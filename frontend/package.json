@@ -1,0 +1,45 @@
+{
+  "name": "ai-health-assistant",
+  "version": "1.0.0",
+  "description": "AI Medical Diagnosis Assistant - Frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview --port 3000",
+    "lint": "eslint src/ --ext .vue,.js,.ts",
+    "format": "prettier --write src/",
+    "clean": "rm -rf dist node_modules",
+    "start": "npm run build && npm run serve"
+  },
+  "dependencies": {
+    "@tailwindcss/forms": "^0.5.10",
+    "@vueuse/core": "^13.3.0",
+    "axios": "^1.9.0",
+    "chart.js": "^4.5.1",
+    "chartjs-plugin-datalabels": "^2.2.0",
+    "dompurify": "^3.2.6",
+    "html2canvas": "^1.4.1",
+    "html2pdf.js": "^0.10.3",
+    "jspdf": "^3.0.3",
+    "lucide-vue-next": "^0.513.0",
+    "microsoft-cognitiveservices-speech-sdk": "^1.44.1",
+    "print-js": "^1.6.0",
+    "vue": "^3.5.13",
+    "vue-chartjs": "^5.3.2",
+    "vue-i18n": "^9.14.5",
+    "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.8",
+    "@tailwindcss/typography": "^0.5.16",
+    "@vitejs/plugin-basic-ssl": "^2.0.0",
+    "@vitejs/plugin-vue": "^5.2.3",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.4",
+    "tailwindcss": "^3.4.17",
+    "vite": "^6.3.5"
+  }
+}

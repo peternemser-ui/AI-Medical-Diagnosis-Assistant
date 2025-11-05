@@ -1,0 +1,474 @@
+@import './base.css';
+
+/* ====================================
+   ACCESSIBLE LIGHT/DARK MODE DESIGN SYSTEM
+   Clean, semantic color tokens
+   ==================================== */
+
+/* Hide all scrollbars globally */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Hide number input spinners/arrows */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+  appearance: textfield;
+}
+
+/* Base settings (shared) */
+:root {
+  --radius: 12px;
+}
+
+/* Light theme - State-of-the-Art Medical Interface Design */
+:root[data-theme="light"], :root, :root:not([data-theme="dark"]):not(.dark) {
+  /* ====================================
+     SOPHISTICATED BACKGROUND SYSTEM
+     Premium glass morphism and depth
+     ==================================== */
+  
+  /* Main Backgrounds - Crystal clear hierarchy */
+  --bg:               var(--light-primary);      /* Pure white main background */
+  --surface:          var(--light-surface);      /* Crystal white cards/surfaces */
+  --surface-2:        var(--light-secondary);    /* Sophisticated gray-blue sections */
+  --surface-lighter:  var(--light-tertiary);     /* Subtle depth backgrounds */
+  
+  /* Advanced Section-Specific Backgrounds - Premium visual hierarchy */
+  --header-bg:        var(--light-header);       /* Gradient header sophistication */
+  --chat-bg:          var(--light-chat);         /* Pure white for chat clarity */
+  --progress-bg:      var(--light-progress);     /* Medical gradient for progress */
+  --controls-bg:      var(--light-controls);     /* Sophisticated controls gradient */
+  --sidebar-bg:       var(--light-sidebar);      /* Professional sidebar gradient */
+  --dashboard-bg:     var(--light-dashboard);    /* Premium dashboard gradient */
+  
+  /* ====================================
+     PREMIUM TEXT HIERARCHY
+     Medical-grade readability
+     ==================================== */
+  
+  /* Advanced Text System - Maximum clarity and sophistication */
+  --text:             var(--light-text-primary);    /* Maximum contrast primary text */
+  --text-muted:       var(--light-text-secondary);  /* Strong secondary hierarchy */
+  --text-subtle:      var(--light-text-tertiary);   /* Refined tertiary text */
+  --text-accent:      var(--light-text-accent);     /* Medical blue accent text */
+  --text-dimmed:      var(--light-text-muted);      /* Subtle muted information */
+  
+  /* ====================================
+     SOPHISTICATED BORDER SYSTEM
+     Premium definition and structure
+     ==================================== */
+  
+  /* Border System - Refined definition */
+  --border:           var(--light-border);          /* Sophisticated subtle borders */
+  --border-strong:    var(--light-border-strong);   /* Strong architectural borders */
+  --border-accent:    var(--light-border-accent);   /* Medical accent borders */
+  
+  /* ====================================
+     STATE-OF-THE-ART MEDICAL COLORS
+     Professional healthcare color psychology
+     ==================================== */
+  
+  /* Primary Medical System - Professional healthcare */
+  --primary:          var(--medical-primary);       /* Premium medical blue */
+  --primary-light:    var(--medical-primary-light); /* Light blue sophistication */
+  --on-primary:       #ffffff;                      /* Pure white on blue */
+  --primary-600:      var(--primary-700);           /* Deeper blue for interactions */
+  --primary-hover:    var(--primary-700);           /* Hover state refinement */
+
+  /* Medical Status System - Advanced color psychology */
+  --success:          var(--medical-success);       /* Professional success green */
+  --success-light:    var(--medical-success-light); /* Light success sophistication */
+  --warning:          var(--medical-warning);       /* Premium warning amber */
+  --warning-light:    var(--medical-warning-light); /* Light warning sophistication */
+  --error:            var(--medical-error);         /* Critical error red */
+  --error-light:      var(--medical-error-light);   /* Light error sophistication */
+  --info:             var(--medical-info);          /* Information teal */
+  --info-light:       var(--medical-info-light);    /* Light info sophistication */
+
+  /* Advanced Accent System */
+  --accent:           #8b5cf6;                      /* Premium purple accent */
+  --on-accent:        #ffffff;                      /* White text on purple */
+  --accent-600:       #7c3aed;                      /* Deeper purple interactions */
+
+  /* Semantic Color Aliases - Backward compatibility with premium upgrades */
+  --danger:           var(--error);                 /* Error alias */
+  --danger-light:     var(--error-light);           /* Light error alias */
+
+  /* Link System - Medical interface links */
+  --link:             var(--primary-600);           /* Medical blue links */
+  --link-hover:       var(--primary-700);           /* Deeper blue hover */
+
+  /* Focus System - Accessibility premium */
+  --focus:            var(--primary-600);           /* Medical blue focus */
+  --focus-ring:       var(--shadow-primary);        /* Premium focus shadow */
+
+  /* ====================================
+     SOPHISTICATED CHAT SYSTEM
+     Premium messaging interface
+     ==================================== */
+  
+  /* Chat Bubble System - Glass morphism inspired */
+  --bubble:           var(--glass-bg);              /* Glass morphism background */
+  --on-bubble:        var(--slate-800);             /* High contrast text */
+  --bubble-border:    var(--glass-border);          /* Subtle glass border */
+  --bubble-shadow:    var(--glass-shadow);          /* Premium glass shadow */
+
+  /* ====================================
+     PREMIUM SHADOW SYSTEM
+     State-of-the-art depth and elevation
+     ==================================== */
+  
+  /* Advanced Shadow System - Medical interface depth */
+  --shadow-xs:        var(--shadow-xs);             /* Minimal elevation */
+  --shadow-sm:        var(--shadow-sm);             /* Subtle elevation */
+  --shadow-md:        var(--shadow-md);             /* Standard elevation */
+  --shadow-lg:        var(--shadow-lg);             /* Prominent elevation */
+  --shadow-xl:        var(--shadow-xl);             /* Major elevation */
+  --shadow-2xl:       var(--shadow-2xl);            /* Maximum elevation */
+  
+  /* Medical Status Shadows - Colored depth psychology */
+  --shadow-primary:   var(--shadow-primary);        /* Blue depth */
+  --shadow-success:   var(--shadow-success);        /* Green depth */
+  --shadow-warning:   var(--shadow-warning);        /* Amber depth */
+  --shadow-error:     var(--shadow-error);          /* Red depth */
+  --shadow-info:      var(--shadow-info);           /* Teal depth */
+}
+
+/* Dark theme - DARK 5 Design with Premium Medical Interface */
+:root[data-theme="dark"], .dark {
+  /* ====================================
+     SOPHISTICATED DARK MODE BACKGROUNDS
+     DARK 5 medical interface system
+     ==================================== */
+  
+  /* Main Backgrounds - Dark medical interface */
+  --bg:               #0f172a;              /* slate-900 - Very dark navy background */
+  --surface:          #1e293b;              /* slate-800 - Card surfaces */
+  --surface-2:        #334155;              /* slate-700 - Secondary surfaces */
+  --surface-lighter:  #0a0f1a;              /* Even darker for contrast */
+  
+  /* Dark Section-Specific Backgrounds - DARK 5 system */
+  --header-bg:        linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  --chat-bg:          #0f172a;              /* Main dark background */
+  --progress-bg:      linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  --controls-bg:      linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  --sidebar-bg:       linear-gradient(180deg, #334155 0%, #475569 100%);
+  --dashboard-bg:     linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  
+  /* ====================================
+     DARK MODE TEXT HIERARCHY
+     Maximum contrast for readability
+     ==================================== */
+  
+  /* Dark Text System - High contrast */
+  --text:             #f1f5f9;              /* slate-100 - Light text */
+  --text-muted:       #94a3b8;              /* slate-400 - Muted text */
+  --text-subtle:      #64748b;              /* slate-500 - Subtle text */
+  --text-accent:      #22d3ee;              /* cyan-400 - DARK 5 accent */
+  --text-dimmed:      #475569;              /* slate-600 - Dimmed text */
+  
+  /* ====================================
+     DARK MODE BORDER SYSTEM
+     ==================================== */
+  
+  /* Border System - Dark theme borders */
+  --border:           #475569;              /* slate-600 - Borders */
+  --border-strong:    #64748b;              /* slate-500 - Strong borders */
+  --border-accent:    #22d3ee;              /* cyan-400 - Accent borders */
+  
+  /* ====================================
+     DARK MODE MEDICAL COLORS
+     DARK 5 accent system
+     ==================================== */
+  
+  /* Primary Medical System - DARK 5 cyan */
+  --primary:          #06b6d4;              /* cyan-500 - DARK 5 accent */
+  --primary-light:    #164e63;              /* cyan-900 - Dark background */
+  --on-primary:       #ffffff;              /* White text */
+  --primary-600:      #22d3ee;              /* cyan-400 - Hover state */
+  --primary-hover:    #67e8f9;              /* cyan-300 - Bright hover */
+  --primary-700:      #0891b2;              /* cyan-600 - Deeper blue */
+
+  /* Medical Status System - Dark optimized */
+  --success:          #10b981;              /* emerald-500 */
+  --success-light:    #064e3b;              /* emerald-900 dark */
+  --warning:          #f59e0b;              /* amber-500 */
+  --warning-light:    #78350f;              /* amber-900 dark */
+  --error:            #ef4444;              /* red-500 */
+  --error-light:      #7f1d1d;              /* red-900 dark */
+  --info:             #06b6d4;              /* cyan-500 */
+  --info-light:       #164e63;              /* cyan-900 dark */
+
+  /* Advanced Accent System */
+  --accent:           #8b5cf6;              /* purple-500 */
+  --on-accent:        #ffffff;              /* White text */
+  --accent-600:       #a78bfa;              /* purple-400 */
+
+  /* Semantic Color Aliases */
+  --danger:           var(--error);
+  --danger-light:     var(--error-light);
+
+  /* Link System - Dark theme links */
+  --link:             #22d3ee;              /* cyan-400 */
+  --link-hover:       #67e8f9;              /* cyan-300 */
+
+  /* Focus System - Dark accessibility */
+  --focus:            #06b6d4;              /* cyan-500 */
+  --focus-ring:       0 0 0 3px rgba(34, 211, 238, 0.3);
+
+  /* ====================================
+     DARK MODE CHAT SYSTEM
+     ==================================== */
+  
+  /* Chat Bubble System - Dark theme */
+  --bubble:           #1e293b;              /* slate-800 */
+  --on-bubble:        #f1f5f9;              /* slate-100 */
+  --bubble-border:    #475569;              /* slate-600 */
+  --bubble-shadow:    0 8px 32px rgba(0, 0, 0, 0.6);
+
+  /* ====================================
+     DARK MODE SHADOW SYSTEM
+     Enhanced shadows for dark theme
+     ==================================== */
+  
+  /* Dark Shadow System - Stronger shadows */
+  --shadow-xs:        0 1px 2px 0 rgba(0, 0, 0, 0.6);
+  --shadow-sm:        0 1px 3px 0 rgba(0, 0, 0, 0.7);
+  --shadow-md:        0 4px 6px -1px rgba(0, 0, 0, 0.8);
+  --shadow-lg:        0 10px 15px -3px rgba(0, 0, 0, 0.9);
+  --shadow-xl:        0 20px 25px -5px rgba(0, 0, 0, 0.95);
+  --shadow-2xl:       0 25px 50px rgba(0, 0, 0, 0.95);
+  
+  /* Medical Status Shadows - Dark theme */
+  --shadow-primary:   0 4px 14px rgba(6, 182, 212, 0.3);
+  --shadow-success:   0 4px 14px rgba(16, 185, 129, 0.3);
+  --shadow-warning:   0 4px 14px rgba(245, 158, 11, 0.3);
+  --shadow-error:     0 4px 14px rgba(239, 68, 68, 0.3);
+  --shadow-info:      0 4px 14px rgba(6, 182, 212, 0.3);
+
+  /* ====================================
+     DARK MODE GLASS MORPHISM
+     ==================================== */
+  
+  /* Glass Morphism Variables - Dark theme */
+  --glass-bg:         rgba(30, 41, 59, 0.85);    /* slate-800 with transparency */
+  --glass-border:     rgba(71, 85, 105, 0.3);    /* slate-600 with transparency */
+  --glass-shadow:     0 8px 32px rgba(0, 0, 0, 0.6);
+  --glass-backdrop:   blur(16px);
+  
+  /* Gradient System - Dark theme gradients */
+  --gradient-primary: linear-gradient(135deg, #06b6d4 0%, #0891b2 50%, #0e7490 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+  --gradient-error:   linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+  --gradient-surface: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+  --gradient-glass:   linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(30, 41, 59, 0.85) 100%);
+}
+
+/* ====================================
+   SMOOTH THEME TRANSITIONS
+   ==================================== */
+
+/* Only transition properties that won't cause layout shifts */
+* {
+  transition-property: background-color, color, border-color, box-shadow, opacity;
+  transition-duration: 0.2s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Disable transitions for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ====================================
+   UTILITY CLASSES - THEME AWARE
+   ==================================== */
+
+/* Backgrounds */
+.bg-surface {
+  background-color: var(--surface);
+}
+
+.bg-surface-2 {
+  background-color: var(--surface-2);
+}
+
+/* Header - Professional brand color */
+.bg-header {
+  background-color: var(--primary);
+  color: var(--on-primary);
+}
+
+:root[data-theme="dark"] .bg-header {
+  background-color: var(--surface);
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Text Colors */
+.text-primary {
+  color: var(--text);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+/* Status Indicators */
+.status-success {
+  color: var(--success);
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+}
+
+.status-warning {
+  color: var(--warning);
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+}
+
+.status-error {
+  color: var(--danger);
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+}
+
+.status-info {
+  color: var(--info);
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-600);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:active {
+  box-shadow: var(--shadow-xs);
+  transform: translateY(1px);
+}
+
+.btn-accent {
+  background-color: var(--accent);
+  color: var(--on-accent);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-accent:hover {
+  background-color: var(--accent-600);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-accent:active {
+  box-shadow: var(--shadow-xs);
+  transform: translateY(1px);
+}
+
+/* Cards */
+.card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Borders */
+.border-theme {
+  border-color: var(--border);
+}
+
+/* Links */
+.link {
+  color: var(--link);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.link:hover {
+  color: var(--link-hover);
+}
+
+/* Focus styles for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-weight: normal;
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+  padding: 3px;
+}
+
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    display: flex;
+    place-items: center;
+  }
+
+  #app {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 0 2rem;
+  }
+}

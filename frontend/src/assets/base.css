@@ -1,0 +1,255 @@
+/* State-of-the-Art Medical Interface Color System 2024-2025 
+   Inspired by top healthcare SaaS platforms and modern design trends */
+:root {
+  /* Premium Foundation Colors */
+  --vt-c-white: #ffffff;
+  --vt-c-white-soft: #fafbfc;
+  --vt-c-white-mute: #f5f7fa;
+
+  --vt-c-black: #0a0f1a;
+  --vt-c-black-soft: #1a202c;
+  --vt-c-black-mute: #2d3748;
+
+  --vt-c-indigo: #2c3e50;
+
+  /* ====================================
+     SOPHISTICATED COLOR PALETTE
+     Premium medical-grade color system
+     ==================================== */
+  
+  /* Primary Medical Blue - Professional healthcare gradient system */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-200: #bfdbfe;
+  --primary-300: #93c5fd;
+  --primary-400: #60a5fa;
+  --primary-500: #3b82f6;
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  --primary-800: #1e40af;
+  --primary-900: #1e3a8a;
+  --primary-950: #172554;
+  
+  /* Medical Teal - Advanced diagnostic sophistication */
+  --teal-50: #f0fdfa;
+  --teal-100: #ccfbf1;
+  --teal-200: #99f6e4;
+  --teal-300: #5eead4;
+  --teal-400: #2dd4bf;
+  --teal-500: #14b8a6;
+  --teal-600: #0d9488;
+  --teal-700: #0f766e;
+  --teal-800: #115e59;
+  --teal-900: #134e4a;
+  
+  /* Clinical Green - Health vitality and success */
+  --green-50: #ecfef3;
+  --green-100: #d1fae5;
+  --green-200: #a7f3d0;
+  --green-300: #6ee7b7;
+  --green-400: #34d399;
+  --green-500: #10b981;
+  --green-600: #059669;
+  --green-700: #047857;
+  --green-800: #065f46;
+  --green-900: #064e3b;
+  
+  /* Medical Alert Amber - Premium warning system */
+  --amber-50: #fffbeb;
+  --amber-100: #fef3c7;
+  --amber-200: #fde68a;
+  --amber-300: #fcd34d;
+  --amber-400: #fbbf24;
+  --amber-500: #f59e0b;
+  --amber-600: #d97706;
+  --amber-700: #b45309;
+  --amber-800: #92400e;
+  --amber-900: #78350f;
+  
+  /* Critical Red - Emergency and urgent care */
+  --red-50: #fef2f2;
+  --red-100: #fee2e2;
+  --red-200: #fecaca;
+  --red-300: #fca5a5;
+  --red-400: #f87171;
+  --red-500: #ef4444;
+  --red-600: #dc2626;
+  --red-700: #b91c1c;
+  --red-800: #991b1b;
+  --red-900: #7f1d1d;
+  
+  /* Premium Neutral System - Medical-grade precision */
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --slate-950: #020617;
+
+  /* ====================================
+     SOPHISTICATED LIGHT MODE COLORS
+     Premium healthcare interface design
+     ==================================== */
+  
+  /* Main Backgrounds - Glass morphism inspired */
+  --light-primary: #ffffff;               /* Pure white for maximum clarity */
+  --light-secondary: var(--slate-50);     /* Crisp light gray-blue */
+  --light-tertiary: var(--slate-100);     /* Subtle depth background */
+  --light-accent: var(--primary-50);      /* Soft blue accent areas */
+  --light-surface: #ffffff;               /* Card backgrounds */
+  --light-surface-elevated: #ffffff;      /* Elevated surfaces */
+  
+  /* Advanced Section Differentiation - Premium visual hierarchy */
+  --light-header: linear-gradient(180deg, #ffffff 0%, var(--slate-50) 100%);
+  --light-chat: #ffffff;
+  --light-progress: linear-gradient(135deg, var(--primary-50) 0%, var(--teal-50) 100%);
+  --light-controls: linear-gradient(135deg, var(--slate-50) 0%, var(--slate-100) 100%);
+  --light-sidebar: linear-gradient(180deg, var(--slate-100) 0%, var(--slate-200) 100%);
+  --light-dashboard: linear-gradient(135deg, #ffffff 0%, var(--primary-50) 50%, var(--teal-50) 100%);
+  
+  /* Sophisticated Border System */
+  --light-border: var(--slate-200);           /* Subtle definition */
+  --light-border-strong: var(--slate-300);    /* Strong definition */
+  --light-border-accent: var(--primary-200);  /* Accent borders */
+  
+  /* Advanced Text Hierarchy - Medical-grade readability */
+  --light-text-primary: var(--slate-900);     /* Maximum contrast */
+  --light-text-secondary: var(--slate-700);   /* Strong secondary */
+  --light-text-tertiary: var(--slate-500);    /* Subtle tertiary */
+  --light-text-accent: var(--primary-600);    /* Medical blue accent */
+  --light-text-muted: var(--slate-400);       /* Muted information */
+  
+  /* Medical Color System - State-of-the-art status colors */
+  --medical-primary: var(--primary-600);      /* Professional blue */
+  --medical-primary-light: var(--primary-100); /* Light blue backgrounds */
+  --medical-success: var(--green-600);        /* Health success */
+  --medical-success-light: var(--green-100);  /* Light success backgrounds */
+  --medical-warning: var(--amber-600);        /* Professional warning */
+  --medical-warning-light: var(--amber-100);  /* Light warning backgrounds */
+  --medical-error: var(--red-600);            /* Critical alerts */
+  --medical-error-light: var(--red-100);      /* Light error backgrounds */
+  --medical-info: var(--teal-600);            /* Information */
+  --medical-info-light: var(--teal-100);      /* Light info backgrounds */
+
+  /* ====================================
+     PREMIUM GLASS MORPHISM EFFECTS
+     Modern depth and sophistication
+     ==================================== */
+  
+  --glass-bg: rgba(255, 255, 255, 0.90);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+  --glass-backdrop: blur(20px);
+  
+  /* ====================================
+     ADVANCED SHADOW SYSTEM
+     Premium depth and elevation
+     ==================================== */
+  
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.10), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.10), 0 10px 10px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.15);
+  
+  /* Medical Shadow Variants - Colored shadows for depth */
+  --shadow-primary: 0 4px 14px rgba(59, 130, 246, 0.15);
+  --shadow-success: 0 4px 14px rgba(16, 185, 129, 0.15);
+  --shadow-warning: 0 4px 14px rgba(245, 158, 11, 0.15);
+  --shadow-error: 0 4px 14px rgba(239, 68, 68, 0.15);
+  --shadow-info: 0 4px 14px rgba(20, 184, 166, 0.15);
+
+  /* ====================================
+     PREMIUM GRADIENT SYSTEM
+     Medical interface depth
+     ==================================== */
+  
+  --gradient-primary: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 50%, var(--primary-700) 100%);
+  --gradient-success: linear-gradient(135deg, var(--green-500) 0%, var(--green-600) 50%, var(--green-700) 100%);
+  --gradient-warning: linear-gradient(135deg, var(--amber-500) 0%, var(--amber-600) 50%, var(--amber-700) 100%);
+  --gradient-error: linear-gradient(135deg, var(--red-500) 0%, var(--red-600) 50%, var(--red-700) 100%);
+  --gradient-surface: linear-gradient(145deg, #ffffff 0%, var(--slate-50) 100%);
+  --gradient-glass: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+
+  /* Dividers and Shadows for compatibility */
+  --vt-c-divider-light-1: rgba(203, 213, 225, 0.8);
+  --vt-c-divider-light-2: rgba(203, 213, 225, 0.4);
+  --vt-c-divider-dark-1: rgba(84, 84, 84, 0.65);
+  --vt-c-divider-dark-2: rgba(84, 84, 84, 0.48);
+
+  --vt-c-text-light-1: var(--light-text-primary);
+  --vt-c-text-light-2: var(--light-text-secondary);
+  --vt-c-text-dark-1: var(--vt-c-white);
+  --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
+}
+
+/* ====================================
+   SEMANTIC VARIABLES
+   ==================================== */
+
+:root {
+  --section-gap: 160px;
+}
+
+/* ====================================
+   FOUNDATION STYLES
+   Modern, accessible base
+   ==================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  font-weight: normal;
+}
+
+html {
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+body {
+  min-height: 100vh;
+  color: var(--text);
+  background: var(--bg);
+  overflow-x: hidden;
+  transition:
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  line-height: 1.6;
+  font-family:
+    'Inter Variable',
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
