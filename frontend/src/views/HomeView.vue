@@ -4,11 +4,11 @@
       <!-- Header Section -->
       <div class="flex-shrink-0 mb-8">
         <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-700 leading-tight mb-4">
-          Welcome to Your AI Health Checker
+          {{ $t('home.welcome') }}
         </h1>
-        
+
         <p class="text-sm sm:text-base lg:text-lg text-gray-700 leading-relaxed px-2">
-          Get personalized health guidance through our intelligent AI system. Start with a comprehensive health assessment using voice or text input.
+          {{ $t('home.subtitle') }}
         </p>
       </div>
 
@@ -19,14 +19,14 @@
             to="/voice-diagnosis"
             class="bg-blue-600 text-white text-sm sm:text-base lg:text-lg font-semibold py-3 sm:py-4 px-6 rounded-lg shadow-lg hover:bg-blue-700 transition duration-200 transform hover:scale-105 hover:shadow-xl"
           >
-            Start Health Assessment
+            {{ $t('home.startAssessment') }}
           </router-link>
 
           <router-link
             to="/dashboard"
             class="bg-green-600 text-white text-sm sm:text-base lg:text-lg font-semibold py-3 sm:py-4 px-6 rounded-lg shadow-lg hover:bg-green-700 transition duration-200 transform hover:scale-105 hover:shadow-xl"
           >
-            View Sample Dashboard 📊
+            {{ $t('home.viewDashboard') }} 📊
           </router-link>
         </div>
       </div>
@@ -34,7 +34,7 @@
       <!-- Footer -->
       <div class="flex-shrink-0 mt-6">
         <div class="text-xs sm:text-sm text-gray-500">
-          AI-powered health assessment for informational purposes only
+          {{ $t('home.disclaimer') }}
         </div>
       </div>
     </div>

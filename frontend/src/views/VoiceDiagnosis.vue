@@ -21,10 +21,10 @@
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
               </svg>
-              CALL 911 NOW
+              {{ $t('emergency.call911') }}
             </a>
             <button @click="dismissEmergency" class="text-white underline hover:text-red-100 px-3">
-              I understand (dismiss)
+              {{ $t('emergency.understand') }}
             </button>
           </div>
         </div>
@@ -42,7 +42,7 @@
         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
         </svg>
-        <span class="font-medium">AI Active</span>
+        <span class="font-medium">{{ $t('app.aiActive') }}</span>
       </div>
     </div>
     
@@ -52,27 +52,27 @@
       style="background-color: var(--header-bg); border-bottom: 1px solid var(--border);"
     >
       <div>
-        <h1 class="text-2xl font-bold header-title" :style="{ color: '#ffffff', fontWeight: '800' }">🩺 AI Health Assistant</h1>
-        <p class="header-subtitle text-sm" :style="{ color: '#e2e8f0', fontSize: '14px' }">Professional health guidance powered by AI</p>
+        <h1 class="text-2xl font-bold header-title" :style="{ color: '#ffffff', fontWeight: '800' }">🩺 {{ $t('app.title') }}</h1>
+        <p class="header-subtitle text-sm" :style="{ color: '#e2e8f0', fontSize: '14px' }">{{ $t('app.subtitle') }}</p>
       </div>
       <div class="text-right space-y-1 flex items-center gap-4">
         <div class="space-y-1">
           <div class="flex items-center justify-end gap-2">
-            <div class="text-sm status-success">● Online</div>
+            <div class="text-sm status-success">● {{ $t('app.online') }}</div>
             <div v-if="apiStatus === true" class="flex items-center text-xs status-success px-2 py-1 rounded-full border">
               <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
               </svg>
-              AI Active
+              {{ $t('app.aiActive') }}
             </div>
             <div v-else-if="apiStatus === false" class="flex items-center text-xs status-warning px-2 py-1 rounded-full border">
               <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
               </svg>
-              Basic Mode
+              {{ $t('app.basicMode') }}
             </div>
           </div>
-          <div class="text-xs" :style="{ color: '#e2e8f0', fontSize: '12px' }">Estimated Cost: ${{ estimatedCost.toFixed(4) }}</div>
+          <div class="text-xs" :style="{ color: '#e2e8f0', fontSize: '12px' }">{{ $t('app.estimatedCost') }}: ${{ estimatedCost.toFixed(4) }}</div>
         </div>
 
         <!-- Theme Toggle -->
@@ -85,7 +85,7 @@
         <button
           @click="goToApiSettings"
           class="p-2 hover-overlay rounded-lg transition-colors duration-200 group settings-btn"
-          title="Configure API Key"
+          :title="$t('settings.apiKey')"
         >
           <svg class="w-6 h-6 text-secondary group-hover:text-primary group-hover:rotate-90 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
@@ -96,12 +96,12 @@
     </div>
 
     <!-- Progress Indicator - Fixed at top -->
-    <ProgressIndicator 
+    <ProgressIndicator
       v-if="conversationState !== 'initial'"
       :visible="conversationState !== 'initial'"
       :progress="progressPercentage"
       :current-step="currentStep"
-      :steps="['Start', 'Symptoms', 'Duration', 'Severity', 'Details', 'Analysis']"
+      :steps="progressSteps"
       :title="getProgressTitle()"
       :message="getProgressMessage()"
     />
@@ -129,7 +129,7 @@
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-2">
                 <MaterialIcon icon="accessibility_new" size="lg" :fill="true" class="text-purple-400" />
-                <h3 class="text-lg font-semibold">Select Symptom Locations</h3>
+                <h3 class="text-lg font-semibold">{{ $t('bodyDiagram.title') }}</h3>
               </div>
               <button 
                 @click="showBodyDiagram = false"
@@ -153,16 +153,16 @@
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-2">
                 <MaterialIcon icon="photo_camera" size="lg" :fill="true" class="text-blue-400" />
-                <h3 class="text-lg font-semibold">Add Photos (Optional)</h3>
+                <h3 class="text-lg font-semibold">{{ $t('imageUpload.title') }}</h3>
               </div>
-              <button 
+              <button
                 @click="showImageUpload = false"
                 class="text-gray-400 hover:text-white transition-colors"
               >
                 <MaterialIcon icon="close" size="sm" />
               </button>
             </div>
-            <p class="text-sm text-gray-400 mb-4">Upload photos of your symptoms to help with diagnosis</p>
+            <p class="text-sm text-gray-400 mb-4">{{ $t('imageUpload.subtitle') }}</p>
             <ImageUpload
               ref="imageUploadRef"
               :disabled="isLoading"
@@ -180,20 +180,20 @@
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-2">
                 <MaterialIcon icon="monitor_heart" size="lg" :fill="true" class="text-red-400" />
-                <h3 class="text-lg font-semibold">Rate Your Symptom Severity</h3>
+                <h3 class="text-lg font-semibold">{{ $t('severity.title') }}</h3>
               </div>
-              <button 
+              <button
                 @click="handleSeveritySubmit"
                 class="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2"
               >
                 <MaterialIcon icon="check" size="sm" />
-                Submit
+                {{ $t('common.confirm') }}
               </button>
             </div>
-            <p class="text-sm text-gray-400 mb-4">Use the slider below to indicate how severe your symptoms are</p>
+            <p class="text-sm text-gray-400 mb-4">{{ $t('bodyDiagram.subtitle') }}</p>
             <SeveritySlider
               v-model="severityValue"
-              label="Symptom Severity Level"
+              :label="$t('severity.title')"
             />
           </div>
           
@@ -212,7 +212,7 @@
       v-if="conversationState === 'gathering' && !showBodyDiagram"
       @click="toggleBodyDiagram"
       class="fixed bottom-40 right-6 z-20 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
-      title="Select body areas"
+      :title="$t('bodyDiagram.title')"
     >
       <MaterialIcon icon="accessibility_new" size="lg" :fill="true" />
     </button>
@@ -222,7 +222,7 @@
       v-if="conversationState === 'gathering' && !showImageUpload"
       @click="toggleImageUpload"
       class="fixed bottom-24 right-6 z-20 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
-      title="Upload symptom photos"
+      :title="$t('imageUpload.title')"
     >
       <MaterialIcon icon="add_photo_alternate" size="lg" :fill="true" />
     </button>
@@ -232,12 +232,12 @@
       v-if="conversationState !== 'initial'"
       @click="showDrugLookup = true"
       class="fixed top-24 right-6 z-20 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 flex items-center gap-2"
-      title="Drug Information & Interactions"
+      :title="$t('drugLookup.subtitle')"
     >
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
       </svg>
-      <span class="text-sm font-semibold">💊 Drugs</span>
+      <span class="text-sm font-semibold">💊 {{ $t('drugLookup.title') }}</span>
     </button>
 
     <!-- Drug Lookup Modal -->
@@ -394,54 +394,54 @@ const soundEnabled = voice.soundEnabled
 const autoScroll = chat.autoScroll
 
 // Diagnosis completion actions
-const diagnosisActions = ref([
+const diagnosisActions = computed(() => [
   {
     id: 'view-dashboard',
-    text: 'View Detailed Dashboard',
+    text: t('diagnosis.viewDashboard'),
     category: 'results',
-    description: 'See comprehensive analysis with charts and recommendations',
+    description: t('dashboard.subtitle'),
     icon: 'dashboard',
     action: 'navigate',
     route: '/dashboard'
   },
   {
     id: 'manual-dashboard',
-    text: 'Go to Dashboard (Direct)',
+    text: t('nav.dashboard'),
     category: 'debug',
-    description: 'Direct navigation to dashboard for testing',
+    description: t('dashboard.subtitle'),
     icon: 'build',
     action: 'manual-navigate',
     route: '/dashboard'
   },
   {
     id: 'when-doctor',
-    text: 'When should I see a doctor?',
+    text: t('dashboard.redFlags.seekCare'),
     category: 'care',
-    description: 'Get guidance on when to seek medical attention',
+    description: t('dashboard.redFlags.warning'),
     icon: 'person',
     action: 'question'
   },
   {
     id: 'home-remedies',
-    text: 'What can I do at home?',
+    text: t('dashboard.treatment.title'),
     category: 'treatment',
-    description: 'Learn about home care options',
+    description: t('dashboard.lifestyle.title'),
     icon: 'home',
     action: 'question'
   },
   {
     id: 'medications',
-    text: 'Can I take over-the-counter medications?',
+    text: t('drugLookup.title'),
     category: 'treatment',
-    description: 'Ask about medication options',
+    description: t('drugLookup.subtitle'),
     icon: 'medication',
     action: 'question'
   },
   {
     id: 'symptoms-worse',
-    text: 'Are my symptoms getting worse?',
+    text: t('dashboard.followUp.title'),
     category: 'severity',
-    description: 'Ask about symptom progression',
+    description: t('dashboard.followUp.subtitle'),
     icon: 'trending_down',
     action: 'question'
   }
@@ -463,6 +463,15 @@ const progressPercentage = computed(() => {
   if (conversationState.value === 'diagnosed') return 100
   return 0
 })
+
+const progressSteps = computed(() => [
+  t('diagnosis.start'),
+  t('questionnaire.symptoms'),
+  t('questionnaire.duration'),
+  t('questionnaire.severity'),
+  t('questionnaire.medicalHistory'),
+  t('diagnosis.analyzing')
+])
 
 // === WATCHERS ===
 watch(chatMessages, async () => {
@@ -495,7 +504,7 @@ watch(soundEnabled, (newVal) => {
   // When turning on, play a test message
   if (newVal) {
     setTimeout(() => {
-      voice.speak('Voice enabled', { rate: 1.2, volume: 0.8 })
+      voice.speak(t('settings.voice'), { rate: 1.2, volume: 0.8 })
     }, 100)
   } else {
     // When turning off, stop any ongoing speech
@@ -526,18 +535,19 @@ onMounted(async () => {
 
   // Add only the initial AI greeting
   setTimeout(() => {
-    chat.addAssistantMessage('Hello, I\'m your AI health assistant. I\'m here to help assess your **human health** symptoms and provide guidance.\n\n**Important:** This service is for human health only. If you need help with a pet (dog, cat, fish, bird, etc.), please consult a veterinarian. 🐾\n\nBefore we begin, I need to collect some basic information. **What is your age?**')
-    
+    const greetingMessage = t('diagnosis.startMessage') + '\n\n' + t('questionnaire.age')
+    chat.addAssistantMessage(greetingMessage)
+
     hasStarted.value = true
     conversationState.value = 'gathering'
     console.log('✅ Fresh conversation started')
-    
+
     // Speak the initial greeting if sound is enabled
     if (soundEnabled.value) {
       console.log('🔊 Will speak initial greeting in 800ms')
       setTimeout(() => {
         console.log('🔊 Now speaking initial greeting')
-        voice.speak('Hello, I\'m your AI health assistant. I\'m here to help assess your symptoms and provide guidance. Before we begin, I need to collect some basic information. What is your age?')
+        voice.speak(greetingMessage)
       }, 800)
     } else {
       console.log('❌ NOT speaking initial greeting - sound disabled')
@@ -638,9 +648,9 @@ function handleStart() {
   
   hasStarted.value = true
   conversationState.value = 'gathering'
-  
+
   // Simple direct message addition
-  chat.addAssistantMessage('Hello, I\'m your AI health assistant. What brings you here today?')
+  chat.addAssistantMessage(t('diagnosis.askQuestion'))
 
   console.log('✅ Message added via chat composable')
 }
@@ -722,7 +732,7 @@ async function handleSendMessage(message) {
         await handleProceedToDiagnosis()
       } else {
         // User declined or unclear response
-        addMessage('assistant', "I understand. Would you like me to proceed with the health assessment analysis? Please respond with 'yes' when you're ready.")
+        addMessage('assistant', t('common.confirm') + '?')
       }
     } else if (conversationState.value === 'diagnosed') {
       console.log('💬 Handling follow-up message...')
@@ -764,8 +774,8 @@ async function handleGatheringMessage() {
   if (questionnaire.isComplete.value || currentIndex >= totalQuestions) {
     // All questions completed - change state to awaiting confirmation
     conversationState.value = 'awaiting-confirmation'
-    addMessage('assistant', 
-      "Perfect! I now have all the information I need to provide you with a comprehensive health assessment.\n\n✅ **Medical interview completed**\n\nWould you like me to proceed with analyzing your symptoms and providing my assessment?"
+    addMessage('assistant',
+      t('diagnosis.thinking') + '\n\n' + t('common.confirm') + '?'
     )
     currentStep.value = totalSteps.value
     return
@@ -792,8 +802,8 @@ async function handleGatheringMessage() {
     // No more questions - this shouldn't happen but handle it
     console.warn('⚠️ Unexpected state: no question available but not complete')
     conversationState.value = 'awaiting-confirmation'
-    addMessage('assistant', 
-      "Thank you for providing that information. I have enough details to analyze your symptoms.\n\nWould you like me to proceed with the assessment?"
+    addMessage('assistant',
+      t('common.confirm') + '?'
     )
   }
 }
@@ -808,7 +818,7 @@ async function handleProceedToDiagnosis() {
   conversationState.value = 'diagnosing'
 
   // Add thinking message
-  addMessage('assistant', "🔍 Analyzing your symptoms and medical information...")
+  addMessage('assistant', t('diagnosis.analyzing'))
 
   try {
     // Extract all responses from questionnaire
@@ -947,8 +957,8 @@ async function handleProceedToDiagnosis() {
     localStorage.setItem('chatHistory', JSON.stringify(chatHistory))
     
     // Add error message but still set state to diagnosed so user can access dashboard
-    addMessage('assistant', 
-      "I apologize, but I'm having trouble processing your diagnosis right now. This could be due to a connection issue. However, I've prepared a basic assessment for you based on the information provided.\n\n**I recommend consulting with a healthcare professional for proper evaluation.** You can view your assessment summary below."
+    addMessage('assistant',
+      t('errors.network')
     )
     
     conversationState.value = 'diagnosed'
@@ -1032,10 +1042,10 @@ function handleImageAnalysisComplete(images) {
   // Add image analysis to chat
   if (imageAnalysisResults.value.length > 0) {
     const analysisText = imageAnalysisResults.value
-      .map((result, index) => `📸 **Image ${index + 1} Analysis:**\n${result.analysis}`)
+      .map((result, index) => `📸 **${t('imageUpload.analyzing')} ${index + 1}:**\n${result.analysis}`)
       .join('\n\n')
-    
-    addMessage('assistant', `I've analyzed your ${imageAnalysisResults.value.length} image(s):\n\n${analysisText}\n\nThis visual information will be included in your diagnosis.`)
+
+    addMessage('assistant', `${t('imageUpload.analyzing')}\n\n${analysisText}`)
   }
 }
 
@@ -1046,7 +1056,7 @@ function toggleBodyDiagram() {
   showBodyDiagram.value = !showBodyDiagram.value
   
   if (showBodyDiagram.value) {
-    addMessage('assistant', '👤 Please click on the body diagram to show me where your symptoms are located. You can select multiple areas.')
+    addMessage('assistant', t('bodyDiagram.subtitle'))
   }
 }
 
@@ -1061,7 +1071,7 @@ function handleBodyAreasChanged(areas) {
       .map(area => area.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '))
       .join(', ')
     
-    addMessage('assistant', `✅ Got it! You've indicated symptoms in: **${areaList}**. This will help me provide a more targeted diagnosis.`)
+    addMessage('assistant', `${t('bodyDiagram.selected')}: **${areaList}**`)
   }
 }
 
@@ -1072,7 +1082,7 @@ function toggleImageUpload() {
   showImageUpload.value = !showImageUpload.value
   
   if (showImageUpload.value) {
-    addMessage('assistant', '📸 You can now upload photos of your symptoms. This will help me provide a more accurate diagnosis.')
+    addMessage('assistant', t('imageUpload.subtitle'))
   }
 }
 
@@ -1091,8 +1101,8 @@ async function handleSeveritySubmit() {
   questionnaire.addResponse(severityValue.value.toString())
   
   // Acknowledge the severity rating
-  const severityText = severityValue.value <= 3 ? 'mild' : severityValue.value <= 5 ? 'moderate' : severityValue.value <= 7 ? 'significant' : severityValue.value <= 9 ? 'severe' : 'critical'
-  addMessage('assistant', `✅ Thank you. I've noted your symptoms are at a **${severityText}** level (${severityValue.value}/10). This helps me understand the urgency of your situation.`)
+  const severityKey = severityValue.value <= 3 ? 'severity.mild' : severityValue.value <= 5 ? 'severity.moderate' : severityValue.value <= 7 ? 'severity.significant' : severityValue.value <= 9 ? 'severity.severe' : 'severity.critical'
+  addMessage('assistant', `${t(severityKey)} (${severityValue.value}/10)`)
   
   // Continue with next question
   await new Promise(resolve => setTimeout(resolve, 800))
@@ -1115,7 +1125,7 @@ function handleQuickAction(action) {
         console.log('✅ Navigation successful')
       }).catch(err => {
         console.error('❌ Navigation failed:', err)
-        handleError('Failed to navigate to dashboard. Please try refreshing the page.')
+        handleError(t('errors.generic'))
       })
     }
   } else if (action.action === 'question') {
@@ -1546,7 +1556,7 @@ function toggleVoiceEnabled(enabled) {
  */
 async function toggleVoiceRecording() {
   if (!voiceEnabled.value) {
-    handleError('Voice recording is disabled. Please enable it in settings.')
+    handleError(t('settings.voice'))
     return
   }
 
@@ -1565,7 +1575,7 @@ async function startVoiceRecording() {
 
   if (!voice.isSupported.value) {
     console.warn('⚠️ Voice recording not supported')
-    handleError('Voice recording is not supported in your browser.')
+    handleError(t('errors.generic'))
     voice.voiceEnabled.value = false
     return
   }
@@ -1644,13 +1654,13 @@ function handleSettingsChange(settings) {
 function getProgressTitle() {
   switch (conversationState.value) {
     case 'gathering':
-      return 'Collecting Information'
+      return t('questionnaire.symptoms')
     case 'diagnosing':
-      return 'Analyzing Symptoms'
+      return t('diagnosis.analyzing')
     case 'diagnosed':
-      return 'Assessment Complete'
+      return t('diagnosis.viewDashboard')
     default:
-      return 'Getting Started'
+      return t('diagnosis.start')
   }
 }
 
@@ -1660,13 +1670,13 @@ function getProgressTitle() {
 function getProgressMessage() {
   switch (conversationState.value) {
     case 'gathering':
-      return `Gathering medical information (${questionnaire.progress.value.current}/${questionnaire.progress.value.total})`
+      return `${t('questionnaire.symptoms')} (${questionnaire.progress.value.current}/${questionnaire.progress.value.total})`
     case 'diagnosing':
-      return 'Processing your symptoms and generating health insights...'
+      return t('diagnosis.analyzing')
     case 'diagnosed':
-      return 'Your health assessment is ready. Feel free to ask follow-up questions.'
+      return t('dashboard.followUp.askQuestion')
     default:
-      return 'Ready to begin your health assessment'
+      return t('diagnosis.start')
   }
 }
 
@@ -1808,7 +1818,7 @@ function goToApiSettings() {
 function testSpeech() {
   console.log('🔊 Testing speech synthesis...')
   if (window.speechSynthesis) {
-    const utterance = new SpeechSynthesisUtterance('Hello, I am your AI health assistant. I can speak to you.')
+    const utterance = new SpeechSynthesisUtterance(t('diagnosis.startMessage'))
     utterance.rate = 1.0
     utterance.pitch = 1.0
     utterance.volume = 1.0
@@ -1830,7 +1840,7 @@ if (import.meta.env.DEV) {
 function handleStartOver() {
   // Confirm if user really wants to start over
   if (chatMessages.value.length > 0) {
-    if (!confirm('Are you sure you want to start over? This will clear your current conversation.')) {
+    if (!confirm(t('diagnosis.restart') + '?')) {
       return
     }
   }

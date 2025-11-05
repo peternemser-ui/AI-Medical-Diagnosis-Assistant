@@ -34,7 +34,7 @@
               :fill="true"
               :style="{ color: 'var(--primary)' }"
             />
-            AI Medical Assessment Dashboard
+            {{ $t('dashboard.title') }}
           </h1>
           <p 
             class="text-sm premium-subtitle"
@@ -44,7 +44,7 @@
               fontWeight: '500'
             }"
           >
-            Comprehensive diagnosis analysis with clinical insights
+            {{ $t('dashboard.subtitle') }}
           </p>
         </div>
         <div class="flex items-center gap-3">
@@ -55,7 +55,7 @@
               class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-lg font-semibold text-sm transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               <MaterialIcon icon="download" size="sm" />
-              Export Report
+              {{ $t('dashboard.exportReport') }}
             </button>
 
             <!-- Export Dropdown -->
@@ -65,32 +65,32 @@
                       class="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-center gap-3 border-b border-gray-700">
                 <MaterialIcon icon="picture_as_pdf" size="sm" class="text-red-400" />
                 <div>
-                  <div class="font-semibold text-sm">Export as PDF</div>
-                  <div class="text-xs text-gray-400">Printable medical report</div>
+                  <div class="font-semibold text-sm">{{ $t('dashboard.exportFormats.pdf') }}</div>
+                  <div class="text-xs text-gray-400">{{ $t('dashboard.exportFormats.pdfDesc') }}</div>
                 </div>
               </button>
               <button @click="exportReport('html')"
                       class="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-center gap-3 border-b border-gray-700">
                 <MaterialIcon icon="web" size="sm" class="text-blue-400" />
                 <div>
-                  <div class="font-semibold text-sm">Export as HTML</div>
-                  <div class="text-xs text-gray-400">Web page format</div>
+                  <div class="font-semibold text-sm">{{ $t('dashboard.exportFormats.html') }}</div>
+                  <div class="text-xs text-gray-400">{{ $t('dashboard.exportFormats.htmlDesc') }}</div>
                 </div>
               </button>
               <button @click="exportReport('json')"
                       class="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-center gap-3 border-b border-gray-700">
                 <MaterialIcon icon="code" size="sm" class="text-yellow-400" />
                 <div>
-                  <div class="font-semibold text-sm">Export as JSON</div>
-                  <div class="text-xs text-gray-400">Data format</div>
+                  <div class="font-semibold text-sm">{{ $t('dashboard.exportFormats.json') }}</div>
+                  <div class="text-xs text-gray-400">{{ $t('dashboard.exportFormats.jsonDesc') }}</div>
                 </div>
               </button>
               <button @click="exportReport('text')"
                       class="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-center gap-3">
                 <MaterialIcon icon="description" size="sm" class="text-gray-400" />
                 <div>
-                  <div class="font-semibold text-sm">Export as Text</div>
-                  <div class="text-xs text-gray-400">Plain text transcript</div>
+                  <div class="font-semibold text-sm">{{ $t('dashboard.exportFormats.text') }}</div>
+                  <div class="text-xs text-gray-400">{{ $t('dashboard.exportFormats.textDesc') }}</div>
                 </div>
               </button>
             </div>
@@ -108,27 +108,27 @@
       <div class="bg-gradient-to-r from-blue-800 to-indigo-800 rounded-lg shadow-lg p-3 mb-4 border border-blue-700">
         <div class="flex items-center gap-2 mb-2">
           <MaterialIcon icon="badge" size="lg" :fill="true" />
-          <h2 class="text-sm font-bold uppercase tracking-wide">Patient Information</h2>
+          <h2 class="text-sm font-bold uppercase tracking-wide">{{ $t('dashboard.patientInfo.title') }}</h2>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
           <div class="flex items-center gap-1.5 bg-blue-900 bg-opacity-40 rounded px-2 py-1.5">
             <MaterialIcon icon="person" size="sm" />
-            <span class="text-gray-300">Age:</span>
+            <span class="text-gray-300">{{ $t('dashboard.patientInfo.age') }}:</span>
             <span class="font-semibold text-white">{{ patientInfo.age }}</span>
           </div>
           <div class="flex items-center gap-1.5 bg-blue-900 bg-opacity-40 rounded px-2 py-1.5">
             <MaterialIcon icon="wc" size="sm" />
-            <span class="text-gray-300">Gender:</span>
+            <span class="text-gray-300">{{ $t('dashboard.patientInfo.gender') }}:</span>
             <span class="font-semibold text-white">{{ patientInfo.gender }}</span>
           </div>
           <div class="flex items-center gap-1.5 bg-blue-900 bg-opacity-40 rounded px-2 py-1.5">
             <MaterialIcon icon="schedule" size="sm" />
-            <span class="text-gray-300">Duration:</span>
+            <span class="text-gray-300">{{ $t('dashboard.patientInfo.duration') }}:</span>
             <span class="font-semibold text-white">{{ patientInfo.duration }}</span>
           </div>
           <div class="flex items-center gap-1.5 bg-blue-900 bg-opacity-40 rounded px-2 py-1.5">
             <MaterialIcon icon="emergency" size="sm" />
-            <span class="text-gray-300">Severity:</span>
+            <span class="text-gray-300">{{ $t('dashboard.patientInfo.severity') }}:</span>
             <span class="font-semibold text-white">{{ patientInfo.severity }}</span>
           </div>
         </div>
@@ -136,7 +136,7 @@
           <div class="flex items-start gap-1.5 text-xs">
             <MaterialIcon icon="medical_information" size="sm" class="mt-0.5" />
             <div>
-              <span class="text-gray-300">Chief Complaint:</span>
+              <span class="text-gray-300">{{ $t('dashboard.patientInfo.chiefComplaint') }}:</span>
               <span class="font-semibold text-white ml-1">{{ patientInfo.symptoms }}</span>
             </div>
           </div>
@@ -151,7 +151,7 @@
           <div class="bg-gradient-to-r from-blue-700 to-blue-600 px-4 py-2.5 rounded-t-lg border-b border-blue-500">
             <h3 class="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
               <MaterialIcon icon="troubleshoot" size="lg" :fill="true" />
-              Differential Diagnoses
+              {{ $t('dashboard.differentialDiagnoses.title') }}
             </h3>
           </div>
           
@@ -198,10 +198,10 @@
                   <div class="flex items-center justify-between mb-3">
                     <h4 class="text-xs font-bold uppercase tracking-wide text-gray-300 flex items-center gap-2">
                       <MaterialIcon icon="accessibility_new" size="sm" :fill="true" />
-                      Symptom Map
+                      {{ $t('dashboard.differentialDiagnoses.symptomMap') }}
                     </h4>
                     <span v-if="bodyAreas.length > 0" class="text-xs bg-red-600 text-white px-2 py-0.5 rounded-full">
-                      {{ bodyAreas.length }} area{{ bodyAreas.length !== 1 ? 's' : '' }}
+                      {{ bodyAreas.length }} {{ $t('dashboard.differentialDiagnoses.areas', bodyAreas.length) }}
                     </span>
                   </div>
                   
@@ -325,7 +325,7 @@
                     <div v-if="bodyAreas.length > 0" class="space-y-1">
                       <div class="flex items-center justify-center gap-2 mb-2">
                         <span class="w-3 h-3 bg-red-600 rounded-full animate-pulse"></span>
-                        <span class="font-semibold">Affected Areas</span>
+                        <span class="font-semibold">{{ $t('dashboard.differentialDiagnoses.affectedAreas') }}</span>
                       </div>
                       <div class="flex flex-wrap gap-1 justify-center">
                         <span v-for="area in bodyAreas" :key="area" 
@@ -336,7 +336,7 @@
                     </div>
                     <div v-else class="text-gray-500 flex items-center justify-center gap-2">
                       <MaterialIcon icon="info" size="sm" />
-                      <span>No symptom locations recorded</span>
+                      <span>{{ $t('dashboard.differentialDiagnoses.noLocations') }}</span>
                     </div>
                   </div>
                 </div>
@@ -382,7 +382,7 @@
                           :style="{ backgroundColor: getColorForIndex(index) + '30', color: getColorForIndex(index) }">
                       {{ getLikelihoodText(diagnosis.confidence) }}
                     </span>
-                    <span class="text-gray-500">{{ diagnosis.urgency || 'routine' }} urgency</span>
+                    <span class="text-gray-500">{{ diagnosis.urgency || 'routine' }} {{ $t('dashboard.differentialDiagnoses.urgency') }}</span>
                     <span class="text-gray-500">{{ diagnosis.specialty || 'Primary Care' }}</span>
                   </div>
                   
@@ -398,7 +398,7 @@
                       }"
                     >
                       <MaterialIcon icon="info" size="sm" />
-                      Learn More
+                      {{ $t('dashboard.differentialDiagnoses.learnMore') }}
                     </button>
                     
                     <button 
@@ -406,7 +406,7 @@
                       class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-slate-700 text-slate-300 border border-slate-600 transition-all duration-200 hover:bg-slate-600 hover:scale-105"
                     >
                       <MaterialIcon icon="help" size="sm" />
-                      Ask Questions
+                      {{ $t('dashboard.differentialDiagnoses.askQuestions') }}
                     </button>
                     
                     <button 
@@ -414,7 +414,7 @@
                       class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-cyan-600/20 text-cyan-400 border border-cyan-600/40 transition-all duration-200 hover:bg-cyan-600/30 hover:scale-105"
                     >
                       <MaterialIcon icon="local_hospital" size="sm" />
-                      Find Specialist
+                      {{ $t('dashboard.differentialDiagnoses.findSpecialist') }}
                     </button>
                   </div>
                 </div>
@@ -423,7 +423,7 @@
           </div>
         </div>
         <div v-else class="p-6 text-center text-gray-400 text-sm">
-          No differential diagnoses available.
+          {{ $t('dashboard.differentialDiagnoses.noData') }}
         </div>
       </div>
 
@@ -432,7 +432,7 @@
         <div class="bg-gradient-to-r from-green-700 to-green-600 px-4 py-2.5 rounded-t-lg border-b border-green-500">
           <h3 class="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
             <MaterialIcon icon="local_hospital" size="lg" :fill="true" />
-            Medical Treatment Plan
+            {{ $t('dashboard.treatment.title') }}
           </h3>
         </div>
         
@@ -448,7 +448,7 @@
           </div>
         </div>
         <div v-else class="p-6 text-center text-gray-400 text-sm">
-          No specific treatment recommendations available.
+          {{ $t('dashboard.treatment.noData') }}
         </div>
       </div>
 
@@ -460,7 +460,7 @@
           <div class="bg-gradient-to-r from-purple-700 to-purple-600 px-4 py-2.5 rounded-t-lg border-b border-purple-500">
             <h3 class="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
               <MaterialIcon icon="spa" size="lg" :fill="true" />
-              Holistic & Alternative Therapies
+              {{ $t('dashboard.holistic.title') }}
             </h3>
           </div>
           
@@ -478,7 +478,7 @@
           </div>
           <div v-else class="p-6 text-center text-gray-400 text-sm">
             <MaterialIcon icon="spa" size="lg" class="mb-2 opacity-50" />
-            <p>No holistic recommendations available.</p>
+            <p>{{ $t('dashboard.holistic.noData') }}</p>
           </div>
         </div>
 
@@ -487,7 +487,7 @@
           <div class="bg-gradient-to-r from-yellow-700 to-yellow-600 px-4 py-2.5 rounded-t-lg border-b border-yellow-500">
             <h3 class="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
               <MaterialIcon icon="chat" size="lg" :fill="true" />
-              Conversation
+              {{ $t('dashboard.conversation.title') }}
             </h3>
           </div>
           
@@ -498,13 +498,13 @@
               <div class="font-semibold mb-1 flex items-center gap-1.5" 
                    :class="msg.role === 'user' ? 'text-blue-300' : 'text-green-300'">
                 <MaterialIcon :icon="msg.role === 'user' ? 'person' : 'smart_toy'" size="xs" />
-                {{ msg.role === 'user' ? 'You' : 'AI Doctor' }}
+                {{ msg.role === 'user' ? $t('dashboard.conversation.you') : $t('dashboard.conversation.assistant') }}
               </div>
               <div class="text-gray-200 whitespace-pre-wrap leading-relaxed" v-text="sanitizeText(msg.content)"></div>
             </div>
           </div>
           <div v-else class="p-6 text-center text-gray-400 text-sm">
-            No conversation history available.
+            {{ $t('dashboard.conversation.noMessages') }}
           </div>
         </div>
       </div>
@@ -515,12 +515,12 @@
         <button @click="exportPDF" 
                 class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg hover:shadow-xl transition duration-300 flex items-center gap-2 text-sm">
           <MaterialIcon icon="picture_as_pdf" size="lg" />
-          Export PDF
+          {{ $t('diagnosis.exportPdf') }}
         </button>
         <router-link to="/" 
                      class="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg hover:shadow-xl transition duration-300 flex items-center gap-2 text-sm">
           <MaterialIcon icon="refresh" size="lg" />
-          New Assessment
+          {{ $t('diagnosis.restart') }}
         </router-link>
       </div>
 
@@ -758,7 +758,7 @@
                       :disabled="!followUpQuestion.trim() || sendingFollowUp"
                       class="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:from-gray-700 disabled:to-gray-800 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2">
                       <MaterialIcon icon="send" size="sm" />
-                      <span>Send</span>
+                      <span>{{ $t('dashboard.followUp.send') }}</span>
                     </button>
                   </div>
                 </div>
@@ -769,7 +769,7 @@
                 <button @click="closeDetailsModal"
                         class="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition duration-300 flex items-center gap-2">
                   <MaterialIcon icon="close" size="lg" />
-                  Close
+                  {{ $t('common.close') }}
                 </button>
               </div>
             </div>
@@ -1463,11 +1463,11 @@ export default {
       return colors[index % colors.length];
     },
     getLikelihoodText(confidence) {
-      if (confidence >= 80) return 'Very Likely';
-      if (confidence >= 60) return 'Likely';
-      if (confidence >= 40) return 'Possible';
-      if (confidence >= 20) return 'Less Likely';
-      return 'Unlikely';
+      if (confidence >= 80) return this.$t('dashboard.differentialDiagnoses.likelihood.veryHigh');
+      if (confidence >= 60) return this.$t('dashboard.differentialDiagnoses.likelihood.high');
+      if (confidence >= 40) return this.$t('dashboard.differentialDiagnoses.likelihood.moderate');
+      if (confidence >= 20) return this.$t('dashboard.differentialDiagnoses.likelihood.low');
+      return this.$t('dashboard.differentialDiagnoses.likelihood.veryLow');
     },
     async openDiagnosisDetails(diagnosis) {
       console.log('🔍 Opening detailed analysis for:', diagnosis.condition)

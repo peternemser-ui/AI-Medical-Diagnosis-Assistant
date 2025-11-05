@@ -11,17 +11,17 @@
             </svg>
           </div>
         </div>
-        <h1 class="text-4xl font-bold text-white mb-4">AI Medical Diagnosis Assistant</h1>
-        <p class="text-xl text-blue-200 mb-8">Configure your AI service to get started</p>
+        <h1 class="text-4xl font-bold text-white mb-4">{{ $t('apiSetup.title') }}</h1>
+        <p class="text-xl text-blue-200 mb-8">{{ $t('apiSetup.subtitle') }}</p>
       </div>
 
       <!-- API Key Setup Card -->
       <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
         <div class="space-y-6">
           <div>
-            <h2 class="text-2xl font-semibold text-white mb-2">OpenAI API Configuration</h2>
+            <h2 class="text-2xl font-semibold text-white mb-2">{{ $t('apiSetup.configTitle') }}</h2>
             <p class="text-blue-200">
-              Enter your OpenAI API key to enable AI-powered medical diagnosis assistance.
+              {{ $t('apiSetup.configSubtitle') }}
             </p>
           </div>
 
@@ -29,14 +29,14 @@
           <div class="space-y-4">
             <div>
               <label for="apiKey" class="block text-sm font-medium text-blue-200 mb-2">
-                OpenAI API Key
+                {{ $t('apiSetup.apiKeyLabel') }}
               </label>
               <div class="relative">
                 <input
                   id="apiKey"
                   v-model="apiKey"
                   :type="showApiKey ? 'text' : 'password'"
-                  placeholder="sk-..."
+                  :placeholder="$t('apiSetup.apiKeyPlaceholder')"
                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent backdrop-blur-sm"
                   @keyup.enter="saveAndContinue"
                 />
@@ -78,31 +78,31 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              {{ isLoading ? 'Validating...' : 'Save & Continue' }}
+              {{ isLoading ? $t('apiSetup.validating') : $t('apiSetup.saveAndContinue') }}
             </button>
             
             <button
               @click="skipSetup"
               class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
             >
-              Skip for Now
+              {{ $t('apiSetup.skipForNow') }}
             </button>
           </div>
 
           <!-- Help Text -->
           <div class="bg-blue-500/20 border border-blue-500/30 rounded-lg p-4">
-            <h4 class="text-blue-200 font-semibold mb-2">Need an API Key?</h4>
+            <h4 class="text-blue-200 font-semibold mb-2">{{ $t('apiSetup.needKeyTitle') }}</h4>
             <p class="text-blue-200 text-sm mb-3">
-              Get your OpenAI API key from the OpenAI platform:
+              {{ $t('apiSetup.needKeySubtitle') }}
             </p>
             <ol class="text-blue-200 text-sm space-y-1 ml-4 list-decimal">
-              <li>Visit <a href="https://platform.openai.com/api-keys" target="_blank" class="text-blue-300 hover:text-blue-100 underline">platform.openai.com/api-keys</a></li>
-              <li>Sign in to your OpenAI account</li>
-              <li>Click "Create new secret key"</li>
-              <li>Copy the key and paste it above</li>
+              <li><a href="https://platform.openai.com/api-keys" target="_blank" class="text-blue-300 hover:text-blue-100 underline">{{ $t('apiSetup.steps.step1') }}</a></li>
+              <li>{{ $t('apiSetup.steps.step2') }}</li>
+              <li>{{ $t('apiSetup.steps.step3') }}</li>
+              <li>{{ $t('apiSetup.steps.step4') }}</li>
             </ol>
             <p class="text-blue-300 text-xs mt-3">
-              ⚠️ Your API key is stored locally and never sent to our servers.
+              ⚠️ {{ $t('apiSetup.securityNote') }}
             </p>
           </div>
         </div>
@@ -111,7 +111,7 @@
       <!-- Footer -->
       <div class="text-center">
         <p class="text-blue-300 text-sm">
-          Secure • Private • HIPAA-Compliant Design
+          {{ $t('apiSetup.footer') }}
         </p>
       </div>
     </div>
@@ -121,11 +121,13 @@
 <script>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'ApiKeySetup',
   setup() {
     const router = useRouter()
+    const { t } = useI18n()
     const apiKey = ref(localStorage.getItem('openai_api_key') || '')
     const showApiKey = ref(false)
     const isLoading = ref(false)
@@ -134,13 +136,13 @@ export default {
 
     const validateApiKey = (key) => {
       if (!key.trim()) {
-        return 'API key is required'
+        return t('apiSetup.errors.required')
       }
       if (!key.startsWith('sk-')) {
-        return 'Invalid API key format. OpenAI keys start with "sk-"'
+        return t('apiSetup.errors.invalidFormat')
       }
       if (key.length < 20) {
-        return 'API key appears to be too short'
+        return t('apiSetup.errors.tooShort')
       }
       return null
     }
@@ -148,7 +150,7 @@ export default {
     const saveAndContinue = async () => {
       error.value = ''
       success.value = ''
-      
+
       const validationError = validateApiKey(apiKey.value)
       if (validationError) {
         error.value = validationError
@@ -161,16 +163,16 @@ export default {
         // Save to localStorage
         localStorage.setItem('openai_api_key', apiKey.value.trim())
         localStorage.setItem('api_key_configured', 'true')
-        
-        success.value = 'API key saved successfully!'
-        
+
+        success.value = t('apiSetup.success')
+
         // Redirect to main app after a brief delay
         setTimeout(() => {
           router.push('/')
         }, 1000)
-        
+
       } catch (err) {
-        error.value = 'Failed to save API key. Please try again.'
+        error.value = t('apiSetup.errors.saveFailed')
         console.error('Error saving API key:', err)
       } finally {
         isLoading.value = false
