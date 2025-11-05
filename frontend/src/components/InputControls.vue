@@ -107,6 +107,9 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   disabled: {
@@ -159,10 +162,10 @@ const canSend = computed(() => {
 })
 
 const placeholderText = computed(() => {
-  if (props.disabled) return 'Please wait...'
-  if (props.isProcessing) return 'Processing...'
-  if (isRecording.value) return 'Recording in progress...'
-  return 'Type your message or use voice recording...'
+  if (props.disabled) return t('common.loading')
+  if (props.isProcessing) return t('common.loading')
+  if (isRecording.value) return t('diagnosis.analyzing')
+  return t('diagnosis.voiceInputPlaceholder')
 })
 
 const soundToggleClasses = computed(() => ({
