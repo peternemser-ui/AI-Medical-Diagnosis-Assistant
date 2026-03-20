@@ -1,8 +1,8 @@
 <template>
-  <div class="agent-status-board bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 mx-4 my-3">
+  <div class="agent-status-board backdrop-blur-sm border rounded-xl p-4 mx-4 my-3" :class="isDark ? 'bg-slate-900/80 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'">
     <div class="flex items-center justify-between mb-3">
-      <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Agent Pipeline Status</h3>
-      <span class="text-xs text-slate-500">{{ completedCount }}/{{ agents.length }} complete</span>
+      <h3 class="text-sm font-semibold uppercase tracking-wider" :class="isDark ? 'text-slate-300' : 'text-slate-700'">Agent Pipeline Status</h3>
+      <span class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ completedCount }}/{{ agents.length }} complete</span>
     </div>
 
     <div class="space-y-1.5">
@@ -65,9 +65,9 @@
 
         <!-- Expanded details -->
         <transition name="expand">
-          <div v-if="expandedAgent === agent.key && isCompleted(agent.key)" class="mt-2 pt-2 border-t border-slate-700/50">
-            <p class="text-xs text-slate-400 leading-relaxed">{{ agentFindings[agent.key] || 'No details available' }}</p>
-            <div v-if="agentTimings[agent.key]" class="mt-1 text-[10px] text-slate-500">
+          <div v-if="expandedAgent === agent.key && isCompleted(agent.key)" class="mt-2 pt-2 border-t" :class="isDark ? 'border-slate-700/50' : 'border-slate-200'">
+            <p class="text-xs leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-600'">{{ agentFindings[agent.key] || 'No details available' }}</p>
+            <div v-if="agentTimings[agent.key]" class="mt-1 text-[10px]" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
               Completed in {{ agentTimings[agent.key].toFixed(2) }} seconds
             </div>
           </div>
@@ -76,7 +76,7 @@
     </div>
 
     <!-- Progress bar -->
-    <div class="mt-3 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+    <div class="mt-3 h-1.5 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'">
       <div
         class="h-full rounded-full transition-all duration-700 ease-out"
         :class="progressBarClass"
@@ -85,7 +85,7 @@
     </div>
 
     <!-- Estimated cost -->
-    <div class="mt-2.5 flex items-center justify-between text-[10px] text-slate-500">
+    <div class="mt-2.5 flex items-center justify-between text-[10px]" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
       <span>Est. cost: ~${{ estimatedCost }}</span>
       <span>{{ currentModel }}</span>
     </div>
@@ -94,6 +94,9 @@
 
 <script setup>
 import { ref, computed, watch, onUnmounted } from 'vue'
+import { useTheme } from '@/composables/useTheme.js'
+
+const { isDark } = useTheme()
 
 const props = defineProps({
   activeAgent: { type: String, default: null },
@@ -195,30 +198,30 @@ function toggleExpand(key) {
 }
 
 function getRowClasses(key) {
-  if (hasError(key)) return 'border-red-500/40 bg-red-500/5'
-  if (isActive(key)) return 'border-blue-500/50 bg-blue-500/10 shadow-md shadow-blue-500/5'
-  if (isCompleted(key)) return 'border-emerald-500/30 bg-emerald-500/5'
-  return 'border-slate-700/30 bg-slate-800/20'
+  if (hasError(key)) return isDark.value ? 'border-red-500/40 bg-red-500/5' : 'border-red-300 bg-red-50'
+  if (isActive(key)) return isDark.value ? 'border-blue-500/50 bg-blue-500/10 shadow-md shadow-blue-500/5' : 'border-blue-400 bg-blue-50 shadow-md shadow-blue-100'
+  if (isCompleted(key)) return isDark.value ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-emerald-300 bg-emerald-50'
+  return isDark.value ? 'border-slate-700/30 bg-slate-800/20' : 'border-slate-200 bg-slate-50/50'
 }
 
 function getNameClass(key) {
-  if (hasError(key)) return 'text-red-300'
-  if (isActive(key)) return 'text-blue-200'
-  if (isCompleted(key)) return 'text-emerald-300'
-  return 'text-slate-500'
+  if (hasError(key)) return isDark.value ? 'text-red-300' : 'text-red-600'
+  if (isActive(key)) return isDark.value ? 'text-blue-200' : 'text-blue-700'
+  if (isCompleted(key)) return isDark.value ? 'text-emerald-300' : 'text-emerald-700'
+  return isDark.value ? 'text-slate-500' : 'text-slate-400'
 }
 
 function getTimingClass(key) {
-  if (isActive(key)) return 'text-blue-400 animate-pulse'
-  if (isCompleted(key)) return 'text-emerald-500/70'
-  return 'text-slate-600'
+  if (isActive(key)) return isDark.value ? 'text-blue-400 animate-pulse' : 'text-blue-600 animate-pulse'
+  if (isCompleted(key)) return isDark.value ? 'text-emerald-500/70' : 'text-emerald-600'
+  return isDark.value ? 'text-slate-600' : 'text-slate-400'
 }
 
 function getStatusClass(key) {
-  if (hasError(key)) return 'text-red-400/80'
-  if (isCompleted(key)) return 'text-emerald-400/70'
-  if (isActive(key)) return 'text-blue-400/70'
-  return 'text-slate-600'
+  if (hasError(key)) return isDark.value ? 'text-red-400/80' : 'text-red-500'
+  if (isCompleted(key)) return isDark.value ? 'text-emerald-400/70' : 'text-emerald-600'
+  if (isActive(key)) return isDark.value ? 'text-blue-400/70' : 'text-blue-600'
+  return isDark.value ? 'text-slate-600' : 'text-slate-400'
 }
 </script>
 
