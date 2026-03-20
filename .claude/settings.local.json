@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /f/dev-mercor/\"AI Medical Diagnosis Assistant\")",
+      "Bash(netstat -ano)",
+      "Bash(taskkill:*)",
+      "Bash(python -c \":*)",
+      "Bash(python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload)",
+      "Bash(npx vite:*)",
+      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(curl:*)",
+      "Bash(sed -i 's/claude-sonnet-4-6-20250514/claude-sonnet-4-6/g' diagnostician.py empathy.py research.py safety.py specialist.py treatment.py)",
+      "Bash(sed -i 's/claude-opus-4-6-20250514/claude-opus-4-6/g' diagnostician.py)",
+      "Bash(rm:*)",
+      "Bash(npx vue-tsc:*)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\(''agents/base.py''\\).read\\(\\)\\); ast.parse\\(open\\(''agents/orchestrator.py''\\).read\\(\\)\\); ast.parse\\(open\\(''main.py''\\).read\\(\\)\\); print\\(''All files parse OK''\\)\")",
+      "Bash(npm run:*)",
+      "Bash(python -c \"from main import app; print\\(''Main import OK''\\)\")",
+      "Bash(timeout 20 python -c \":*)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\(''''main.py''''\\).read\\(\\)\\); print\\(''''Backend OK''''\\)\")",
+      "Bash(python -m uvicorn main:app --host 0.0.0.0 --port 8002 --reload)"
+    ]
+  }
+}
