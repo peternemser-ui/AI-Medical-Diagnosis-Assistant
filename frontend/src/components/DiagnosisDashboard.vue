@@ -302,26 +302,42 @@
           <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Find Nearby Specialists</h2>
         </div>
         <div class="p-4">
+          <!-- Location input -->
+          <div class="flex gap-2 mb-3">
+            <input
+              v-model="searchZip"
+              @keyup.enter="updateMapSearch"
+              placeholder="Enter zip code or city..."
+              class="flex-1 rounded-lg px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+              :class="isDark ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'"
+            />
+            <select v-model="selectedSpecForMap" @change="updateMapSearch" class="rounded-lg px-3 py-2 text-xs border" :class="isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-700'">
+              <option v-for="spec in uniqueSpecialties" :key="spec" :value="spec">{{ spec }}</option>
+            </select>
+            <button @click="updateMapSearch" class="px-4 py-2 rounded-lg text-xs font-medium bg-blue-600 text-white hover:bg-blue-500 transition-colors">Search</button>
+          </div>
+
           <!-- Map embed -->
-          <div class="rounded-lg overflow-hidden mb-4 border" :class="isDark ? 'border-slate-700' : 'border-slate-200'" style="height: 300px">
+          <div class="rounded-lg overflow-hidden mb-4 border" :class="isDark ? 'border-slate-700' : 'border-slate-200'" style="height: 350px">
             <iframe
               :src="mapSrc"
               width="100%" height="100%" style="border:0" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"
             ></iframe>
           </div>
+
           <!-- Specialty search links -->
           <div class="flex flex-wrap gap-2">
             <a v-for="spec in uniqueSpecialties" :key="spec"
-              :href="'https://www.google.com/maps/search/' + encodeURIComponent(spec + ' near me')"
+              :href="'https://www.google.com/maps/search/' + encodeURIComponent(spec + (searchZip ? ' near ' + searchZip : ' near me'))"
               target="_blank" rel="noopener"
               class="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition-colors"
               :class="isDark ? 'bg-slate-700/50 border-slate-600/50 text-slate-300 hover:bg-blue-500/15 hover:border-blue-500/30 hover:text-blue-300' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700'"
             >
               <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-              Find {{ spec }} near me
+              {{ spec }}
             </a>
           </div>
-          <p class="text-[10px] mt-3" :class="isDark ? 'text-slate-600' : 'text-slate-400'">Map shows specialists near your location. Always verify credentials and check with your insurance provider.</p>
+          <p class="text-[10px] mt-3" :class="isDark ? 'text-slate-600' : 'text-slate-400'">Enter a zip code or city to find specialists in a specific area. Always verify credentials and check with your insurance provider.</p>
         </div>
       </div>
 
@@ -353,7 +369,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { Bar } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -584,14 +600,35 @@ const defaultDietaryTips = [
 
 const uniqueSpecialties = computed(() => {
   const specs = causes.value.map(c => c.specialty).filter(Boolean)
-  return [...new Set(specs)].slice(0, 5)
+  // Always include Dermatologist for skin-related conditions
+  const allText = causes.value.map(c => ((c.cause || '') + ' ' + (c.specialty || '')).toLowerCase()).join(' ')
+  if (allText.includes('skin') || allText.includes('dermat') || allText.includes('cheilit') || allText.includes('lip') || allText.includes('rash') || allText.includes('acne')) {
+    specs.push('Dermatologist')
+  }
+  return [...new Set(specs)].slice(0, 6)
 })
 
+const searchZip = ref('')
+const selectedSpecForMap = ref('')
+const mapSearchQuery = ref('')
+
+function updateMapSearch() {
+  const spec = selectedSpecForMap.value || uniqueSpecialties.value[0] || 'doctor'
+  const location = searchZip.value.trim() || 'near me'
+  mapSearchQuery.value = spec + ' ' + location
+}
+
 const mapSrc = computed(() => {
-  const topSpec = uniqueSpecialties.value[0] || 'doctor'
-  // Use Google Maps embed without API key (free, limited but works)
-  return 'https://maps.google.com/maps?q=' + encodeURIComponent(topSpec + ' near me') + '&output=embed'
+  const query = mapSearchQuery.value || (uniqueSpecialties.value[0] || 'doctor') + ' near me'
+  return 'https://maps.google.com/maps?q=' + encodeURIComponent(query) + '&output=embed'
 })
+
+// Initialize selected specialty
+watch(uniqueSpecialties, (specs) => {
+  if (specs.length > 0 && !selectedSpecForMap.value) {
+    selectedSpecForMap.value = specs[0]
+  }
+}, { immediate: true })
 
 const safetyStatus = computed(() => diagnosisData.value?.safety_status || diagnosisData.value?.safetyStatus || '')
 
