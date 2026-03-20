@@ -93,126 +93,129 @@
       </div>
     </div>
 
-    <!-- Agent Pipeline - shown during diagnosis -->
-    <AgentPipelineIndicator
-      v-if="conversationState === 'diagnosing'"
-      :active-agent="activeAgent"
-      :completed-agents="completedAgents"
-      :agent-timings="agentTimings"
-      :total-time="diagnosisElapsed"
-    />
+    <!-- ══════ SPLIT-PANEL LAYOUT ══════ -->
+    <div class="flex-1 flex min-h-0">
 
-    <!-- Agent Status Board - detailed real-time status during diagnosis -->
-    <AgentStatusBoard
-      v-if="conversationState === 'diagnosing'"
-      :active-agent="activeAgent"
-      :completed-agents="completedAgents"
-      :agent-timings="agentTimings"
-      :agent-findings="agentFindings"
-      :errors="agentErrors"
-    />
+      <!-- ── LEFT PANEL: Doctor context (desktop only) ── -->
+      <div class="hidden md:flex flex-col w-72 flex-shrink-0 border-r overflow-y-auto"
+        :class="isDark ? 'bg-slate-950/50 border-slate-800/50' : 'bg-slate-50/80 border-slate-200'">
 
-    <!-- Progress Indicator - shown during gathering -->
-    <ProgressIndicator
-      v-if="conversationState === 'gathering' || conversationState === 'awaiting-confirmation'"
-      :visible="true"
-      :progress="progressPercentage"
-      :current-step="currentStep"
-      :steps="progressSteps"
-      :title="getProgressTitle()"
-      :message="getProgressMessage()"
-    />
-
-    <!-- ══════ AVATAR MODE ══════ -->
-    <div v-if="avatarMode" class="flex-1 flex flex-col min-h-0 pb-28 relative overflow-hidden">
-      <!-- Ambient glow -->
-      <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="top: -10%">
-        <div
-          class="w-[600px] h-[600px] rounded-full blur-[150px] opacity-15 transition-colors duration-1000"
-          :style="{ backgroundColor: doctorAvatar.bgColor }"
-        ></div>
-      </div>
-
-      <!-- Top: Avatar area (reduced to give more room to chat) -->
-      <div class="flex-[1.2] flex flex-col items-center justify-center relative z-10">
-        <!-- Avatar (extra large) -->
-        <div class="relative cursor-pointer" @click="showAvatarCustomizer = true" title="Click to customize">
-          <DoctorAvatar :avatar="doctorAvatar" :speaking="isSpeakingAnimating" :size="avatarSize" :show-name="false" />
-          <!-- Sound waves when speaking -->
-          <div v-if="isSpeakingAnimating" class="absolute -left-8 top-1/2 -translate-y-1/2 flex flex-col gap-1.5">
-            <div class="w-5 h-1.5 bg-blue-400/60 rounded-full animate-pulse" style="animation-delay:0s"></div>
-            <div class="w-8 h-1.5 bg-blue-400/40 rounded-full animate-pulse" style="animation-delay:0.2s"></div>
-            <div class="w-4 h-1.5 bg-blue-400/50 rounded-full animate-pulse" style="animation-delay:0.4s"></div>
+        <!-- Doctor card -->
+        <div class="p-4 text-center border-b" :class="isDark ? 'border-slate-800/50' : 'border-slate-200'">
+          <div class="cursor-pointer inline-block" @click="showAvatarCustomizer = true">
+            <DoctorAvatar :avatar="doctorAvatar" :speaking="isSpeakingAnimating" size="lg" :show-name="false" />
           </div>
-          <div v-if="isSpeakingAnimating" class="absolute -right-8 top-1/2 -translate-y-1/2 flex flex-col gap-1.5">
-            <div class="w-4 h-1.5 bg-blue-400/50 rounded-full animate-pulse" style="animation-delay:0.1s"></div>
-            <div class="w-8 h-1.5 bg-blue-400/40 rounded-full animate-pulse" style="animation-delay:0.3s"></div>
-            <div class="w-5 h-1.5 bg-blue-400/60 rounded-full animate-pulse" style="animation-delay:0.5s"></div>
+          <div class="mt-2">
+            <div class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">{{ doctorAvatar.name }}</div>
+            <div class="text-[11px]" :class="isDark ? 'text-slate-500' : 'text-slate-500'">{{ doctorAvatar.specialty }}</div>
           </div>
         </div>
-        <!-- Doctor name -->
-        <div class="mt-2 text-center">
-          <div class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">{{ doctorAvatar.name }}</div>
-          <div class="text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-600'">{{ doctorAvatar.specialty }}</div>
-          <button @click="showAvatarCustomizer = true" class="mt-0.5 text-[10px] transition-colors" :class="isDark ? 'text-blue-400/50 hover:text-blue-300' : 'text-blue-500/60 hover:text-blue-600'">{{ t('customize') }}</button>
+
+        <!-- Progress (during gathering) -->
+        <div v-if="conversationState === 'gathering' || conversationState === 'awaiting-confirmation'" class="p-4 border-b" :class="isDark ? 'border-slate-800/50' : 'border-slate-200'">
+          <div class="text-[10px] uppercase font-semibold tracking-wider mb-2" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Progress</div>
+          <div class="w-full rounded-full h-1.5 mb-2" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'">
+            <div class="h-1.5 rounded-full bg-blue-500 transition-all duration-500" :style="{ width: progressPercentage + '%' }"></div>
+          </div>
+          <div class="text-[10px]" :class="isDark ? 'text-slate-600' : 'text-slate-400'">{{ progressPercentage }}% complete</div>
+        </div>
+
+        <!-- Agent Pipeline (during diagnosis) -->
+        <div v-if="conversationState === 'diagnosing'" class="p-3 flex-1">
+          <div class="text-[10px] uppercase font-semibold tracking-wider mb-2" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Agent Pipeline</div>
+          <AgentStatusBoard
+            :active-agent="activeAgent"
+            :completed-agents="completedAgents"
+            :agent-timings="agentTimings"
+            :agent-findings="agentFindings"
+            :errors="agentErrors"
+          />
+        </div>
+
+        <!-- Trust signals -->
+        <div class="mt-auto p-4 border-t" :class="isDark ? 'border-slate-800/50' : 'border-slate-200'">
+          <div class="space-y-1.5 text-[10px]" :class="isDark ? 'text-slate-600' : 'text-slate-400'">
+            <div class="flex items-center gap-1.5">
+              <svg class="w-3 h-3 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              AI-assisted, not a medical diagnosis
+            </div>
+            <div class="flex items-center gap-1.5">
+              <svg class="w-3 h-3 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              Your data stays on your device
+            </div>
+            <div class="flex items-center gap-1.5">
+              <svg class="w-3 h-3 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              7-agent clinical analysis
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Bottom: Chat subtitle area — larger, with expand button -->
-      <div class="flex-[1.5] flex flex-col justify-start items-center relative z-10 px-4">
-        <!-- Typing indicator -->
-        <div v-if="showTyping" class="flex items-center justify-center gap-2 mb-2">
-          <div class="flex gap-1">
-            <span class="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style="animation-delay:0s"></span>
-            <span class="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style="animation-delay:0.15s"></span>
-            <span class="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style="animation-delay:0.3s"></span>
+      <!-- ── RIGHT PANEL: Chat + Input (main interaction) ── -->
+      <div class="flex-1 flex flex-col min-h-0 min-w-0">
+
+        <!-- Mobile: compact progress bar -->
+        <div v-if="(conversationState === 'gathering' || conversationState === 'diagnosing') && isMobile" class="px-4 py-2 border-b flex items-center gap-3" :class="isDark ? 'border-slate-800/50' : 'border-slate-200'">
+          <DoctorAvatar :avatar="doctorAvatar" :speaking="isSpeakingAnimating" size="sm" :show-name="false" />
+          <div class="flex-1">
+            <div class="w-full rounded-full h-1" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'">
+              <div class="h-1 rounded-full bg-blue-500 transition-all" :style="{ width: (conversationState === 'diagnosing' ? (completedAgents.length / 7 * 100) : progressPercentage) + '%' }"></div>
+            </div>
+            <div class="text-[10px] mt-0.5" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+              {{ conversationState === 'diagnosing' ? completedAgents.length + '/7 agents' : progressPercentage + '%' }}
+            </div>
           </div>
-          <span class="text-xs text-slate-500">{{ t('thinking') }}</span>
         </div>
 
-        <!-- User's last message -->
-        <div v-if="lastUserText" class="mb-2 text-center">
-          <span class="inline-block text-sm px-4 py-1.5 rounded-full border backdrop-blur-sm"
-            :class="isDark ? 'bg-blue-600/20 text-blue-200 border-blue-500/15' : 'bg-blue-600 text-white border-blue-700'">
-            {{ lastUserText }}
-          </span>
+        <!-- Desktop: Agent pipeline bar (during diagnosis only) -->
+        <AgentPipelineIndicator
+          v-if="conversationState === 'diagnosing' && !isMobile"
+          :active-agent="activeAgent"
+          :completed-agents="completedAgents"
+          :agent-timings="agentTimings"
+          :total-time="diagnosisElapsed"
+        />
+
+        <!-- Chat area -->
+        <div class="flex-1 overflow-y-auto">
+          <div class="max-w-3xl mx-auto px-3">
+            <ChatArea
+              ref="chatAreaRef"
+              :messages="chatMessages"
+              :is-typing="showTyping"
+              :auto-scroll="autoScroll"
+              :sound-enabled="soundEnabled"
+              @followup-selected="handleQuickQuestion"
+              @replay-message="speakMessage"
+            />
+          </div>
         </div>
 
-        <!-- Subtitle text — larger -->
-        <div
-          v-if="lastAssistantText"
-          class="w-full max-w-3xl backdrop-blur-md rounded-xl px-6 py-5 text-center border shadow-2xl"
-          :class="isDark ? 'bg-black/60 border-slate-700/20' : 'bg-slate-900 border-slate-800'"
-        >
-          <p class="text-white text-lg sm:text-xl leading-relaxed font-medium" v-html="formatSubtitle(lastAssistantText)"></p>
-        </div>
+        <!-- Symptom chips (visible during first few questions) -->
+        <SymptomChips
+          v-if="conversationState === 'gathering' && questionnaire.currentQuestionIndex <= 2"
+          :visible="true"
+          class="px-3 py-2 max-w-3xl mx-auto w-full"
+          @select="handleQuickQuestion"
+        />
 
-        <!-- Expand to chat button -->
-        <button
-          @click="avatarMode = false; localStorage.setItem('avatar_mode', 'false')"
-          class="mt-3 flex items-center gap-1.5 text-[11px] transition-colors"
-          :class="isDark ? 'text-slate-500 hover:text-blue-400' : 'text-slate-600 hover:text-blue-600'"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-          </svg>
-          {{ t('nav.chat') === 'Chat' ? 'Open full chat' : t('nav.chat') }}
-        </button>
-      </div>
-    </div>
-
-    <!-- ══════ CHAT MODE (default) ══════ -->
-    <div v-else class="flex-1 flex flex-col min-h-0 pb-28">
-      <div class="flex-1 overflow-y-auto">
-        <div class="max-w-4xl mx-auto px-2">
-          <ChatArea
-            ref="chatAreaRef"
-            :messages="chatMessages"
-            :is-typing="showTyping"
-            :auto-scroll="autoScroll"
+        <!-- Input Controls — now part of flow, not fixed -->
+        <div class="flex-shrink-0 max-w-3xl mx-auto w-full">
+          <InputControls
+            ref="inputControlsRef"
+            :disabled="isLoading"
+            :is-processing="isLoading"
+            :is-speaking="isTTSSpeaking"
+            :voice-enabled="voiceEnabled"
             :sound-enabled="soundEnabled"
-            @followup-selected="handleQuickQuestion"
-            @replay-message="speakMessage"
+            :quick-actions="getQuickActions()"
+            @send-message="handleSendMessage"
+            @start-recording="startVoiceRecording"
+            @stop-recording="stopVoiceRecording"
+            @voice-input="handleVoiceResult"
+            @voice-toggle="toggleVoiceEnabled"
+            @sound-toggle="soundEnabled = !soundEnabled"
+            @open-voice-settings="showAvatarCustomizer = true"
           />
         </div>
       </div>
@@ -226,25 +229,7 @@
       @save="saveDoctorAvatar"
     />
 
-    <!-- Input Controls - Fixed at bottom -->
-    <div class="fixed bottom-0 left-0 right-0 z-50">
-      <InputControls
-        ref="inputControlsRef"
-        :disabled="isLoading"
-        :is-processing="isLoading"
-        :is-speaking="isTTSSpeaking"
-        :voice-enabled="voiceEnabled"
-        :sound-enabled="soundEnabled"
-        :quick-actions="getQuickActions()"
-        @send-message="handleSendMessage"
-        @start-recording="startVoiceRecording"
-        @stop-recording="stopVoiceRecording"
-        @voice-input="handleVoiceResult"
-        @voice-toggle="toggleVoiceEnabled"
-        @sound-toggle="soundEnabled = !soundEnabled"
-        @open-voice-settings="showAvatarCustomizer = true"
-      />
-    </div>
+    <!-- Input controls now inline in the split panel above -->
 
     <!-- Error Message -->
     <ErrorMessage 
@@ -294,6 +279,7 @@ import SettingsPanel from '@/components/SettingsPanel.vue'
 import DoctorAvatar from '@/components/DoctorAvatar.vue'
 import AvatarCustomizer from '@/components/AvatarCustomizer.vue'
 import HistoryDrawer from '@/components/HistoryDrawer.vue'
+import SymptomChips from '@/components/SymptomChips.vue'
 import ThemeLangControls from '@/components/ThemeLangControls.vue'
 import { saveSession } from '@/services/historyService.js'
 import { useTheme } from '@/composables/useTheme.js'
