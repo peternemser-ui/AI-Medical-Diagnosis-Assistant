@@ -60,6 +60,41 @@
           </div>
         </div>
 
+        <!-- Confidence Chart -->
+        <div v-if="causes.length > 0" class="mb-6 p-4 rounded-xl border" :class="isDark ? 'bg-slate-800/40 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'">
+          <h2 class="text-xs font-bold uppercase tracking-wide mb-4" :class="isDark ? 'text-slate-300' : 'text-slate-700'">Diagnosis Confidence</h2>
+          <div class="space-y-3">
+            <div v-for="(cause, i) in causes" :key="'chart-'+i" class="flex items-center gap-3">
+              <div class="w-6 text-right text-[10px] font-bold flex-shrink-0" :class="isDark ? 'text-slate-500' : 'text-slate-400'">#{{ i+1 }}</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-medium truncate pr-2" :class="isDark ? 'text-slate-300' : 'text-slate-700'">{{ cause.cause }}</span>
+                  <span class="text-xs font-bold flex-shrink-0" :class="cause.value >= 50 ? 'text-emerald-500' : cause.value >= 20 ? 'text-amber-500' : (isDark ? 'text-slate-400' : 'text-slate-500')">{{ cause.value }}%</span>
+                </div>
+                <div class="w-full h-2.5 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-700/50' : 'bg-slate-100'">
+                  <div class="h-full rounded-full transition-all duration-1000 ease-out" :style="{ width: cause.value + '%' }" :class="cause.value >= 50 ? 'bg-emerald-500' : cause.value >= 20 ? 'bg-amber-500' : (isDark ? 'bg-slate-500' : 'bg-slate-300')"></div>
+                </div>
+              </div>
+              <span class="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded flex-shrink-0" :class="cause.urgency === 'urgent' || cause.urgency === 'emergency' ? (isDark ? 'bg-red-500/20 text-red-400' : 'bg-red-50 text-red-600') : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500')">{{ cause.urgency }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent Performance (if available) -->
+        <div v-if="session.diagnosisResult && session.diagnosisResult.agent_timings" class="mb-6 p-4 rounded-xl border" :class="isDark ? 'bg-slate-800/40 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'">
+          <h2 class="text-xs font-bold uppercase tracking-wide mb-3" :class="isDark ? 'text-slate-300' : 'text-slate-700'">Agent Performance</h2>
+          <div class="space-y-2">
+            <div v-for="(time, agent) in session.diagnosisResult.agent_timings" :key="agent" class="flex items-center justify-between text-xs">
+              <span class="capitalize" :class="isDark ? 'text-slate-400' : 'text-slate-600'">{{ agent.replace(/_/g, ' ') }}</span>
+              <span class="font-mono font-medium" :class="isDark ? 'text-slate-300' : 'text-slate-700'">{{ typeof time === 'number' ? time.toFixed(1) + 's' : time }}</span>
+            </div>
+            <div class="pt-2 border-t flex items-center justify-between text-xs font-bold" :class="isDark ? 'border-slate-700 text-white' : 'border-slate-200 text-slate-900'">
+              <span>Total</span>
+              <span>{{ session.diagnosisResult.total_time ? session.diagnosisResult.total_time.toFixed(1) + 's' : '—' }}</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Diagnoses -->
         <div v-if="causes.length > 0" class="mb-6">
           <h2 class="text-sm font-bold uppercase tracking-wide mb-3" :class="isDark ? 'text-slate-300' : 'text-slate-700'">Differential Diagnoses</h2>
