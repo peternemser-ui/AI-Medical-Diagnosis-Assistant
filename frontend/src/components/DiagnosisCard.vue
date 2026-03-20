@@ -3,7 +3,9 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 gap-2 sm:gap-0" :class="headerBg">
       <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-        <span class="text-base sm:text-lg flex-shrink-0">{{ rankEmoji }}</span>
+        <div class="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center text-sm" :class="isDark ? 'bg-slate-700/50' : 'bg-slate-100'">
+          <span>{{ specialtyIcon }}</span>
+        </div>
         <div class="min-w-0">
           <h4 class="text-xs sm:text-sm font-bold truncate" :class="isDark ? 'text-white' : 'text-slate-900'">{{ cause.cause }}</h4>
           <div class="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -29,6 +31,22 @@
     <!-- Explanation -->
     <div v-if="cause.explanation" class="px-4 py-3 text-xs leading-relaxed" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
       {{ cause.explanation }}
+    </div>
+
+    <!-- Research links -->
+    <div class="px-4 pb-2 flex flex-wrap gap-1.5">
+      <a :href="'https://scholar.google.com/scholar?q=' + encodeURIComponent(cause.cause)" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-md transition-colors" :class="isDark ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+        Google Scholar
+      </a>
+      <a :href="'https://www.mayoclinic.org/search/search-results?q=' + encodeURIComponent(cause.cause)" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-md transition-colors" :class="isDark ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+        Mayo Clinic
+      </a>
+      <a :href="'https://medlineplus.gov/ency/article/' + encodeURIComponent(cause.cause) + '.htm'" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-md transition-colors" :class="isDark ? 'bg-purple-500/10 text-purple-400 hover:bg-purple-500/20' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+        MedlinePlus
+      </a>
     </div>
 
     <!-- Expandable details -->
@@ -85,10 +103,22 @@ const props = defineProps({
 
 const expanded = ref(false)
 
-const rankEmoji = computed(() => {
-  if (props.rank === 1) return '#1'
-  if (props.rank === 2) return '#2'
-  return `#${props.rank}`
+const specialtyIcon = computed(() => {
+  const s = (props.cause.specialty || '').toLowerCase()
+  if (s.includes('cardio') || s.includes('heart')) return '❤️'
+  if (s.includes('neuro')) return '🧠'
+  if (s.includes('dermat') || s.includes('skin')) return '🩹'
+  if (s.includes('gastro') || s.includes('gi')) return '🫁'
+  if (s.includes('pulmon') || s.includes('lung')) return '🫁'
+  if (s.includes('ent') || s.includes('ear')) return '👂'
+  if (s.includes('ortho') || s.includes('msk')) return '🦴'
+  if (s.includes('psych') || s.includes('mental')) return '🧘'
+  if (s.includes('oncol') || s.includes('cancer')) return '🔬'
+  if (s.includes('allergy') || s.includes('immun')) return '🛡️'
+  if (s.includes('endo') || s.includes('thyroid')) return '⚗️'
+  if (s.includes('surgery') || s.includes('oral')) return '🏥'
+  if (s.includes('primary') || s.includes('family') || s.includes('internal')) return '🩺'
+  return '🩺'
 })
 
 const borderClass = computed(() => {

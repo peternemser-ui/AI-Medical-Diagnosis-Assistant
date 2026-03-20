@@ -138,6 +138,59 @@
           </ul>
         </div>
 
+        <!-- Treatment Plan -->
+        <div v-if="treatments.length || medications.length || lifestyleRecs.length" class="mb-6 p-4 rounded-xl border" :class="isDark ? 'bg-slate-800/40 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'">
+          <h3 class="text-xs font-bold uppercase tracking-wide mb-3" :class="isDark ? 'text-slate-300' : 'text-slate-700'">
+            <span class="inline-flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+              Treatment Plan
+            </span>
+          </h3>
+          <div class="space-y-3">
+            <div v-if="medications.length">
+              <div class="text-[10px] font-semibold uppercase mb-1.5" :class="isDark ? 'text-blue-400' : 'text-blue-600'">Medications</div>
+              <ul class="space-y-1">
+                <li v-for="med in medications" :key="typeof med === 'string' ? med : med.name" class="text-xs" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                  <span class="font-medium">{{ typeof med === 'string' ? med : med.name }}</span>
+                  <span v-if="med.dose" class="text-slate-400"> — {{ med.dose }}</span>
+                  <span v-if="med.warnings" class="text-amber-400 text-[10px]"> ({{ med.warnings }})</span>
+                </li>
+              </ul>
+            </div>
+            <div v-if="lifestyleRecs.length">
+              <div class="text-[10px] font-semibold uppercase mb-1.5" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'">Lifestyle Recommendations</div>
+              <ul class="space-y-1">
+                <li v-for="rec in lifestyleRecs" :key="rec" class="text-xs flex items-start gap-1.5" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                  <span class="text-emerald-400 mt-0.5">&#10003;</span>{{ rec }}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Find a Doctor -->
+        <div v-if="causes.length > 0" class="mb-6 p-4 rounded-xl border" :class="isDark ? 'bg-slate-800/40 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'">
+          <h3 class="text-xs font-bold uppercase tracking-wide mb-3" :class="isDark ? 'text-slate-300' : 'text-slate-700'">
+            <span class="inline-flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              Find Nearby Specialists
+            </span>
+          </h3>
+          <p class="text-xs mb-3" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Search for specialists related to your diagnosis:</p>
+          <div class="flex flex-wrap gap-2">
+            <a v-for="cause in causes.slice(0, 3)" :key="'doc-'+cause.cause"
+              :href="'https://www.google.com/maps/search/' + encodeURIComponent((cause.specialty || 'doctor') + ' near me')"
+              target="_blank" rel="noopener"
+              class="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition-colors"
+              :class="isDark ? 'bg-slate-700/50 border-slate-600/50 text-slate-300 hover:bg-slate-700 hover:text-white' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700'"
+            >
+              <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              Find {{ cause.specialty || 'Doctor' }} near me
+            </a>
+          </div>
+          <p class="text-[10px] mt-3" :class="isDark ? 'text-slate-600' : 'text-slate-400'">Opens Google Maps to find specialists in your area. Always verify credentials and check with your insurance provider.</p>
+        </div>
+
         <!-- Chat transcript -->
         <div v-if="session.chatMessages && session.chatMessages.length" class="mb-6">
           <h2 class="text-sm font-bold uppercase tracking-wide mb-3" :class="isDark ? 'text-slate-300' : 'text-slate-700'">Conversation Transcript</h2>
@@ -183,6 +236,9 @@ const causes = computed(() => session.value?.diagnosisResult?.causes || [])
 const redFlags = computed(() => session.value?.diagnosisResult?.red_flags || session.value?.diagnosisResult?.redFlags || [])
 const recommendedTests = computed(() => session.value?.diagnosisResult?.recommended_tests || session.value?.diagnosisResult?.recommendedTests || [])
 const actionChecklist = computed(() => session.value?.diagnosisResult?.action_checklist || session.value?.diagnosisResult?.actionChecklist || [])
+const medications = computed(() => session.value?.diagnosisResult?.medications || [])
+const lifestyleRecs = computed(() => session.value?.diagnosisResult?.lifestyle_recommendations || session.value?.diagnosisResult?.lifestyleRecommendations || [])
+const treatments = computed(() => session.value?.diagnosisResult?.treatment_plans || [])
 
 const topUrgency = computed(() => {
   if (!causes.value.length) return ''
