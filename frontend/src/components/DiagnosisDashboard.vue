@@ -240,6 +240,91 @@
         </div>
       </div>
 
+      <!-- Row 5: Treatment & Dietary Recommendations -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Treatment Plan -->
+        <div class="rounded-xl overflow-hidden border transition-colors" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'">
+          <div class="px-5 py-3 border-b flex items-center gap-2" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
+            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+            <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Treatment Recommendations</h2>
+          </div>
+          <div class="p-4">
+            <div v-if="medications.length > 0" class="mb-4">
+              <div class="text-[10px] font-semibold uppercase mb-2" :class="isDark ? 'text-blue-400' : 'text-blue-600'">Medications</div>
+              <div v-for="med in medications" :key="typeof med === 'string' ? med : med.name" class="text-xs mb-2 p-2.5 rounded-lg" :class="isDark ? 'bg-slate-700/30' : 'bg-slate-50'">
+                <div class="font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ typeof med === 'string' ? med : med.name }}</div>
+                <div v-if="med.dose" class="text-[10px] mt-0.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ med.dose }} {{ med.frequency ? '— ' + med.frequency : '' }}</div>
+                <div v-if="med.warnings" class="text-[10px] mt-0.5 text-amber-400">⚠ {{ med.warnings }}</div>
+              </div>
+            </div>
+            <div v-if="lifestyleRecs.length > 0">
+              <div class="text-[10px] font-semibold uppercase mb-2" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'">Lifestyle & Healing</div>
+              <ul class="space-y-1.5">
+                <li v-for="rec in lifestyleRecs" :key="rec" class="text-xs flex items-start gap-2" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                  <span class="text-emerald-400 mt-0.5 flex-shrink-0">&#10003;</span>{{ rec }}
+                </li>
+              </ul>
+            </div>
+            <div v-if="medications.length === 0 && lifestyleRecs.length === 0" class="text-center py-4 text-sm" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+              Treatment details will appear after diagnosis
+            </div>
+          </div>
+        </div>
+
+        <!-- Dietary Recommendations -->
+        <div class="rounded-xl overflow-hidden border transition-colors" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'">
+          <div class="px-5 py-3 border-b flex items-center gap-2" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
+            <span class="text-base">🥗</span>
+            <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Dietary & Healing Guidance</h2>
+          </div>
+          <div class="p-4">
+            <div v-if="dietaryRecs.length > 0" class="space-y-1.5">
+              <div v-for="(rec, i) in dietaryRecs" :key="i" class="text-xs flex items-start gap-2" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                <span class="flex-shrink-0 mt-0.5">{{ ['🥬','🫐','🥛','💧','🧘','😴'][i % 6] }}</span>
+                <span>{{ rec }}</span>
+              </div>
+            </div>
+            <div v-else class="space-y-2">
+              <p class="text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-500'">General healing recommendations:</p>
+              <div v-for="(tip, i) in defaultDietaryTips" :key="i" class="text-xs flex items-start gap-2" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                <span class="flex-shrink-0 mt-0.5">{{ tip.icon }}</span>
+                <span>{{ tip.text }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 6: Find Nearby Specialists -->
+      <div class="rounded-xl overflow-hidden border transition-colors" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'">
+        <div class="px-5 py-3 border-b flex items-center gap-2" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
+          <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Find Nearby Specialists</h2>
+        </div>
+        <div class="p-4">
+          <!-- Map embed -->
+          <div class="rounded-lg overflow-hidden mb-4 border" :class="isDark ? 'border-slate-700' : 'border-slate-200'" style="height: 300px">
+            <iframe
+              :src="mapSrc"
+              width="100%" height="100%" style="border:0" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+          <!-- Specialty search links -->
+          <div class="flex flex-wrap gap-2">
+            <a v-for="spec in uniqueSpecialties" :key="spec"
+              :href="'https://www.google.com/maps/search/' + encodeURIComponent(spec + ' near me')"
+              target="_blank" rel="noopener"
+              class="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition-colors"
+              :class="isDark ? 'bg-slate-700/50 border-slate-600/50 text-slate-300 hover:bg-blue-500/15 hover:border-blue-500/30 hover:text-blue-300' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700'"
+            >
+              <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              Find {{ spec }} near me
+            </a>
+          </div>
+          <p class="text-[10px] mt-3" :class="isDark ? 'text-slate-600' : 'text-slate-400'">Map shows specialists near your location. Always verify credentials and check with your insurance provider.</p>
+        </div>
+      </div>
+
       <!-- Bottom Actions -->
       <div class="flex justify-center gap-4 flex-wrap py-4">
         <button
@@ -419,6 +504,29 @@ function getSampleData() {
       'NSAID use with possible peptic ulcer disease increases GI bleeding risk — discontinue ibuprofen and switch to acetaminophen',
       'PPI therapy should be time-limited (8 weeks) and reassessed — long-term use associated with magnesium deficiency and increased fracture risk',
     ],
+    medications: [
+      { name: 'Omeprazole (Prilosec)', dose: '20mg once daily', frequency: 'Before breakfast', warnings: 'Limit to 8 weeks; reassess if symptoms persist' },
+      { name: 'Calcium Carbonate (Tums)', dose: '500mg as needed', frequency: 'After meals', warnings: 'Do not exceed 6 tablets/day' },
+    ],
+    lifestyle_recommendations: [
+      'Elevate the head of your bed 6-8 inches to reduce nighttime acid reflux',
+      'Avoid eating within 3 hours of bedtime',
+      'Reduce caffeine, alcohol, chocolate, and spicy food intake',
+      'Maintain a healthy weight — excess abdominal fat increases reflux',
+      'Quit smoking — nicotine relaxes the lower esophageal sphincter',
+      'Wear loose-fitting clothing to reduce abdominal pressure',
+      'Practice stress management — yoga, meditation, or deep breathing exercises',
+    ],
+    dietary_recommendations: [
+      'Eat smaller, more frequent meals instead of 3 large meals',
+      'Include alkaline foods: bananas, melons, oatmeal, and green vegetables',
+      'Increase fiber intake with whole grains, fruits, and vegetables',
+      'Choose lean proteins: chicken, fish, tofu — avoid fried or fatty meats',
+      'Drink ginger or chamomile tea to soothe the digestive tract',
+      'Avoid acidic foods: tomatoes, citrus, vinegar, and carbonated drinks',
+      'Include probiotic-rich foods: yogurt, kefir, sauerkraut, kimchi',
+      'Stay hydrated with water between meals (not during) to aid digestion',
+    ],
   }
 }
 
@@ -461,6 +569,29 @@ const recommendedTests = computed(() => diagnosisData.value?.recommended_tests |
 const redFlags = computed(() => diagnosisData.value?.red_flags || diagnosisData.value?.redFlags || [])
 const actionChecklist = computed(() => diagnosisData.value?.action_checklist || diagnosisData.value?.actionChecklist || [])
 const safetyWarnings = computed(() => diagnosisData.value?.safety_warnings || diagnosisData.value?.safetyWarnings || [])
+const medications = computed(() => diagnosisData.value?.medications || [])
+const lifestyleRecs = computed(() => diagnosisData.value?.lifestyle_recommendations || diagnosisData.value?.lifestyleRecommendations || [])
+const dietaryRecs = computed(() => diagnosisData.value?.dietary_recommendations || [])
+
+const defaultDietaryTips = [
+  { icon: '💧', text: 'Stay well hydrated — aim for 8+ glasses of water daily to support healing' },
+  { icon: '🥬', text: 'Eat anti-inflammatory foods: leafy greens, berries, fatty fish, nuts, and olive oil' },
+  { icon: '🫐', text: 'Include antioxidant-rich foods: blueberries, tomatoes, spinach, and bell peppers' },
+  { icon: '🥛', text: 'Ensure adequate protein intake for tissue repair — lean meats, eggs, legumes, dairy' },
+  { icon: '😴', text: 'Prioritize 7-9 hours of quality sleep — critical for immune function and healing' },
+  { icon: '🧘', text: 'Manage stress through meditation, deep breathing, or gentle exercise' },
+]
+
+const uniqueSpecialties = computed(() => {
+  const specs = causes.value.map(c => c.specialty).filter(Boolean)
+  return [...new Set(specs)].slice(0, 5)
+})
+
+const mapSrc = computed(() => {
+  const topSpec = uniqueSpecialties.value[0] || 'doctor'
+  // Use Google Maps embed without API key (free, limited but works)
+  return 'https://maps.google.com/maps?q=' + encodeURIComponent(topSpec + ' near me') + '&output=embed'
+})
 
 const safetyStatus = computed(() => diagnosisData.value?.safety_status || diagnosisData.value?.safetyStatus || '')
 
