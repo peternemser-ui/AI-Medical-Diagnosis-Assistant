@@ -179,7 +179,7 @@ class BaseAgent:
     # Core agent loop
     # ------------------------------------------------------------------
 
-    async def run(self, user_message: str, context: dict[str, Any] | None = None, images: list[str] | None = None, timeout: float = 45.0) -> dict[str, Any]:
+    async def run(self, user_message: str, context: dict[str, Any] | None = None, images: list[str] | None = None, timeout: float = None) -> dict[str, Any]:
         """
         Run the autonomous agent loop with a timeout.
 
@@ -192,6 +192,10 @@ class BaseAgent:
         can perform visual analysis.
         """
         import asyncio
+        from .llm_client import get_vendor
+        # Local models (Ollama) need more time per agent
+        if timeout is None:
+            timeout = 90.0 if get_vendor(self.model) == "ollama" else 45.0
         try:
             return await asyncio.wait_for(
                 self._run_loop(user_message, context, images),

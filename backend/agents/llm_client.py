@@ -111,10 +111,12 @@ class LLMClient:
 
     def _get_ollama(self):
         if "ollama" not in self._clients:
+            import httpx
             from openai import AsyncOpenAI
             self._clients["ollama"] = AsyncOpenAI(
                 base_url="http://localhost:11434/v1",
                 api_key="ollama",  # Ollama doesn't need a real key
+                http_client=httpx.AsyncClient(timeout=httpx.Timeout(120.0, connect=10.0)),
             )
         return self._clients["ollama"]
 
@@ -283,6 +285,13 @@ class LLMClient:
     async def _call_ollama(self, model_id, system, messages, tools, max_tokens, temperature):
         """Call Ollama using the OpenAI-compatible API (no tool support)."""
         client = self._get_ollama()
+
+        # Cap max_tokens for local models to prevent very slow generation
+        max_tokens = min(max_tokens, 1500)
+
+        # Trim system prompt for Ollama — keep it under 2000 chars for speed
+        if len(system) > 2000:
+            system = system[:1900] + "\n\n[System prompt trimmed for local model. Provide a concise clinical analysis.]"
 
         # Build simple message list — Ollama doesn't support tool use well,
         # so we skip tools and just use text messages
