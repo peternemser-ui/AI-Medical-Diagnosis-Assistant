@@ -1,8 +1,10 @@
 <template>
   <div class="flex-1 overflow-hidden flex flex-col">
     <!-- Conversation messages -->
-    <div 
+    <div
       ref="chatContainer"
+      role="log"
+      aria-live="polite"
       class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4"
       :class="{ 'auto-scroll': autoScroll }"
     >
@@ -44,9 +46,12 @@
       </div>
 
       <!-- Message list -->
+      <div role="list" aria-label="Chat messages">
       <div
         v-for="(message, index) in messages"
         :key="message.id || index"
+        role="listitem"
+        :aria-label="message.sender === 'user' ? 'Your message' : 'Doctor message'"
         class="flex"
         :class="{ 'justify-end': message.sender === 'user', 'justify-start': message.sender === 'assistant' }"
       >
@@ -256,6 +261,8 @@
             <div class="mt-2 text-xs text-blue-200/60">{{ formatTimestamp(message.timestamp) }}</div>
           </div>
         </div>
+      </div>
+
       </div>
 
       <!-- Typing indicator -->

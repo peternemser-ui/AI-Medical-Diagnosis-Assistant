@@ -4,8 +4,11 @@
       ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-gray-900 text-white'
       : 'bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900'"
   >
+    <!-- Skip to content link -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">Skip to main content</a>
+
     <!-- Header -->
-    <div class="backdrop-blur-xl border-b py-3 px-4 sm:px-6 flex justify-between items-center transition-colors duration-300"
+    <nav role="banner" aria-label="Main navigation" class="backdrop-blur-xl border-b py-3 px-4 sm:px-6 flex justify-between items-center transition-colors duration-300"
       :class="isDark ? 'bg-slate-900/95 border-slate-700/60' : 'bg-white/95 border-slate-200 shadow-sm'"
     >
       <!-- Left: Brand + Home link -->
@@ -57,17 +60,17 @@
       <!-- Right: Icon toolbar -->
       <div class="flex items-center gap-1">
         <!-- New -->
-        <button @click="handleStartOver" class="hidden sm:flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all" :class="isDark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" :title="t('nav.new')">
+        <button @click="handleStartOver" aria-label="New consultation" class="hidden sm:flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all" :class="isDark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" :title="t('nav.new')">
           <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
           <span class="hidden lg:inline">{{ t('nav.new') }}</span>
         </button>
         <!-- History -->
-        <button @click="showHistory = true" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all" :class="isDark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" :title="t('nav.history')">
+        <button @click="showHistory = true" aria-label="View history" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all" :class="isDark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" :title="t('nav.history')">
           <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           <span class="hidden lg:inline">{{ t('nav.history') }}</span>
         </button>
         <!-- Reports -->
-        <router-link to="/reports" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all" :class="isDark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'">
+        <router-link to="/reports" aria-label="View reports" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all" :class="isDark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'">
           <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           <span class="hidden lg:inline">Reports</span>
         </router-link>
@@ -77,21 +80,21 @@
         <ThemeLangControls />
 
         <!-- Avatar Mode Toggle -->
-        <button @click="avatarMode = !avatarMode; localStorage.setItem('avatar_mode', String(avatarMode))" class="p-2 rounded-lg transition-all" :class="avatarMode ? (isDark ? 'text-blue-400 bg-blue-500/15 hover:bg-blue-500/25' : 'text-blue-600 bg-blue-100 hover:bg-blue-200') : (isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100')" title="Toggle Avatar Mode">
+        <button @click="avatarMode = !avatarMode; localStorage.setItem('avatar_mode', String(avatarMode))" class="p-2 rounded-lg transition-all" :class="avatarMode ? (isDark ? 'text-blue-400 bg-blue-500/15 hover:bg-blue-500/25' : 'text-blue-600 bg-blue-100 hover:bg-blue-200') : (isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100')" title="Toggle Avatar Mode" aria-label="Toggle avatar mode">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14c-4 0-7 2-7 4v1h14v-1c0-2-3-4-7-4z"/></svg>
         </button>
 
         <!-- Settings -->
-        <button @click="goToApiSettings" class="p-2 rounded-lg transition-all" :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" :title="t('nav.settings')">
+        <button @click="goToApiSettings" class="p-2 rounded-lg transition-all" :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" :title="t('nav.settings')" aria-label="Settings">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         </button>
 
         <!-- My Account -->
-        <router-link to="/profile" class="p-2 rounded-lg transition-all" :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" title="My Account">
+        <router-link to="/profile" class="p-2 rounded-lg transition-all" :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" title="My Account" aria-label="My Account">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </router-link>
       </div>
-    </div>
+    </nav>
 
     <!-- Agent Pipeline - shown during diagnosis -->
     <AgentPipelineIndicator
@@ -124,7 +127,7 @@
     />
 
     <!-- ══════ AVATAR MODE ══════ -->
-    <div v-if="avatarMode" class="flex-1 flex flex-col min-h-0 pb-20 relative overflow-hidden">
+    <div v-if="avatarMode" id="main-content" role="main" class="flex-1 flex flex-col min-h-0 pb-20 relative overflow-hidden">
       <!-- Avatar area — centered, large -->
       <div class="flex-[1] flex flex-col items-center justify-center relative z-10">
         <div class="relative cursor-pointer" @click="showAvatarCustomizer = true">
@@ -152,7 +155,7 @@
     </div>
 
     <!-- ══════ CHAT MODE ══════ -->
-    <div v-else class="flex-1 flex flex-col min-h-0 pb-20">
+    <div v-else id="main-content" role="main" class="flex-1 flex flex-col min-h-0 pb-20">
       <div class="flex-1 overflow-y-auto">
         <div class="max-w-4xl mx-auto px-2">
           <ChatArea
@@ -202,6 +205,14 @@
       :current-avatar="doctorAvatar"
       @close="showAvatarCustomizer = false"
       @save="saveDoctorAvatar"
+    />
+
+    <!-- Image Description Modal -->
+    <ImageDescriptionModal
+      :visible="showImageDescriptionModal"
+      :image-url="pendingImageUrl"
+      @close="closeImageDescriptionModal"
+      @submit="handleImageDescriptionSubmit"
     />
 
     <!-- Input controls are fixed at bottom above -->
@@ -289,6 +300,7 @@ import HistoryDrawer from '@/components/HistoryDrawer.vue'
 import SymptomChips from '@/components/SymptomChips.vue'
 import ThemeLangControls from '@/components/ThemeLangControls.vue'
 import OnboardingTour from '@/components/OnboardingTour.vue'
+import ImageDescriptionModal from '@/components/ImageDescriptionModal.vue'
 import { saveSession } from '@/services/historyService.js'
 import { useTheme } from '@/composables/useTheme.js'
 import { useI18n } from '@/composables/useI18n.js'
@@ -377,6 +389,9 @@ const currentInput = ref('')
 const isLoading = ref(false)
 const error = ref(null)
 const pendingImageBase64 = ref(null) // Stored image for diagnosis request
+const showImageDescriptionModal = ref(false)
+const pendingImageUrl = ref(null) // Data URL for image preview in modal
+const pendingImageBase64Raw = ref(null) // Raw base64 for the pending image
 const estimatedCost = ref(0.0)
 const hasStarted = ref(false)
 const chatMessages = ref([])
@@ -930,9 +945,12 @@ function validateInput(message, questionType) {
  * Handles sending a message from the user
  */
 async function handleSendMessage(message, imageBase64Param = null) {
-  // Store the image for later use in diagnosis request
+  // If an image was uploaded, show the description modal instead of sending immediately
   if (imageBase64Param) {
-    pendingImageBase64.value = imageBase64Param
+    pendingImageBase64Raw.value = imageBase64Param
+    pendingImageUrl.value = `data:image/jpeg;base64,${imageBase64Param}`
+    showImageDescriptionModal.value = true
+    return
   }
 
   if (!message.trim() || isLoading.value) {
@@ -1008,6 +1026,47 @@ async function handleSendMessage(message, imageBase64Param = null) {
     isLoading.value = false
     restoreInputFocus()
   }
+}
+
+/**
+ * Close the image description modal without sending
+ */
+function closeImageDescriptionModal() {
+  showImageDescriptionModal.value = false
+  pendingImageUrl.value = null
+  pendingImageBase64Raw.value = null
+}
+
+/**
+ * Handle submission from the image description modal
+ * Adds the image + description to the chat and includes description in symptoms
+ */
+function handleImageDescriptionSubmit({ imageUrl, description }) {
+  showImageDescriptionModal.value = false
+
+  // Store the raw base64 for the diagnosis request
+  pendingImageBase64.value = pendingImageBase64Raw.value
+
+  // Build a message that includes the visual description
+  const imageMessage = `[Image attached] ${description}`
+
+  // Add the user message with the image preview
+  addMessage('user', imageMessage, { imageUrl })
+
+  // Append the visual description to the current questionnaire response
+  // so it gets included in the symptoms data sent to the backend
+  if (conversationState.value === 'gathering') {
+    // If we're in the middle of gathering, store as additional context
+    const currentQ = questionnaire.value.questions[questionnaire.value.currentQuestionIndex]
+    if (currentQ) {
+      // Don't advance the questionnaire, just note the image was added
+      addMessage('assistant', 'Thank you for sharing the image. I\'ve noted your visual description. Please continue answering the current question.')
+    }
+  }
+
+  // Clean up pending state
+  pendingImageUrl.value = null
+  pendingImageBase64Raw.value = null
 }
 
 /**
@@ -1286,8 +1345,18 @@ async function handleProceedToDiagnosis() {
       })
     }
 
+    // Include visual symptom descriptions from uploaded images
+    const imageMessages = chatMessages.value.filter(m => m.sender === 'user' && m.text && m.text.startsWith('[Image attached]'))
+    if (imageMessages.length > 0) {
+      symptomParts.push('\nVisual Symptom Description:')
+      imageMessages.forEach(m => {
+        const desc = m.text.replace('[Image attached] ', '')
+        if (desc) symptomParts.push(desc)
+      })
+    }
+
     const symptomsText = symptomParts.join('\n\n')
-    
+
     // Extract structured fields separately for richer backend context
     const diagnosisData = {
       symptoms: symptomsText,

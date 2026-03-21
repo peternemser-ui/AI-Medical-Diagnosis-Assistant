@@ -145,6 +145,7 @@
                 <input
                   type="checkbox"
                   v-model="testChecked[i]"
+                  :aria-label="'Mark test complete: ' + test"
                   class="mt-0.5 rounded border-slate-600 bg-slate-700 text-blue-500 focus:ring-blue-500/50 focus:ring-offset-0"
                 />
                 <span class="text-xs leading-relaxed" :class="testChecked[i] ? 'line-through text-slate-400' : (isDark ? 'text-slate-300 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-900')">{{ test }}</span>
@@ -198,6 +199,7 @@
                 <input
                   type="checkbox"
                   v-model="actionChecked[i]"
+                  :aria-label="'Mark action complete: ' + item"
                   class="mt-0.5 rounded focus:ring-amber-500/50 focus:ring-offset-0"
                   :class="isDark ? 'border-slate-600 bg-slate-700 text-amber-500' : 'border-slate-300 bg-white text-amber-600'"
                 />
@@ -319,6 +321,7 @@
               v-model="searchZip"
               @keyup.enter="updateMapSearch"
               placeholder="Enter zip code or city..."
+              aria-label="Search by zip code or city"
               class="flex-1 rounded-lg px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40"
               :class="isDark ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'"
             />
@@ -333,6 +336,8 @@
             <iframe
               :src="mapSrc"
               width="100%" height="100%" style="border:0" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+              title="Map showing nearby medical specialists"
+              aria-label="Map showing nearby medical specialists"
             ></iframe>
           </div>
 

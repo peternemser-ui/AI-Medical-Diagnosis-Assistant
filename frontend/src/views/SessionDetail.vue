@@ -198,7 +198,7 @@
               <div v-if="recommendedTests.length > 0" class="space-y-2">
                 <label v-for="(test, i) in recommendedTests" :key="i"
                   class="flex items-start gap-3 p-2.5 rounded-lg cursor-pointer transition-colors group" :class="isDark ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'">
-                  <input type="checkbox" v-model="testChecked[i]" class="mt-0.5 rounded border-slate-600 bg-slate-700 text-blue-500 focus:ring-blue-500/50 focus:ring-offset-0" />
+                  <input type="checkbox" v-model="testChecked[i]" :aria-label="'Mark test complete: ' + test" class="mt-0.5 rounded border-slate-600 bg-slate-700 text-blue-500 focus:ring-blue-500/50 focus:ring-offset-0" />
                   <span class="text-xs leading-relaxed" :class="testChecked[i] ? 'line-through text-slate-400' : (isDark ? 'text-slate-300 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-900')">{{ test }}</span>
                 </label>
               </div>
@@ -240,7 +240,7 @@
               <div v-if="actionChecklist.length > 0" class="space-y-2">
                 <label v-for="(item, i) in actionChecklist" :key="i"
                   class="flex items-start gap-3 p-2.5 rounded-lg cursor-pointer transition-colors group" :class="isDark ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'">
-                  <input type="checkbox" v-model="actionChecked[i]" class="mt-0.5 rounded focus:ring-amber-500/50 focus:ring-offset-0" :class="isDark ? 'border-slate-600 bg-slate-700 text-amber-500' : 'border-slate-300 bg-white text-amber-600'" />
+                  <input type="checkbox" v-model="actionChecked[i]" :aria-label="'Mark action complete: ' + item" class="mt-0.5 rounded focus:ring-amber-500/50 focus:ring-offset-0" :class="isDark ? 'border-slate-600 bg-slate-700 text-amber-500' : 'border-slate-300 bg-white text-amber-600'" />
                   <span class="text-xs leading-relaxed" :class="actionChecked[i] ? 'line-through text-slate-400' : (isDark ? 'text-slate-300 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-900')">{{ item }}</span>
                 </label>
               </div>
@@ -344,6 +344,7 @@
             <!-- Location input -->
             <div class="flex gap-2 mb-3">
               <input v-model="searchZip" @keyup.enter="updateMapSearch" placeholder="Enter zip code or city..."
+                aria-label="Search by zip code or city"
                 class="flex-1 rounded-lg px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                 :class="isDark ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'" />
               <select v-model="selectedSpecForMap" @change="updateMapSearch" class="rounded-lg px-3 py-2 text-xs border" :class="isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-700'">
@@ -354,7 +355,7 @@
 
             <!-- Map embed -->
             <div class="rounded-lg overflow-hidden mb-4 border" :class="isDark ? 'border-slate-700' : 'border-slate-200'" style="height: 350px">
-              <iframe :src="mapSrc" width="100%" height="100%" style="border:0" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+              <iframe :src="mapSrc" width="100%" height="100%" style="border:0" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Map showing nearby medical specialists" aria-label="Map showing nearby medical specialists"></iframe>
             </div>
 
             <!-- Specialty search links -->

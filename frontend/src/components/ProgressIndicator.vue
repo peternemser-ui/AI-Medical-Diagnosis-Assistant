@@ -1,10 +1,10 @@
 <template>
   <div v-if="visible" class="border-b backdrop-blur-xl" :class="isDark ? 'bg-slate-900/90 border-slate-800/80' : 'bg-white/90 border-gray-200'">
-    <div class="max-w-5xl mx-auto px-4 py-2.5">
+    <div class="max-w-5xl mx-auto px-4 py-2.5" aria-label="Interview progress">
       <!-- Compact single row: title + steps + percentage -->
       <div class="flex items-center gap-4">
         <!-- Steps as pills -->
-        <div class="flex-1 flex items-center gap-1 overflow-x-auto no-scrollbar">
+        <div class="flex-1 flex items-center gap-1 overflow-x-auto no-scrollbar" role="navigation" aria-label="Interview steps">
           <div
             v-for="(step, index) in steps"
             :key="index"
@@ -42,6 +42,11 @@
       <!-- Thin progress bar -->
       <div class="mt-2 h-1 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-800' : 'bg-gray-200'">
         <div
+          role="progressbar"
+          :aria-valuenow="Math.round(progress)"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-label="'Interview progress: ' + Math.round(progress) + '%'"
           class="h-full rounded-full transition-all duration-700 ease-out"
           :class="progress >= 80 ? 'bg-emerald-500' : 'bg-blue-500'"
           :style="{ width: progress + '%' }"
