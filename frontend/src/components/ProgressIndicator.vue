@@ -12,7 +12,7 @@
           >
             <!-- Step pill -->
             <div
-              class="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium transition-all duration-300 whitespace-nowrap"
+              class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap"
               :class="getStepPillClass(index)"
             >
               <!-- Check for completed -->
@@ -25,22 +25,22 @@
               <span class="sm:hidden">{{ index + 1 }}</span>
             </div>
             <!-- Connector -->
-            <svg v-if="index < steps.length - 1" class="w-3 h-3 flex-shrink-0" :class="currentStep > index ? 'text-emerald-600' : (isDark ? 'text-slate-700' : 'text-gray-300')" fill="currentColor" viewBox="0 0 20 20">
+            <svg v-if="index < steps.length - 1" class="w-3 h-3 flex-shrink-0" :class="currentStep > index ? (isDark ? 'text-emerald-500' : 'text-emerald-600') : (isDark ? 'text-slate-700' : 'text-gray-400')" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
             </svg>
           </div>
         </div>
 
         <!-- Percentage badge -->
-        <div class="flex-shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full"
-          :class="progress >= 80 ? 'bg-emerald-500/15 text-emerald-400' : (isDark ? 'bg-slate-800 text-slate-400' : 'bg-gray-200 text-gray-500')"
+        <div class="flex-shrink-0 text-xs font-bold px-2.5 py-1 rounded-full"
+          :class="progress >= 80 ? (isDark ? 'bg-emerald-500/15 text-emerald-400' : 'bg-emerald-100 text-emerald-700') : (isDark ? 'bg-slate-800 text-slate-400' : 'bg-gray-200 text-gray-600')"
         >
           {{ Math.round(progress) }}%
         </div>
       </div>
 
       <!-- Thin progress bar -->
-      <div class="mt-1.5 h-[3px] rounded-full overflow-hidden" :class="isDark ? 'bg-slate-800' : 'bg-gray-200'">
+      <div class="mt-2 h-1 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-800' : 'bg-gray-200'">
         <div
           class="h-full rounded-full transition-all duration-700 ease-out"
           :class="progress >= 80 ? 'bg-emerald-500' : 'bg-blue-500'"
@@ -66,9 +66,13 @@ const props = defineProps({
 })
 
 function getStepPillClass(index) {
-  if (props.currentStep > index) return 'bg-emerald-500/15 text-emerald-400'
-  if (props.currentStep === index) return 'bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/30'
-  return isDark.value ? 'bg-slate-800/50 text-slate-600' : 'bg-gray-100 text-gray-400'
+  if (props.currentStep > index) {
+    return isDark.value ? 'bg-emerald-500/15 text-emerald-400' : 'bg-emerald-100 text-emerald-700 font-semibold'
+  }
+  if (props.currentStep === index) {
+    return isDark.value ? 'bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/30' : 'bg-blue-100 text-blue-700 ring-1 ring-blue-300 font-semibold'
+  }
+  return isDark.value ? 'bg-slate-800/50 text-slate-500' : 'bg-gray-100 text-gray-500'
 }
 </script>
 

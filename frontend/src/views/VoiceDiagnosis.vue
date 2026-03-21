@@ -6,15 +6,34 @@
   >
     <!-- Header -->
     <div class="backdrop-blur-xl border-b py-3 px-4 sm:px-6 flex justify-between items-center transition-colors duration-300"
-      :class="isDark ? 'bg-slate-950/90 border-slate-800/50' : 'bg-white/90 border-slate-200'"
+      :class="isDark ? 'bg-slate-900/95 border-slate-700/60' : 'bg-white/95 border-slate-200 shadow-sm'"
     >
       <!-- Left: Brand + Home link -->
       <div class="flex items-center gap-3">
         <router-link to="/" class="flex items-center gap-2.5 group">
-          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md shadow-blue-500/15 group-hover:shadow-blue-500/25 transition-shadow">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
+          <div class="w-9 h-9 rounded-full overflow-hidden border-2 flex-shrink-0 shadow-sm"
+            :class="isDark ? 'border-slate-600' : 'border-slate-300'"
+            :style="{ backgroundColor: doctorAvatar.bgColor || '#1e3a5f' }">
+            <svg viewBox="0 0 200 200" class="w-full h-full">
+              <!-- Simple doctor head for nav icon -->
+              <circle cx="100" cy="85" r="45" :fill="doctorAvatar.skinTone || '#F5CBA7'" />
+              <!-- Hair -->
+              <ellipse cx="100" cy="58" rx="46" ry="28" :fill="doctorAvatar.hairColor || '#3d2b1f'" />
+              <!-- Eyes -->
+              <circle cx="83" cy="82" r="4" fill="#2d2d2d" />
+              <circle cx="117" cy="82" r="4" fill="#2d2d2d" />
+              <circle cx="84" cy="81" r="1.5" fill="white" />
+              <circle cx="118" cy="81" r="1.5" fill="white" />
+              <!-- Glasses -->
+              <circle v-if="doctorAvatar.glasses" cx="83" cy="82" r="12" fill="none" stroke="#555" stroke-width="2.5" />
+              <circle v-if="doctorAvatar.glasses" cx="117" cy="82" r="12" fill="none" stroke="#555" stroke-width="2.5" />
+              <line v-if="doctorAvatar.glasses" x1="95" y1="82" x2="105" y2="82" stroke="#555" stroke-width="2" />
+              <!-- Smile -->
+              <path d="M 90 98 Q 100 107 110 98" fill="none" :stroke="doctorAvatar.lipColor || '#c9877a'" stroke-width="2.5" stroke-linecap="round" />
+              <!-- Lab coat -->
+              <path d="M 55 155 Q 55 130 75 125 L 82 120 Q 100 135 118 120 L 125 125 Q 145 130 145 155 L 145 200 L 55 200 Z" :fill="doctorAvatar.coatColor || '#f0f0f0'" />
+              <!-- Stethoscope hint -->
+              <circle cx="115" cy="155" r="6" fill="none" stroke="#888" stroke-width="2" />
             </svg>
           </div>
           <span class="text-base font-semibold hidden sm:inline transition-colors" :class="isDark ? 'text-white group-hover:text-blue-300' : 'text-slate-900 group-hover:text-blue-600'">{{ t('nav.brand') }}</span>
@@ -25,7 +44,7 @@
           <div class="w-px h-5" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
           <router-link to="/settings" v-if="apiStatus === true" class="flex items-center text-xs bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/15 gap-1.5 hover:bg-emerald-500/20 transition-colors cursor-pointer" title="Click to change AI model">
             <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
-            {{ activeProvider === 'anthropic' ? 'Claude' : 'GPT-4o' }} {{ t('nav.connected') }}
+            {{ activeProvider === 'anthropic' ? 'Claude' : activeProvider === 'ollama' ? 'Ollama' : 'GPT-4o' }} {{ t('nav.connected') }}
             <svg class="w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </router-link>
           <div v-else-if="apiStatus === false" class="flex items-center text-xs bg-amber-500/10 text-amber-400 px-3 py-1 rounded-full border border-amber-500/15 gap-1.5">
@@ -38,32 +57,37 @@
       <!-- Right: Icon toolbar -->
       <div class="flex items-center gap-1">
         <!-- New -->
-        <button @click="handleStartOver" class="hidden sm:flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs transition-all" :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800/60' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'" :title="t('nav.new')">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <button @click="handleStartOver" class="hidden sm:flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all" :class="isDark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" :title="t('nav.new')">
+          <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
           <span class="hidden lg:inline">{{ t('nav.new') }}</span>
         </button>
         <!-- History -->
-        <button @click="showHistory = true" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs transition-all" :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800/60' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'" :title="t('nav.history')">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <button @click="showHistory = true" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all" :class="isDark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" :title="t('nav.history')">
+          <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           <span class="hidden lg:inline">{{ t('nav.history') }}</span>
         </button>
         <!-- Reports -->
-        <router-link to="/reports" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs transition-all" :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800/60' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <router-link to="/reports" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all" :class="isDark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'">
+          <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           <span class="hidden lg:inline">Reports</span>
         </router-link>
 
-        <div class="w-px h-5 mx-0.5" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
+        <div class="w-px h-5 mx-0.5" :class="isDark ? 'bg-slate-700' : 'bg-slate-300'"></div>
 
         <ThemeLangControls />
 
+        <!-- Avatar Mode Toggle -->
+        <button @click="avatarMode = !avatarMode; localStorage.setItem('avatar_mode', String(avatarMode))" class="p-2 rounded-lg transition-all" :class="avatarMode ? (isDark ? 'text-blue-400 bg-blue-500/15 hover:bg-blue-500/25' : 'text-blue-600 bg-blue-100 hover:bg-blue-200') : (isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100')" title="Toggle Avatar Mode">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14c-4 0-7 2-7 4v1h14v-1c0-2-3-4-7-4z"/></svg>
+        </button>
+
         <!-- Settings -->
-        <button @click="goToApiSettings" class="p-2 rounded-lg transition-all" :class="isDark ? 'text-slate-500 hover:text-white hover:bg-slate-800/60' : 'text-slate-400 hover:text-slate-800 hover:bg-slate-100'" :title="t('nav.settings')">
+        <button @click="goToApiSettings" class="p-2 rounded-lg transition-all" :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" :title="t('nav.settings')">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         </button>
 
         <!-- My Account -->
-        <router-link to="/profile" class="p-2 rounded-lg transition-all" :class="isDark ? 'text-slate-500 hover:text-white hover:bg-slate-800/60' : 'text-slate-400 hover:text-slate-800 hover:bg-slate-100'" title="My Account">
+        <router-link to="/profile" class="p-2 rounded-lg transition-all" :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" title="My Account">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </router-link>
       </div>
@@ -90,7 +114,7 @@
 
     <!-- Progress Indicator -->
     <ProgressIndicator
-      v-if="conversationState === 'gathering' || conversationState === 'awaiting-confirmation'"
+      v-if="conversationState === 'gathering' || conversationState === 'followup' || conversationState === 'awaiting-confirmation'"
       :visible="true"
       :progress="progressPercentage"
       :current-step="currentStep"
@@ -215,7 +239,8 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { diagnose, diagnoseStream, followup, healthCheck, ApiError } from '@/services/api.js'
+import { diagnose, diagnoseStream, followup, generateQuestion, healthCheck, ApiError } from '@/services/api.js'
+import { getProfile } from '@/services/userService.js'
 
 // Import core components
 import ChatArea from '@/components/ChatArea.vue'
@@ -331,10 +356,16 @@ const viewingHistorySession = ref(false)
 const apiStatus = ref(null) // null = checking, true = AI enabled, false = fallback mode
 
 // Conversation management
-const conversationState = ref('initial') // initial, gathering, diagnosing, diagnosed
+const conversationState = ref('initial') // initial, gathering, followup, diagnosing, diagnosed
 const questionnaire = ref(new MedicalQuestionnaireManager())
 const currentStep = ref(0)
 const totalSteps = ref(8) // Progress bar steps: Demographics, Symptoms, HPI, Details, History, Lifestyle, AI Follow-up, Review
+
+// AI follow-up questions (up to 5 targeted questions to improve diagnosis accuracy)
+const MAX_AI_FOLLOWUPS = 5
+const aiFollowupCount = ref(0)
+const aiFollowupQuestions = ref([])
+const aiFollowupResponses = ref([])
 
 // Doctor avatar state
 const avatarMode = ref(localStorage.getItem('avatar_mode') === 'true')
@@ -508,11 +539,15 @@ const canSubmit = computed(() => {
 const progressPercentage = computed(() => {
   if (conversationState.value === 'initial') return 0
   if (conversationState.value === 'gathering') {
-    const totalQs = questionnaire.value.questions.length + 3 // fixed + AI
+    const totalQs = questionnaire.value.questions.length + MAX_AI_FOLLOWUPS
     const current = questionnaire.value.getProgress().current
     return Math.round((current / totalQs) * 80)
   }
-  if (conversationState.value === 'awaiting-confirmation') return 85
+  if (conversationState.value === 'followup') {
+    // 80% base (fixed questions done) + up to 10% for follow-ups
+    return 80 + Math.round((aiFollowupCount.value / MAX_AI_FOLLOWUPS) * 10)
+  }
+  if (conversationState.value === 'awaiting-confirmation') return 92
   if (conversationState.value === 'diagnosing') return 90
   if (conversationState.value === 'diagnosed') return 100
   return 0
@@ -625,8 +660,20 @@ async function checkApiStatus() {
       apiStatus.value = true
       activeProvider.value = 'openai'
     } else {
-      apiStatus.value = false
-      activeProvider.value = null
+      // Check if Ollama is available via backend health check
+      try {
+        const health = await healthCheck()
+        if (health?.ollama_available) {
+          apiStatus.value = true
+          activeProvider.value = 'ollama'
+        } else {
+          apiStatus.value = false
+          activeProvider.value = null
+        }
+      } catch {
+        apiStatus.value = false
+        activeProvider.value = null
+      }
     }
   } catch (err) {
     console.error('API status check failed:', err)
@@ -726,7 +773,48 @@ function cleanup() {
 function handleStart() {
   hasStarted.value = true
   conversationState.value = 'gathering'
-  addMessage('assistant', t('chat.greeting'))
+
+  // Pre-fill demographics from user profile to skip redundant questions
+  const profile = getProfile()
+  const prefilled = []
+
+  // Age — calculate from DOB
+  let profileAge = 0
+  if (profile.dateOfBirth) {
+    const dob = new Date(profile.dateOfBirth)
+    profileAge = Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+    if (profileAge > 0 && profileAge < 150) {
+      questionnaire.value.userResponses['age'] = String(profileAge)
+      questionnaire.value.currentQuestionIndex++
+      prefilled.push(`Age: ${profileAge}`)
+    }
+  }
+
+  // Gender
+  if (profile.gender && questionnaire.value.currentQuestionIndex === 1) {
+    const genderMap = { male: 'Male', female: 'Female', other: 'Other', prefer_not_to_say: 'Other' }
+    const genderStr = genderMap[profile.gender] || profile.gender
+    questionnaire.value.userResponses['gender'] = genderStr
+    questionnaire.value.currentQuestionIndex++
+    prefilled.push(`Gender: ${genderStr}`)
+  }
+
+  // Build greeting — skip demographics if we have them from profile
+  if (prefilled.length > 0) {
+    const profileSummary = prefilled.join(', ')
+    const allergies = (profile.allergies || []).filter(a => a && a.toLowerCase() !== 'none').join(', ')
+    const meds = (profile.medications || []).filter(m => m && m.toLowerCase() !== 'none').join(', ')
+
+    let profileNote = `From your profile: **${profileSummary}**`
+    if (allergies) profileNote += ` | Allergies: **${allergies}**`
+    if (meds) profileNote += ` | Medications: **${meds}**`
+
+    const greeting = `Hello${profile.name ? ', ' + profile.name.split(' ')[0] : ''}! I'm your AI medical assistant powered by 7 specialized agents.\n\n${profileNote}\n\nI'll ask about your symptoms, their characteristics, and relevant history. Then our agent team (Triage, Diagnostician, Research, Specialist, Treatment, Safety, and Communication) will collaborate to analyze your case.\n\n**What brings you here today? Please describe your main symptoms or health concerns in as much detail as possible.**`
+
+    addMessage('assistant', greeting)
+  } else {
+    addMessage('assistant', t('chat.greeting'))
+  }
 }
 
 /**
@@ -841,6 +929,10 @@ async function handleSendMessage(message, imageBase64Param = null) {
       // Store response in questionnaire for regular questions
       questionnaire.value.addResponse(message)
       await handleGatheringMessage()
+    } else if (conversationState.value === 'followup') {
+      // Store AI follow-up response and ask next follow-up or proceed
+      aiFollowupResponses.value.push(message)
+      await handleAiFollowup()
     } else if (conversationState.value === 'awaiting-confirmation') {
       // Check if this is a "yes" response to proceed with diagnosis
       const isConfirmation = /^(yes|y|sure|ok|okay|proceed|go ahead|continue|let's go)$/i.test(message.trim())
@@ -889,15 +981,33 @@ async function handleGatheringMessage() {
   const currentIndex = questionnaire.value.currentQuestionIndex
   const fixedQuestionCount = questionnaire.value.questions.length // 15 structured questions
 
-  // After all fixed questions, go straight to diagnosis — no AI follow-ups
-  // The AI follow-up loop was causing 80+ repetitive questions
+  // After all fixed questions, transition to AI follow-up phase
   if (currentIndex >= fixedQuestionCount) {
-    addMessage('assistant', t('chat.analysisStart'))
-    await waitForSpeech()
-    currentStep.value = totalSteps.value
-    // Auto-proceed to diagnosis without waiting for confirmation
-    await handleProceedToDiagnosis()
+    // Enter follow-up phase with up to 5 targeted AI questions
+    conversationState.value = 'followup'
+    await handleAiFollowup()
     return
+  }
+
+  // Auto-fill from profile if data is available for the upcoming question
+  const upcomingQ = questionnaire.value.questions[currentIndex]
+  if (upcomingQ) {
+    const profile = getProfile()
+    const autoFillMap = {
+      'allergies': (profile.allergies || []).join(', '),
+      'medications': (profile.medications || []).join(', '),
+    }
+    const autoVal = autoFillMap[upcomingQ.id]
+    if (autoVal && autoVal.trim()) {
+      // Auto-fill and show what we used
+      questionnaire.value.userResponses[upcomingQ.id] = autoVal
+      questionnaire.value.currentQuestionIndex++
+      addMessage('assistant', `From your profile: **${autoVal}**`)
+      addMessage('user', autoVal)
+      // Recurse to handle the next question
+      await handleGatheringMessage()
+      return
+    }
   }
 
   // Fixed structured questions — translate using i18n
@@ -920,6 +1030,80 @@ async function handleGatheringMessage() {
     addMessage('assistant', prefix + t(nextQuestionKey))
     await waitForSpeech()
     currentStep.value = Math.min(currentIndex, totalSteps.value - 1)
+  }
+}
+
+/**
+ * Handles AI-generated follow-up questions (up to 5) for improved diagnosis accuracy.
+ * Called after the fixed 15 questions are complete, and after each follow-up response.
+ */
+async function handleAiFollowup() {
+  // If we've asked enough follow-ups, proceed to diagnosis
+  if (aiFollowupCount.value >= MAX_AI_FOLLOWUPS) {
+    addMessage('assistant', t('chat.analysisStart'))
+    await waitForSpeech()
+    currentStep.value = totalSteps.value
+    await handleProceedToDiagnosis()
+    return
+  }
+
+  // Build context from the interview so far
+  const responses = questionnaire.value.userResponses
+  const symptomsSummary = [
+    responses.symptoms,
+    responses.onset ? `Onset: ${responses.onset}` : '',
+    responses.character ? `Character: ${responses.character}` : '',
+    responses.location_radiation ? `Location: ${responses.location_radiation}` : '',
+    responses.severity ? `Severity: ${responses.severity}` : '',
+    responses.associated_symptoms ? `Associated: ${responses.associated_symptoms}` : '',
+    responses.past_medical ? `PMH: ${responses.past_medical}` : '',
+    responses.medications ? `Meds: ${responses.medications}` : '',
+    responses.lifestyle ? `Social: ${responses.lifestyle}` : '',
+  ].filter(Boolean).join('. ')
+
+  try {
+    // Show a brief typing indicator
+    const typingMsg = addMessage('assistant', '...')
+
+    const result = await generateQuestion({
+      symptoms: symptomsSummary,
+      age: parseInt(responses.age) || 30,
+      gender: responses.gender || 'unknown',
+      conversation_history: aiFollowupResponses.value,
+      previous_questions: aiFollowupQuestions.value,
+      questions_asked: aiFollowupCount.value,
+      total_ai_questions: MAX_AI_FOLLOWUPS,
+    })
+
+    const question = result?.question
+    if (!question || question.trim().length < 5) {
+      // AI couldn't generate a useful question — proceed to diagnosis
+      removeMessage(typingMsg)
+      addMessage('assistant', t('chat.analysisStart'))
+      await waitForSpeech()
+      currentStep.value = totalSteps.value
+      await handleProceedToDiagnosis()
+      return
+    }
+
+    // Replace typing indicator with the actual question
+    const qNum = aiFollowupCount.value + 1
+    const prefix = qNum === 1
+      ? `I have a few follow-up questions to improve diagnostic accuracy. (${qNum}/${MAX_AI_FOLLOWUPS})\n\n`
+      : `(${qNum}/${MAX_AI_FOLLOWUPS}) `
+    updateMessage(typingMsg, prefix + question)
+    await waitForSpeech()
+
+    aiFollowupQuestions.value.push(question)
+    aiFollowupCount.value++
+    currentStep.value = Math.min(questionnaire.value.questions.length + aiFollowupCount.value, totalSteps.value - 1)
+  } catch (err) {
+    console.error('AI follow-up question failed:', err)
+    // On error, proceed to diagnosis rather than blocking
+    addMessage('assistant', t('chat.analysisStart'))
+    await waitForSpeech()
+    currentStep.value = totalSteps.value
+    await handleProceedToDiagnosis()
   }
 }
 
@@ -1054,12 +1238,14 @@ async function handleProceedToDiagnosis() {
     if (responses.family_history) symptomParts.push(`Family History: ${responses.family_history}`)
     if (responses.lifestyle) symptomParts.push(`Social/Lifestyle: ${responses.lifestyle}`)
 
-    // Include any AI follow-up responses
-    Object.entries(responses).forEach(([key, val]) => {
-      if (key.startsWith('ai_question_') && val) {
-        symptomParts.push(`Follow-up: ${val}`)
-      }
-    })
+    // Include AI follow-up Q&A pairs for richer diagnostic context
+    if (aiFollowupQuestions.value.length > 0) {
+      symptomParts.push('\nAI Follow-up Interview:')
+      aiFollowupQuestions.value.forEach((q, i) => {
+        const answer = aiFollowupResponses.value[i] || 'No answer'
+        symptomParts.push(`Q: ${q}\nA: ${answer}`)
+      })
+    }
 
     const symptomsText = symptomParts.join('\n\n')
     
@@ -1796,6 +1982,19 @@ function addMessage(role, content, additionalData = {}) {
   } else {
     currentSpeechPromise = Promise.resolve()
   }
+  return message
+}
+
+function removeMessage(msgOrId) {
+  const id = typeof msgOrId === 'object' ? msgOrId.id : msgOrId
+  chatMessages.value = chatMessages.value.filter(m => m.id !== id)
+}
+
+function updateMessage(msgOrId, newText) {
+  const id = typeof msgOrId === 'object' ? msgOrId.id : msgOrId
+  const msg = chatMessages.value.find(m => m.id === id)
+  if (msg) msg.text = newText
+  chatMessages.value = [...chatMessages.value]
 }
 
 /**
@@ -2109,6 +2308,9 @@ function handleStartOver() {
   hasStarted.value = false
   conversationState.value = 'initial'
   questionnaire.value.reset()
+  aiFollowupCount.value = 0
+  aiFollowupQuestions.value = []
+  aiFollowupResponses.value = []
   error.value = null
   currentStep.value = 0
   showTyping.value = false

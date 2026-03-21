@@ -28,6 +28,11 @@ MODEL_CATALOG = {
     "gemini-2.5-pro": {"vendor": "google", "model_id": "gemini-2.5-pro-preview-06-05"},
     "gemini-2.5-flash": {"vendor": "google", "model_id": "gemini-2.5-flash-preview-05-20"},
     "gemini-2.0-flash": {"vendor": "google", "model_id": "gemini-2.0-flash"},
+    # Ollama (local)
+    "llama3.1:8b": {"vendor": "ollama", "model_id": "llama3.1:8b"},
+    "llama3.1": {"vendor": "ollama", "model_id": "llama3.1:8b"},
+    "mistral": {"vendor": "ollama", "model_id": "mistral"},
+    "gemma2": {"vendor": "ollama", "model_id": "gemma2:9b"},
 }
 
 
@@ -43,6 +48,8 @@ def get_vendor(model_name: str) -> str:
         return "openai"
     if model_name.startswith("gemini"):
         return "google"
+    if model_name.startswith(("llama", "mistral", "gemma", "phi", "qwen", "deepseek", "codellama")):
+        return "ollama"
     return "anthropic"  # default
 
 
@@ -102,6 +109,15 @@ class LLMClient:
             self._clients["google"] = genai.Client(api_key=self._google_key)
         return self._clients["google"]
 
+    def _get_ollama(self):
+        if "ollama" not in self._clients:
+            from openai import AsyncOpenAI
+            self._clients["ollama"] = AsyncOpenAI(
+                base_url="http://localhost:11434/v1",
+                api_key="ollama",  # Ollama doesn't need a real key
+            )
+        return self._clients["ollama"]
+
     async def create_message(
         self,
         model: str,
@@ -129,6 +145,8 @@ class LLMClient:
             return await self._call_openai(model_id, system, messages, tools, max_tokens, temperature)
         elif vendor == "google":
             return await self._call_google(model_id, system, messages, tools, max_tokens, temperature)
+        elif vendor == "ollama":
+            return await self._call_ollama(model_id, system, messages, tools, max_tokens, temperature)
         else:
             raise ValueError(f"Unknown vendor for model: {model}")
 
@@ -259,6 +277,50 @@ class LLMClient:
 
         stop_reason = "tool_use" if choice.message.tool_calls else "end_turn"
         return {"content": content, "stop_reason": stop_reason}
+
+    # ── Ollama (local, OpenAI-compatible) ────────────────────────
+
+    async def _call_ollama(self, model_id, system, messages, tools, max_tokens, temperature):
+        """Call Ollama using the OpenAI-compatible API (no tool support)."""
+        client = self._get_ollama()
+
+        # Build simple message list — Ollama doesn't support tool use well,
+        # so we skip tools and just use text messages
+        oai_messages = [{"role": "system", "content": system}]
+        for msg in messages:
+            role = msg["role"]
+            content = msg["content"]
+            if isinstance(content, str):
+                oai_messages.append({"role": role, "content": content})
+            elif isinstance(content, list):
+                # Flatten multi-part content to text
+                text_parts = []
+                for block in content:
+                    if hasattr(block, "text"):
+                        text_parts.append(block.text)
+                    elif isinstance(block, dict) and block.get("type") == "text":
+                        text_parts.append(block.get("text", ""))
+                    elif isinstance(block, dict) and block.get("type") == "tool_result":
+                        text_parts.append(str(block.get("content", "")))
+                if text_parts:
+                    oai_messages.append({"role": role, "content": "\n".join(text_parts)})
+
+        try:
+            response = await client.chat.completions.create(
+                model=model_id,
+                messages=oai_messages,
+                max_tokens=max_tokens,
+                temperature=temperature,
+            )
+
+            text = response.choices[0].message.content or ""
+            return {
+                "content": [type("TextBlock", (), {"type": "text", "text": text})()],
+                "stop_reason": "end_turn",
+            }
+        except Exception as e:
+            logger.error(f"Ollama call failed: {e}")
+            raise
 
     # ── Google Gemini ──────────────────────────────────────────────
 

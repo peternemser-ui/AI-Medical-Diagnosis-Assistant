@@ -39,15 +39,22 @@
         <ThemeLangControls />
         <!-- User menu -->
         <div class="relative" ref="userMenuRef">
-          <button @click="showUserMenu = !showUserMenu" class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all" :class="isDark ? 'hover:bg-slate-800/60 text-slate-400 hover:text-white' : 'hover:bg-slate-200/60 text-slate-500 hover:text-slate-900'">
+          <!-- Logged-in: avatar button -->
+          <button v-if="isLoggedIn" @click="showUserMenu = !showUserMenu" class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all" :class="isDark ? 'hover:bg-slate-800/60 text-slate-400 hover:text-white' : 'hover:bg-slate-200/60 text-slate-500 hover:text-slate-900'">
             <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-[10px] font-bold text-white">
               {{ userInitials || '?' }}
             </div>
+            <span class="hidden sm:inline text-sm font-medium" :class="isDark ? 'text-slate-300' : 'text-slate-700'">{{ userName }}</span>
             <svg class="w-3 h-3 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
+          <!-- Logged-out: Log In button -->
+          <router-link v-else to="/profile" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-md shadow-blue-500/20 hover:shadow-blue-500/30">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+            Log In
+          </router-link>
           <Transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
-            <div v-if="showUserMenu" class="absolute right-0 top-full mt-1 w-48 rounded-lg shadow-xl border z-50 overflow-hidden py-1" :class="isDark ? 'bg-slate-900 border-slate-700/50' : 'bg-white border-slate-200'">
-              <div v-if="userName" class="px-3 py-2 border-b" :class="isDark ? 'border-slate-700/50' : 'border-slate-200'">
+            <div v-if="showUserMenu && isLoggedIn" class="absolute right-0 top-full mt-1 w-48 rounded-lg shadow-xl border z-50 overflow-hidden py-1" :class="isDark ? 'bg-slate-900 border-slate-700/50' : 'bg-white border-slate-200'">
+              <div class="px-3 py-2 border-b" :class="isDark ? 'border-slate-700/50' : 'border-slate-200'">
                 <div class="text-xs font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">{{ userName }}</div>
                 <div class="text-[10px]" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ userEmail || 'No email set' }}</div>
               </div>
@@ -67,6 +74,12 @@
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
                 API Keys
               </router-link>
+              <!-- Divider + Log Out -->
+              <div class="border-t my-1" :class="isDark ? 'border-slate-700/50' : 'border-slate-200'"></div>
+              <button @click="handleLogout" class="flex items-center gap-2 px-3 py-2 text-xs transition-colors w-full text-left" :class="isDark ? 'text-red-400 hover:bg-slate-800' : 'text-red-500 hover:bg-red-50'">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                Log Out
+              </button>
             </div>
           </Transition>
         </div>
@@ -216,6 +229,48 @@
       </div>
     </div>
 
+    <!-- ═══════ MIDGROUND — Privacy & Security ═══════ -->
+    <div class="relative max-w-4xl mx-auto px-6 mt-10 sm:mt-14 pb-10" style="z-index:10">
+      <div class="rounded-2xl p-6 sm:p-8 backdrop-blur-lg border"
+        :class="isDark
+          ? 'bg-slate-900/40 border-slate-700/30'
+          : 'bg-white/50 border-white/60 shadow-lg shadow-slate-200/50'">
+        <div class="text-center mb-5">
+          <div class="inline-flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <h2 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">Privacy & Security</h2>
+          </div>
+          <p class="text-sm" :class="isDark ? 'text-slate-500' : 'text-slate-500'">Your health data stays on your device, always.</p>
+        </div>
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div class="flex flex-col items-center text-center p-4 rounded-xl border"
+            :class="isDark ? 'bg-slate-800/40 border-slate-700/30' : 'bg-white/60 border-slate-200/60'">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-3" :class="isDark ? 'bg-emerald-500/15' : 'bg-emerald-50'">
+              <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </div>
+            <h3 class="text-xs font-semibold mb-1" :class="isDark ? 'text-white' : 'text-slate-800'">100% Local Storage</h3>
+            <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">All your profile, medical data, and consultation history are stored in your browser's localStorage. Nothing is ever sent to or stored on any server.</p>
+          </div>
+          <div class="flex flex-col items-center text-center p-4 rounded-xl border"
+            :class="isDark ? 'bg-slate-800/40 border-slate-700/30' : 'bg-white/60 border-slate-200/60'">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-3" :class="isDark ? 'bg-blue-500/15' : 'bg-blue-50'">
+              <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
+            </div>
+            <h3 class="text-xs font-semibold mb-1" :class="isDark ? 'text-white' : 'text-slate-800'">No Password Needed</h3>
+            <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Since data never leaves your device, no password is required. Your account is tied to this browser. Just sign up with your name and email to get started.</p>
+          </div>
+          <div class="flex flex-col items-center text-center p-4 rounded-xl border"
+            :class="isDark ? 'bg-slate-800/40 border-slate-700/30' : 'bg-white/60 border-slate-200/60'">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-3" :class="isDark ? 'bg-purple-500/15' : 'bg-purple-50'">
+              <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            </div>
+            <h3 class="text-xs font-semibold mb-1" :class="isDark ? 'text-white' : 'text-slate-800'">Full Data Control</h3>
+            <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Export all your data anytime as JSON. Delete your profile from Settings. Clearing your browser data removes everything permanently — you're always in control.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Footer -->
     <div class="relative border-t py-6 px-6 text-center" style="z-index:10"
       :class="isDark ? 'border-slate-800/50' : 'border-slate-200'">
@@ -227,24 +282,25 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import DoctorAvatar from '@/components/DoctorAvatar.vue'
 import ThemeLangControls from '@/components/ThemeLangControls.vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { useI18n } from '@/composables/useI18n.js'
+import { useUser } from '@/composables/useUser.js'
 
 const router = useRouter()
 const { isDark } = useTheme()
 const { t } = useI18n()
+const { profile, isLoggedIn, logout: doLogout } = useUser()
 
 // User menu
 const showUserMenu = ref(false)
 const userMenuRef = ref(null)
-const userProfile = JSON.parse(localStorage.getItem('user_profile') || '{}')
-const userName = ref(userProfile.name || '')
-const userEmail = ref(userProfile.email || '')
-const userInitials = ref(
+const userName = computed(() => profile.value.name || '')
+const userEmail = computed(() => profile.value.email || '')
+const userInitials = computed(() =>
   userName.value
     ? userName.value.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
     : ''
@@ -255,6 +311,11 @@ function onClickOutsideUserMenu(e) {
 }
 onMounted(() => document.addEventListener('click', onClickOutsideUserMenu))
 onUnmounted(() => document.removeEventListener('click', onClickOutsideUserMenu))
+
+function handleLogout() {
+  showUserMenu.value = false
+  doLogout()
+}
 
 // ─── Animated background ───
 const bgCanvas = ref(null)

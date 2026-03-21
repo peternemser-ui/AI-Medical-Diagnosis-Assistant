@@ -2,8 +2,8 @@
   <div class="doctor-avatar-container flex flex-col items-center">
     <!-- Avatar circle -->
     <div
-      class="relative rounded-full overflow-hidden border-4 transition-all duration-500"
-      :class="[sizeClasses, speaking ? 'border-blue-400 shadow-lg shadow-blue-500/30' : 'border-slate-600']"
+      class="relative rounded-full overflow-hidden transition-all duration-500"
+      :class="[sizeClasses, size === 'xs' ? 'border-2' : 'border-4', speaking ? 'border-blue-400 shadow-lg shadow-blue-500/30' : (isDark ? 'border-slate-600' : 'border-slate-300')]"
     >
       <!-- ══ PHOTO MODE ══ -->
       <div v-if="avatar.avatarStyle === 'photo' && avatar.photoUrl" class="w-full h-full relative">
@@ -427,6 +427,9 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useTheme } from '@/composables/useTheme.js'
+
+const { isDark } = useTheme()
 
 const props = defineProps({
   avatar: { type: Object, required: true },
@@ -437,6 +440,7 @@ const props = defineProps({
 })
 
 const sizeClasses = {
+  xs: 'w-10 h-10',
   sm: 'w-16 h-16',
   md: 'w-24 h-24',
   lg: 'w-36 h-36',
@@ -444,6 +448,9 @@ const sizeClasses = {
   xxl: 'w-80 h-80 sm:w-96 sm:h-96',
   xxxl: 'w-[min(70vh,28rem)] h-[min(70vh,28rem)] sm:w-[min(55vh,34rem)] sm:h-[min(55vh,34rem)]',
 }[props.size] || 'w-24 h-24'
+
+// Unique ID prefix for SVG gradients (prevents conflicts when multiple avatars render)
+const uid = Math.random().toString(36).slice(2, 8)
 
 // Color helpers for realistic mode
 function adjustColor(hex, amount) {

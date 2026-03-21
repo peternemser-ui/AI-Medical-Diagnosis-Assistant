@@ -43,10 +43,22 @@ app.add_middleware(
 # ── Helpers ──────────────────────────────────────────────────────────
 
 def _get_api_key(header_key: Optional[str] = None) -> tuple[Optional[str], str]:
-    """Resolve API key from header or env. Returns (key, provider)."""
+    """Resolve API key from header or env. Returns (key, provider).
+    Supports Anthropic, OpenAI, Google, and Ollama (local).
+    """
     key = header_key or os.getenv("ANTHROPIC_API_KEY") or os.getenv("OPENAI_API_KEY")
-    if not key:
-        return None, "none"
+    # Check for Ollama — use it when no cloud key is available or explicitly requested
+    if not key or key == "ollama":
+        # Check if Ollama is running locally
+        try:
+            import httpx
+            resp = httpx.get("http://localhost:11434/api/version", timeout=2.0)
+            if resp.status_code == 200:
+                return "ollama", "ollama"
+        except Exception:
+            pass
+        if not key:
+            return None, "none"
     if key.startswith("sk-ant-"):
         return key, "anthropic"
     if key.startswith("AIza"):
@@ -225,9 +237,22 @@ async def root():
 @app.get("/health")
 async def health_check():
     has_key = bool(os.getenv("ANTHROPIC_API_KEY") or os.getenv("OPENAI_API_KEY"))
+    # Check if Ollama is running locally
+    ollama_available = False
+    ollama_models = []
+    try:
+        import httpx
+        resp = httpx.get("http://localhost:11434/api/tags", timeout=2.0)
+        if resp.status_code == 200:
+            ollama_available = True
+            ollama_models = [m["name"] for m in resp.json().get("models", [])]
+    except Exception:
+        pass
     return {
         "status": "healthy",
-        "api_key_configured": has_key,
+        "api_key_configured": has_key or ollama_available,
+        "ollama_available": ollama_available,
+        "ollama_models": ollama_models,
         "architecture": "multi-agent",
         "agents": ["triage", "diagnostician", "specialist", "treatment"],
         "cors": "enabled",
@@ -340,16 +365,23 @@ async def diagnose_symptoms(
             logger.info("OpenAI key detected — using OpenAI single-model diagnosis")
             return await _openai_diagnosis(api_key, diagnosis_request)
 
+        # Ollama: use local model via multi-agent pipeline
+        if provider == "ollama":
+            logger.info("Ollama detected — using local model for multi-agent diagnosis")
+            if not diagnosis_request.model_preference or diagnosis_request.model_preference == "auto":
+                diagnosis_request.model_preference = "llama3.1:8b"
+
         logger.info(
-            "Starting multi-agent diagnosis for: %s (age=%d, gender=%s)",
+            "Starting multi-agent diagnosis for: %s (age=%d, gender=%s, provider=%s)",
             diagnosis_request.symptoms[:80],
             diagnosis_request.age,
             diagnosis_request.gender,
+            provider,
         )
 
         all_keys = _get_all_api_keys(http_request)
         orchestrator = OrchestratorAgent(
-            api_key=api_key,
+            api_key=api_key if provider != "ollama" else "ollama",
             openai_key=all_keys.get("openai"),
             google_key=all_keys.get("google"),
         )
@@ -418,17 +450,23 @@ async def diagnose_symptoms_stream(
 
             return StreamingResponse(openai_generator(), media_type="text/event-stream")
 
+        # Ollama: use local model
+        if provider == "ollama":
+            if not diagnosis_request.model_preference or diagnosis_request.model_preference == "auto":
+                diagnosis_request.model_preference = "llama3.1:8b"
+
         logger.info(
-            "Starting streaming multi-agent diagnosis for: %s (age=%d, gender=%s)",
+            "Starting streaming multi-agent diagnosis for: %s (age=%d, gender=%s, provider=%s)",
             diagnosis_request.symptoms[:80],
             diagnosis_request.age,
             diagnosis_request.gender,
+            provider,
         )
 
         event_queue: asyncio.Queue = asyncio.Queue()
         all_keys = _get_all_api_keys(http_request)
         orchestrator = OrchestratorAgent(
-            api_key=api_key,
+            api_key=api_key if provider != "ollama" else "ollama",
             openai_key=all_keys.get("openai"),
             google_key=all_keys.get("google"),
         )
@@ -531,20 +569,25 @@ async def generate_question(
                 "estimated_cost": 0.0,
             }
 
-        if provider == "openai":
+        if provider == "openai" or provider == "ollama":
             from openai import OpenAI
-            client = OpenAI(api_key=api_key)
+            client_kwargs = {"api_key": api_key}
+            model_name = "gpt-4o"
+            if provider == "ollama":
+                client_kwargs = {"api_key": "ollama", "base_url": "http://localhost:11434/v1"}
+                model_name = "llama3.1:8b"
+            client = OpenAI(**client_kwargs)
             prompt = (
                 f"Generate ONE specific follow-up question for a {request_data.age}-year-old {request_data.gender} "
                 f"with symptoms: {request_data.symptoms}. Question {request_data.questions_asked + 1} of {request_data.total_ai_questions}. "
-                f"Previously asked: {request_data.previous_questions}. Return ONLY the question."
+                f"Previously asked: {request_data.previous_questions}. Return ONLY the question, no preamble."
             )
             resp = client.chat.completions.create(
-                model="gpt-4o",
+                model=model_name,
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=150, temperature=0.7,
             )
-            return {"question": resp.choices[0].message.content.strip().strip('"'), "estimated_cost": 0.01}
+            return {"question": resp.choices[0].message.content.strip().strip('"'), "estimated_cost": 0.0}
 
         orchestrator = OrchestratorAgent(api_key=api_key)
         question = await orchestrator.generate_question(
@@ -605,6 +648,185 @@ async def debug_info():
         ],
         "cors_enabled": True,
     }
+
+
+# Map app specialty names to NPI taxonomy search terms
+_SPECIALTY_MAP = {
+    "primary care": ["Family Medicine", "Internal Medicine", "General Practice"],
+    "self-management": ["Family Medicine", "Internal Medicine"],
+    "internal medicine": ["Internal Medicine"],
+    "dermatology": ["Dermatology"],
+    "dermatologist": ["Dermatology"],
+    "allergy": ["Allergy & Immunology"],
+    "cardiology": ["Cardiovascular Disease"],
+    "gastroenterology": ["Gastroenterology"],
+    "neurology": ["Neurology"],
+    "psychiatry": ["Psychiatry"],
+    "rheumatology": ["Rheumatology"],
+    "orthopedic": ["Orthopaedic Surgery"],
+    "pulmonology": ["Pulmonary Disease"],
+    "endocrinology": ["Endocrinology, Diabetes & Metabolism"],
+    "oncology": ["Hematology & Oncology"],
+    "urology": ["Urology"],
+    "ophthalmology": ["Ophthalmology"],
+    "ent": ["Otolaryngology"],
+    "pediatrics": ["Pediatrics"],
+    "ob/gyn": ["Obstetrics & Gynecology"],
+}
+
+
+def _resolve_taxonomy_terms(specialty: str) -> list[str]:
+    """Convert an app specialty label into NPI taxonomy search terms."""
+    lower = specialty.lower().strip()
+    # Direct match
+    if lower in _SPECIALTY_MAP:
+        return _SPECIALTY_MAP[lower]
+    # Try each part of compound specialties like "Primary Care / Dermatology"
+    terms = []
+    for part in lower.replace("/", ",").replace(" - ", ",").split(","):
+        part = part.strip()
+        if part in _SPECIALTY_MAP:
+            terms.extend(_SPECIALTY_MAP[part])
+        elif part:
+            # Use the part as-is (capitalize properly for NPI)
+            terms.append(part.title())
+    return terms if terms else [specialty]
+
+
+async def _npi_search(client, taxonomy: str, postal_code: str = "", city: str = "", state: str = "", limit: int = 10):
+    """Run a single NPI registry search and return parsed results."""
+    params = {
+        "version": "2.1",
+        "enumeration_type": "NPI-1",
+        "taxonomy_description": taxonomy,
+        "limit": limit,
+    }
+    if postal_code:
+        params["postal_code"] = postal_code
+    if city:
+        params["city"] = city
+    if state:
+        params["state"] = state
+
+    resp = await client.get("https://npiregistry.cms.hhs.gov/api/", params=params)
+    data = resp.json()
+    return data.get("results", [])
+
+
+def _parse_npi_results(raw_results: list, specialty_label: str) -> list[dict]:
+    """Parse raw NPI API results into clean doctor records."""
+    results = []
+    seen_npis = set()
+    for r in raw_results:
+        npi = r.get("number", "")
+        if npi in seen_npis:
+            continue
+        seen_npis.add(npi)
+
+        basic = r.get("basic", {})
+        addresses = r.get("addresses", [])
+        addr = next(
+            (a for a in addresses if a.get("address_purpose") == "LOCATION"),
+            addresses[0] if addresses else {},
+        )
+        taxonomies = r.get("taxonomies", [])
+        primary_tax = next((t for t in taxonomies if t.get("primary")), taxonomies[0] if taxonomies else {})
+
+        name_parts = []
+        if basic.get("first_name"):
+            name_parts.append(basic["first_name"].title())
+        if basic.get("last_name"):
+            name_parts.append(basic["last_name"].title())
+        credential = basic.get("credential", "")
+
+        full_name = " ".join(name_parts)
+        if credential:
+            full_name += f", {credential}"
+
+        address_lines = []
+        if addr.get("address_1"):
+            address_lines.append(addr["address_1"].title())
+        if addr.get("address_2"):
+            address_lines.append(addr["address_2"].title())
+        city_state = []
+        if addr.get("city"):
+            city_state.append(addr["city"].title())
+        if addr.get("state"):
+            city_state.append(addr["state"])
+        if addr.get("postal_code"):
+            city_state.append(addr["postal_code"][:5])
+        if city_state:
+            address_lines.append(", ".join(city_state))
+
+        results.append({
+            "npi": npi,
+            "name": full_name,
+            "specialty": primary_tax.get("desc", specialty_label),
+            "address": "\n".join(address_lines),
+            "phone": addr.get("telephone_number", ""),
+            "accepting_patients": primary_tax.get("state", "") != "N",
+        })
+    return results
+
+
+@app.get("/api/find-doctors")
+async def find_doctors(
+    specialty: str = "Primary Care",
+    location: str = "",
+    limit: int = 10,
+):
+    """
+    Search the NPI Registry (free, no API key) for healthcare providers
+    by specialty and location (zip code, city, or state).
+    Handles compound specialty names and broadens search if needed.
+    """
+    import httpx
+
+    # Parse location
+    loc = location.strip()
+    postal_code = ""
+    city = ""
+    state = ""
+    if loc:
+        if loc.isdigit() and len(loc) == 5:
+            postal_code = loc
+        elif "," in loc:
+            parts = [p.strip() for p in loc.split(",")]
+            city = parts[0]
+            if len(parts) > 1 and len(parts[1]) <= 2:
+                state = parts[1].upper()
+        elif len(loc) == 2:
+            state = loc.upper()
+        else:
+            city = loc
+
+    taxonomy_terms = _resolve_taxonomy_terms(specialty)
+    target_limit = min(limit, 20)
+
+    try:
+        all_raw = []
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            # Search each taxonomy term
+            for term in taxonomy_terms:
+                raw = await _npi_search(client, term, postal_code=postal_code, city=city, state=state, limit=target_limit)
+                all_raw.extend(raw)
+                if len(all_raw) >= target_limit:
+                    break
+
+            # If zip code search returned too few, broaden to zip prefix (e.g., 816*)
+            if len(all_raw) < 3 and postal_code and len(postal_code) == 5:
+                for term in taxonomy_terms:
+                    raw = await _npi_search(client, term, postal_code=postal_code[:3] + "*", limit=target_limit)
+                    all_raw.extend(raw)
+                    if len(all_raw) >= target_limit:
+                        break
+
+        results = _parse_npi_results(all_raw, specialty)[:target_limit]
+        return {"results": results, "count": len(results)}
+
+    except Exception as e:
+        logger.error(f"NPI Registry search failed: {e}")
+        return {"results": [], "count": 0, "error": str(e)}
 
 
 @app.options("/{full_path:path}")

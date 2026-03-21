@@ -20,6 +20,10 @@ export function useUser() {
     profile.value = { ...merged }
   }
 
+  function setProfile(data) {
+    profile.value = { ...data }
+  }
+
   function updatePreference(key, value) {
     const merged = savePreferenceSvc(key, value)
     preferences.value = { ...merged }
@@ -31,5 +35,5 @@ export function useUser() {
     preferences.value = getPreferences()
   }
 
-  return { profile, preferences, isLoggedIn, updateProfile, updatePreference, logout }
+  return { profile, preferences, isLoggedIn, updateProfile, setProfile, updatePreference, logout }
 }

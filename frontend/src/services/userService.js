@@ -1,6 +1,7 @@
 const PROFILE_KEY = 'user_profile'
 const PREFERENCES_KEY = 'user_preferences'
 const HISTORY_KEY = 'diagnosis_history'
+const ACCOUNTS_KEY = 'user_accounts'
 
 /**
  * Generate a UUID using crypto.randomUUID() with fallback
@@ -28,6 +29,9 @@ function defaultProfile() {
     avatarUrl: '',
     dateOfBirth: '',
     gender: '',
+    city: '',
+    stateRegion: '',
+    zipCode: '',
     bloodType: '',
     allergies: [],
     medications: [],
@@ -77,6 +81,10 @@ export function saveProfile(data) {
     const current = getProfile()
     const merged = { ...current, ...data }
     localStorage.setItem(PROFILE_KEY, JSON.stringify(merged))
+    // Keep accounts list in sync
+    if (merged.name && merged.email) {
+      saveAccountToList(merged)
+    }
     return merged
   } catch (e) {
     console.error('Failed to save user profile:', e)
@@ -140,10 +148,76 @@ export function isProfileComplete() {
 }
 
 /**
- * Remove all user data (profile and preferences) from localStorage.
+ * Get all saved accounts from localStorage.
+ * @returns {Array} List of saved account profiles
+ */
+export function getSavedAccounts() {
+  try {
+    const raw = localStorage.getItem(ACCOUNTS_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch (e) {
+    console.error('Failed to read saved accounts:', e)
+  }
+  return []
+}
+
+/**
+ * Save or update an account in the accounts list.
+ * @param {Object} profile - The profile to save
+ */
+export function saveAccountToList(profile) {
+  try {
+    const accounts = getSavedAccounts()
+    const idx = accounts.findIndex(a => a.email && a.email === profile.email)
+    if (idx >= 0) {
+      accounts[idx] = { ...accounts[idx], ...profile }
+    } else {
+      accounts.push(profile)
+    }
+    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts))
+  } catch (e) {
+    console.error('Failed to save account to list:', e)
+  }
+}
+
+/**
+ * Remove an account from the saved accounts list.
+ * @param {string} email - The email of the account to remove
+ */
+export function removeAccount(email) {
+  try {
+    const accounts = getSavedAccounts().filter(a => a.email !== email)
+    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts))
+  } catch (e) {
+    console.error('Failed to remove account:', e)
+  }
+}
+
+/**
+ * Log in with an existing saved account by email.
+ * @param {string} email - The email to log in with
+ * @returns {Object|null} The profile if found, null otherwise
+ */
+export function loginWithEmail(email) {
+  const accounts = getSavedAccounts()
+  const account = accounts.find(a => a.email && a.email.toLowerCase() === email.toLowerCase())
+  if (account) {
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(account))
+    return account
+  }
+  return null
+}
+
+/**
+ * Remove active session (profile and preferences) but keep saved accounts.
  */
 export function clearUserData() {
   try {
+    // Save current profile to accounts list before clearing
+    const profile = getProfile()
+    if (profile.name && profile.email) {
+      saveAccountToList(profile)
+    }
     localStorage.removeItem(PROFILE_KEY)
     localStorage.removeItem(PREFERENCES_KEY)
   } catch (e) {

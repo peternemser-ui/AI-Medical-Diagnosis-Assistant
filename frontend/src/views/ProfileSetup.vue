@@ -12,10 +12,22 @@
     <nav class="relative z-20 flex items-center justify-between px-6 py-3 border-b"
       :class="isDark ? 'border-slate-800 bg-slate-950/80 backdrop-blur-xl' : 'border-slate-200 bg-white/80 backdrop-blur-xl'">
       <router-link to="/" class="flex items-center gap-2">
-        <div class="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
-          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
+        <div class="w-9 h-9 rounded-full overflow-hidden border-2 flex-shrink-0 shadow-sm"
+          :class="isDark ? 'border-slate-600' : 'border-slate-300'"
+          :style="{ backgroundColor: navAvatar.bgColor }">
+          <svg viewBox="0 0 200 200" class="w-full h-full">
+            <circle cx="100" cy="85" r="45" :fill="navAvatar.skinTone" />
+            <ellipse cx="100" cy="58" rx="46" ry="28" :fill="navAvatar.hairColor" />
+            <circle cx="83" cy="82" r="4" fill="#2d2d2d" />
+            <circle cx="117" cy="82" r="4" fill="#2d2d2d" />
+            <circle cx="84" cy="81" r="1.5" fill="white" />
+            <circle cx="118" cy="81" r="1.5" fill="white" />
+            <circle v-if="navAvatar.glasses" cx="83" cy="82" r="12" fill="none" stroke="#555" stroke-width="2.5" />
+            <circle v-if="navAvatar.glasses" cx="117" cy="82" r="12" fill="none" stroke="#555" stroke-width="2.5" />
+            <line v-if="navAvatar.glasses" x1="95" y1="82" x2="105" y2="82" stroke="#555" stroke-width="2" />
+            <path d="M 90 98 Q 100 107 110 98" fill="none" :stroke="navAvatar.lipColor" stroke-width="2.5" stroke-linecap="round" />
+            <path d="M 55 155 Q 55 130 75 125 L 82 120 Q 100 135 118 120 L 125 125 Q 145 130 145 155 L 145 200 L 55 200 Z" :fill="navAvatar.coatColor" />
+            <circle cx="115" cy="155" r="6" fill="none" stroke="#888" stroke-width="2" />
           </svg>
         </div>
         <span class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">Medical AI</span>
@@ -33,12 +45,138 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
             </svg>
           </div>
-          <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Profile Setup</h1>
-          <p class="text-sm mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Set up your profile for a personalized experience</p>
+          <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">{{ isEditing ? 'Edit Profile' : (mode === 'login' ? 'Welcome Back' : 'Create Account') }}</h1>
+          <p class="text-sm mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ isEditing ? 'Update your profile information' : (mode === 'login' ? 'Log in to your account' : 'Set up your profile for a personalized experience') }}</p>
         </div>
 
-        <!-- Form Card -->
-        <div class="backdrop-blur-xl rounded-2xl border shadow-2xl overflow-hidden"
+        <!-- Login / Sign Up Toggle (hidden when editing existing profile) -->
+        <div v-if="!isEditing" class="flex rounded-xl p-1 gap-1" :class="isDark ? 'bg-slate-800/60' : 'bg-slate-100'">
+          <button @click="mode = 'login'" class="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
+            :class="mode === 'login'
+              ? (isDark ? 'bg-slate-700 text-white shadow-md' : 'bg-white text-slate-900 shadow-md')
+              : (isDark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')">
+            Log In
+          </button>
+          <button @click="mode = 'signup'" class="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
+            :class="mode === 'signup'
+              ? (isDark ? 'bg-slate-700 text-white shadow-md' : 'bg-white text-slate-900 shadow-md')
+              : (isDark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')">
+            Sign Up
+          </button>
+        </div>
+
+        <!-- Security & Privacy Info -->
+        <div class="rounded-2xl border overflow-hidden"
+          :class="isDark ? 'bg-slate-900/60 border-slate-800/60' : 'bg-white/60 border-slate-200'">
+          <div class="p-5 space-y-3">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" :class="isDark ? 'bg-emerald-500/15' : 'bg-emerald-50'">
+                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              </div>
+              <div>
+                <div class="text-xs font-semibold mb-0.5" :class="isDark ? 'text-white' : 'text-slate-900'">100% Private & Local</div>
+                <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Your profile and medical data are stored only on your device using browser localStorage. Nothing is sent to or stored on any server.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" :class="isDark ? 'bg-blue-500/15' : 'bg-blue-50'">
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              </div>
+              <div>
+                <div class="text-xs font-semibold mb-0.5" :class="isDark ? 'text-white' : 'text-slate-900'">No Password Required</div>
+                <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Since all data stays on your device, there's no password. Your account is tied to this browser — just sign up with your name and email to get started.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" :class="isDark ? 'bg-purple-500/15' : 'bg-purple-50'">
+                <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </div>
+              <div>
+                <div class="text-xs font-semibold mb-0.5" :class="isDark ? 'text-white' : 'text-slate-900'">You're in Control</div>
+                <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Export or delete your data anytime from Settings. Clearing your browser data removes everything permanently.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ LOGIN MODE ═══ -->
+        <div v-if="mode === 'login'" class="backdrop-blur-xl rounded-2xl border shadow-2xl overflow-hidden"
+          :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'">
+          <div class="p-6 space-y-5">
+            <!-- Saved accounts -->
+            <div v-if="savedAccounts.length > 0">
+              <h3 class="text-xs uppercase tracking-wider font-semibold mb-3"
+                :class="isDark ? 'text-slate-500' : 'text-slate-400'">Saved Accounts</h3>
+              <div class="space-y-2">
+                <button v-for="account in savedAccounts" :key="account.email"
+                  @click="loginWithAccount(account)"
+                  class="w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left group"
+                  :class="isDark
+                    ? 'border-slate-700/50 hover:border-blue-500/40 hover:bg-slate-800/60'
+                    : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                    {{ account.name ? account.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : '?' }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium truncate" :class="isDark ? 'text-white' : 'text-slate-900'">{{ account.name }}</div>
+                    <div class="text-xs truncate" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ account.email }}</div>
+                  </div>
+                  <svg class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" :class="isDark ? 'text-blue-400' : 'text-blue-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+              <div class="flex items-center gap-3 my-4">
+                <div class="flex-1 h-px" :class="isDark ? 'bg-slate-700/50' : 'bg-slate-200'"></div>
+                <span class="text-[10px] uppercase tracking-wider" :class="isDark ? 'text-slate-600' : 'text-slate-400'">or enter email</span>
+                <div class="flex-1 h-px" :class="isDark ? 'bg-slate-700/50' : 'bg-slate-200'"></div>
+              </div>
+            </div>
+
+            <!-- Email login -->
+            <div>
+              <label class="text-xs font-medium mb-1.5 block" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Email Address</label>
+              <input
+                v-model="loginEmail"
+                type="email"
+                placeholder="your@email.com"
+                @keyup.enter="handleLogin"
+                class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-transparent transition-all"
+                :class="isDark
+                  ? 'bg-slate-800/80 border border-slate-700/50 text-white placeholder-slate-600'
+                  : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400'"
+              />
+            </div>
+
+            <!-- Error -->
+            <div v-if="loginError" class="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <svg class="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+              <div>
+                <p class="text-red-300 text-xs">{{ loginError }}</p>
+                <button @click="mode = 'signup'" class="text-blue-400 hover:text-blue-300 text-xs mt-1 underline underline-offset-2">Create a new account instead</button>
+              </div>
+            </div>
+
+            <!-- Login Button -->
+            <button
+              @click="handleLogin"
+              :disabled="!loginEmail.trim()"
+              class="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-medium py-3 rounded-xl text-sm transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+              </svg>
+              Log In
+            </button>
+
+            <p class="text-center text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+              Don't have an account? <button @click="mode = 'signup'" class="text-blue-400 hover:text-blue-300 underline underline-offset-2">Sign up</button>
+            </p>
+          </div>
+        </div>
+
+        <!-- ═══ SIGN UP MODE ═══ -->
+        <div v-else class="backdrop-blur-xl rounded-2xl border shadow-2xl overflow-hidden"
           :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'">
           <div class="p-6 space-y-6">
 
@@ -68,7 +206,7 @@
                 <!-- Email -->
                 <div>
                   <label class="text-xs font-medium mb-1.5 block" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-                    Email <span class="text-slate-600 text-[10px]">(optional)</span>
+                    Email <span class="text-red-400">*</span>
                   </label>
                   <input
                     v-model="form.email"
@@ -110,6 +248,41 @@
                     :class="isDark
                       ? 'bg-slate-800/80 border border-slate-700/50 text-white'
                       : 'bg-slate-50 border border-slate-200 text-slate-900'"
+                  />
+                </div>
+                <!-- Location -->
+                <div>
+                  <label class="text-xs font-medium mb-1.5 block" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+                    Location <span class="text-[10px] font-normal" :class="isDark ? 'text-slate-600' : 'text-slate-400'">(helps find nearby specialists)</span>
+                  </label>
+                  <div class="grid grid-cols-2 gap-3">
+                    <input
+                      v-model="form.city"
+                      type="text"
+                      placeholder="City or town"
+                      class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-transparent transition-all"
+                      :class="isDark
+                        ? 'bg-slate-800/80 border border-slate-700/50 text-white placeholder-slate-600'
+                        : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400'"
+                    />
+                    <input
+                      v-model="form.stateRegion"
+                      type="text"
+                      placeholder="State / Region"
+                      class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-transparent transition-all"
+                      :class="isDark
+                        ? 'bg-slate-800/80 border border-slate-700/50 text-white placeholder-slate-600'
+                        : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400'"
+                    />
+                  </div>
+                  <input
+                    v-model="form.zipCode"
+                    type="text"
+                    placeholder="Zip / Postal code"
+                    class="w-full rounded-xl px-4 py-3 text-sm mt-3 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-transparent transition-all"
+                    :class="isDark
+                      ? 'bg-slate-800/80 border border-slate-700/50 text-white placeholder-slate-600'
+                      : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400'"
                   />
                 </div>
               </div>
@@ -210,17 +383,6 @@
               </div>
             </div>
 
-            <!-- Privacy Note -->
-            <div class="flex items-start gap-2 p-3 rounded-lg"
-              :class="isDark ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-blue-50 border border-blue-200'">
-              <svg class="w-4 h-4 flex-shrink-0 mt-0.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-              </svg>
-              <p class="text-xs" :class="isDark ? 'text-blue-300/80' : 'text-blue-600'">
-                Stored locally on your device only. Your medical information is never sent to any server.
-              </p>
-            </div>
-
             <!-- Error message -->
             <div v-if="error" class="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
               <svg class="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -232,14 +394,18 @@
             <!-- Save Button -->
             <button
               @click="handleSave"
-              :disabled="!form.name.trim()"
+              :disabled="!form.name.trim() || !form.email.trim() || !isValidEmail(form.email)"
               class="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-medium py-3 rounded-xl text-sm transition-all duration-200 flex items-center justify-center gap-2"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
               </svg>
-              Save Profile
+              Create Account
             </button>
+
+            <p class="text-center text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+              Already have an account? <button @click="mode = 'login'" class="text-blue-400 hover:text-blue-300 underline underline-offset-2">Log in</button>
+            </p>
           </div>
         </div>
       </div>
@@ -249,9 +415,10 @@
 
 <script>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme.js'
-import { getProfile, saveProfile } from '@/services/userService.js'
+import { useUser } from '@/composables/useUser.js'
+import { getProfile, saveProfile, getSavedAccounts, loginWithEmail } from '@/services/userService.js'
 import ThemeLangControls from '@/components/ThemeLangControls.vue'
 
 export default {
@@ -259,10 +426,28 @@ export default {
   components: { ThemeLangControls },
   setup() {
     const router = useRouter()
+    const route = useRoute()
     const { isDark } = useTheme()
+    const { profile: userProfile, updateProfile } = useUser()
     const error = ref('')
     const nameBlurred = ref(false)
     const emailBlurred = ref(false)
+
+    // Doctor avatar for nav icon
+    const defaultAvatar = {
+      bgColor: '#1e3a5f', skinTone: '#F5CBA7', hairColor: '#3d2b1f',
+      coatColor: '#f0f0f0', lipColor: '#c9877a', glasses: true,
+    }
+    const navAvatar = JSON.parse(localStorage.getItem('doctor_avatar') || JSON.stringify(defaultAvatar))
+
+    // Mode: 'login' or 'signup' — default to login if not already logged in
+    const isEditing = ref(false)
+    const mode = ref('login')
+
+    // Login state
+    const loginEmail = ref('')
+    const loginError = ref('')
+    const savedAccounts = ref([])
 
     function isValidEmail(email) {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -273,6 +458,9 @@ export default {
       email: '',
       gender: '',
       dateOfBirth: '',
+      city: '',
+      stateRegion: '',
+      zipCode: '',
       bloodType: '',
       emergencyContactName: '',
       emergencyContactPhone: '',
@@ -282,11 +470,23 @@ export default {
     const medicationsText = ref('')
 
     onMounted(() => {
+      savedAccounts.value = getSavedAccounts()
       const profile = getProfile()
+      // If user already has a profile, they're editing — go straight to signup form
+      if (profile.name && profile.name.trim()) {
+        isEditing.value = true
+        mode.value = 'signup'
+      } else {
+        // Default to login if there are saved accounts, otherwise signup
+        mode.value = savedAccounts.value.length > 0 ? 'login' : 'signup'
+      }
       form.value.name = profile.name || ''
       form.value.email = profile.email || ''
       form.value.gender = profile.gender || ''
       form.value.dateOfBirth = profile.dateOfBirth || ''
+      form.value.city = profile.city || ''
+      form.value.stateRegion = profile.stateRegion || ''
+      form.value.zipCode = profile.zipCode || ''
       form.value.bloodType = profile.bloodType || ''
       form.value.emergencyContactName = profile.emergencyContactName || ''
       form.value.emergencyContactPhone = profile.emergencyContactPhone || ''
@@ -299,10 +499,32 @@ export default {
       return text.split(',').map(s => s.trim()).filter(Boolean)
     }
 
+    function handleLogin() {
+      loginError.value = ''
+      if (!loginEmail.value.trim()) return
+      const account = loginWithEmail(loginEmail.value.trim())
+      if (account) {
+        updateProfile(account)
+        router.push('/')
+      } else {
+        loginError.value = 'No account found with that email address.'
+      }
+    }
+
+    function loginWithAccount(account) {
+      loginWithEmail(account.email)
+      updateProfile(account)
+      router.push('/')
+    }
+
     function handleSave() {
       error.value = ''
       if (!form.value.name.trim()) {
         error.value = 'Name is required.'
+        return
+      }
+      if (!form.value.email.trim() || !isValidEmail(form.value.email)) {
+        error.value = 'A valid email is required.'
         return
       }
 
@@ -316,11 +538,14 @@ export default {
       }
 
       saveProfile(data)
-      router.push('/consult')
+      updateProfile(data)
+      router.push(isEditing.value ? '/consult' : '/')
     }
 
     return {
       isDark,
+      mode,
+      isEditing,
       form,
       allergiesText,
       medicationsText,
@@ -329,6 +554,12 @@ export default {
       emailBlurred,
       isValidEmail,
       handleSave,
+      loginEmail,
+      loginError,
+      savedAccounts,
+      handleLogin,
+      loginWithAccount,
+      navAvatar,
     }
   }
 }

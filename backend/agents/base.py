@@ -33,7 +33,11 @@ class BaseAgent:
 
     def __init__(self, api_key: str, bus: MessageBus, llm_client: LLMClient | None = None):
         # Keep legacy Anthropic client for backward compatibility
-        self.client = AsyncAnthropic(api_key=api_key)
+        # Skip Anthropic init if using Ollama (key="ollama")
+        if api_key and api_key != "ollama":
+            self.client = AsyncAnthropic(api_key=api_key)
+        else:
+            self.client = None
         # Multi-vendor LLM client (used when model is non-Anthropic)
         self.llm_client = llm_client
         self.bus = bus
@@ -232,11 +236,13 @@ class BaseAgent:
 
         tools = self._get_tools()
         tool_call_log: list[dict] = []
+        total_input_tokens = 0
+        total_output_tokens = 0
         max_iterations = 4  # Limit tool-use rounds to prevent agents from looping too long
 
         # Determine whether to use multi-vendor LLMClient or direct Anthropic
         from .llm_client import get_vendor
-        use_llm_client = self.llm_client and get_vendor(self.model) != "anthropic"
+        use_llm_client = self.llm_client and (get_vendor(self.model) != "anthropic" or self.client is None)
 
         for _ in range(max_iterations):
             if use_llm_client:
@@ -260,6 +266,16 @@ class BaseAgent:
                 )
                 assistant_content = response.content
 
+            # Track token usage
+            if not use_llm_client and hasattr(response, "usage"):
+                u = response.usage
+                total_input_tokens += getattr(u, "input_tokens", 0)
+                total_output_tokens += getattr(u, "output_tokens", 0)
+            elif use_llm_client and isinstance(resp, dict) and "usage" in resp:
+                u = resp["usage"]
+                total_input_tokens += u.get("input_tokens", 0)
+                total_output_tokens += u.get("output_tokens", 0)
+
             messages.append({"role": "assistant", "content": assistant_content})
 
             # Check for tool use
@@ -270,6 +286,7 @@ class BaseAgent:
                 return {
                     "text": "\n".join(text_parts),
                     "tool_calls": tool_call_log,
+                    "token_usage": {"input_tokens": total_input_tokens, "output_tokens": total_output_tokens},
                 }
 
             # Process each tool call
@@ -294,4 +311,5 @@ class BaseAgent:
         return {
             "text": "Agent reached maximum iterations without a final answer.",
             "tool_calls": tool_call_log,
+            "token_usage": {"input_tokens": total_input_tokens, "output_tokens": total_output_tokens},
         }

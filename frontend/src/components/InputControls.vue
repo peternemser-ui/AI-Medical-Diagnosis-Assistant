@@ -177,7 +177,7 @@
               :disabled="disabled"
               :placeholder="placeholderText"
               aria-label="Message input"
-              class="w-full rounded-xl px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 border focus:border-transparent transition-all duration-200 input-gradient-focus"
+              class="w-full rounded-xl px-4 py-3.5 text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 border focus:border-transparent transition-all duration-200 input-gradient-focus"
               :class="isDark ? 'bg-slate-800 text-white border-slate-700/50 placeholder-slate-500' : 'bg-gray-100 text-gray-900 border-gray-300 placeholder-gray-400'"
               :style="{ height: textareaHeight + 'px' }"
               rows="1"

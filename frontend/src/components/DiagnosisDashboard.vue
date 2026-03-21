@@ -61,7 +61,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         <!-- Confidence Chart (2/3) -->
-        <div class="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-xl overflow-hidden">
+        <div class="lg:col-span-2 rounded-xl overflow-hidden border transition-colors" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'">
           <div class="px-5 py-3 border-b flex items-center gap-2" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
             <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
             <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Differential Diagnoses Confidence</h2>
@@ -90,9 +90,18 @@
               </div>
               <span class="text-slate-500 w-12 text-right tabular-nums">{{ agent.timeStr }}</span>
             </div>
-            <div class="border-t pt-2 mt-3 flex items-center justify-between text-xs" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
-              <span class="font-semibold" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Total Pipeline</span>
-              <span class="font-bold tabular-nums" :class="isDark ? 'text-white' : 'text-slate-900'">{{ formatTime(totalPipelineTime) }}</span>
+            <div class="border-t pt-2 mt-3 space-y-1.5" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-semibold" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Total Pipeline</span>
+                <span class="font-bold tabular-nums" :class="isDark ? 'text-white' : 'text-slate-900'">{{ formatTime(totalPipelineTime) }}</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-semibold" :class="isDark ? 'text-slate-400' : 'text-slate-500'">AI Cost</span>
+                <span class="font-bold tabular-nums" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'">${{ estimatedCost }}</span>
+              </div>
+              <div v-if="tokenUsage.total_tokens > 0" class="flex items-center justify-between text-[10px]" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+                <span>{{ tokenUsage.total_input_tokens?.toLocaleString() }} in / {{ tokenUsage.total_output_tokens?.toLocaleString() }} out tokens</span>
+              </div>
             </div>
           </div>
         </div>
@@ -156,7 +165,8 @@
               <div
                 v-for="system in bodySystems"
                 :key="system.name"
-                class="flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all"
+                :title="system.full || system.name"
+                class="flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all cursor-default"
                 :class="system.active
                   ? (isDark ? 'bg-blue-500/10 border-blue-500/30 text-blue-300' : 'bg-blue-50 border-blue-300 text-blue-600')
                   : (isDark ? 'bg-slate-800/30 border-slate-700/30 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-400')"
@@ -188,7 +198,8 @@
                 <input
                   type="checkbox"
                   v-model="actionChecked[i]"
-                  class="mt-0.5 rounded border-slate-600 bg-slate-700 text-amber-500 focus:ring-amber-500/50 focus:ring-offset-0"
+                  class="mt-0.5 rounded focus:ring-amber-500/50 focus:ring-offset-0"
+                  :class="isDark ? 'border-slate-600 bg-slate-700 text-amber-500' : 'border-slate-300 bg-white text-amber-600'"
                 />
                 <span class="text-xs leading-relaxed" :class="actionChecked[i] ? 'line-through text-slate-400' : (isDark ? 'text-slate-300 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-900')">{{ item }}</span>
               </label>
@@ -337,7 +348,82 @@
               {{ spec }}
             </a>
           </div>
-          <p class="text-[10px] mt-3" :class="isDark ? 'text-slate-600' : 'text-slate-400'">Enter a zip code or city to find specialists in a specific area. Always verify credentials and check with your insurance provider.</p>
+
+          <!-- Doctor Listings -->
+          <div class="mt-4">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-xs font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-300' : 'text-slate-700'">
+                <span class="inline-flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  Providers Near You
+                </span>
+              </h3>
+              <span v-if="doctorResults.length > 0" class="text-[10px] tabular-nums" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ doctorResults.length }} found</span>
+            </div>
+
+            <!-- Loading -->
+            <div v-if="doctorsLoading" class="flex items-center justify-center py-8 gap-2">
+              <svg class="w-4 h-4 animate-spin text-blue-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              <span class="text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Searching NPI Registry...</span>
+            </div>
+
+            <!-- Results grid -->
+            <div v-else-if="doctorResults.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              <div v-for="doc in doctorResults" :key="doc.npi"
+                class="p-3.5 rounded-xl border transition-all group"
+                :class="isDark ? 'bg-slate-700/30 border-slate-600/30 hover:border-blue-500/30 hover:bg-slate-700/50' : 'bg-slate-50 border-slate-200 hover:border-blue-300 hover:bg-blue-50/30'">
+                <div class="flex items-start gap-3">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold"
+                    :class="isDark ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-100 text-blue-600'">
+                    {{ doc.name.split(' ').filter(w => w.length > 1 && w[0] === w[0].toUpperCase()).map(w => w[0]).slice(0, 2).join('') || '?' }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-semibold truncate" :class="isDark ? 'text-white' : 'text-slate-900'">{{ doc.name }}</div>
+                    <div class="text-[11px] mt-0.5" :class="isDark ? 'text-blue-400' : 'text-blue-600'">{{ doc.specialty }}</div>
+                    <div class="text-[11px] mt-1 whitespace-pre-line leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ doc.address }}</div>
+                    <div v-if="doc.phone" class="flex items-center gap-1 mt-1.5">
+                      <svg class="w-3 h-3" :class="isDark ? 'text-slate-500' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                      <a :href="'tel:' + doc.phone" class="text-[11px] hover:underline" :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ formatPhone(doc.phone) }}</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 mt-3 pt-2.5 border-t" :class="isDark ? 'border-slate-600/20' : 'border-slate-200'">
+                  <a :href="'https://www.google.com/maps/search/' + encodeURIComponent(doc.name + ' ' + doc.address.replace(/\\n/g, ' '))"
+                    target="_blank" rel="noopener"
+                    class="text-[10px] px-2 py-1 rounded-md transition-colors inline-flex items-center gap-1"
+                    :class="isDark ? 'bg-slate-600/30 text-slate-300 hover:bg-slate-600/50' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    Map
+                  </a>
+                  <a v-if="doc.phone" :href="'tel:' + doc.phone"
+                    class="text-[10px] px-2 py-1 rounded-md transition-colors inline-flex items-center gap-1"
+                    :class="isDark ? 'bg-blue-500/15 text-blue-300 hover:bg-blue-500/25' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                    Call
+                  </a>
+                  <a :href="'https://npiregistry.cms.hhs.gov/provider-view/' + doc.npi"
+                    target="_blank" rel="noopener"
+                    class="text-[10px] px-2 py-1 rounded-md transition-colors inline-flex items-center gap-1 ml-auto"
+                    :class="isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'">
+                    NPI: {{ doc.npi }}
+                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- No results -->
+            <div v-else-if="doctorsSearched" class="text-center py-6 text-sm" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+              No providers found. Try a different zip code or specialty.
+            </div>
+
+            <!-- Not searched yet -->
+            <div v-else class="text-center py-6 text-sm" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+              Enter a zip code and click Search to find providers.
+            </div>
+          </div>
+
+          <p class="text-[10px] mt-3" :class="isDark ? 'text-slate-600' : 'text-slate-400'">Provider data from the NPI National Registry (CMS.gov). Always verify credentials and check with your insurance provider.</p>
         </div>
       </div>
 
@@ -383,6 +469,7 @@ import {
 import DiagnosisCard from './DiagnosisCard.vue'
 import ThemeLangControls from './ThemeLangControls.vue'
 import { useTheme } from '@/composables/useTheme.js'
+import { getProfile } from '@/services/userService.js'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
@@ -395,6 +482,13 @@ const isExporting = ref(false)
 
 onMounted(() => {
   loadData()
+  // Pre-fill specialist search location from profile
+  const profile = getProfile()
+  if (profile.zipCode) {
+    searchZip.value = profile.zipCode
+  } else if (profile.city) {
+    searchZip.value = profile.city + (profile.stateRegion ? ', ' + profile.stateRegion : '')
+  }
 })
 
 function loadData() {
@@ -543,6 +637,21 @@ function getSampleData() {
       'Include probiotic-rich foods: yogurt, kefir, sauerkraut, kimchi',
       'Stay hydrated with water between meals (not during) to aid digestion',
     ],
+    token_usage: {
+      per_agent: {
+        triage: { input_tokens: 1250, output_tokens: 580 },
+        diagnostician: { input_tokens: 4800, output_tokens: 2100 },
+        research: { input_tokens: 3900, output_tokens: 1800 },
+        specialist: { input_tokens: 5200, output_tokens: 2400 },
+        treatment: { input_tokens: 6100, output_tokens: 2800 },
+        safety: { input_tokens: 5500, output_tokens: 1900 },
+        empathy: { input_tokens: 4300, output_tokens: 2200 },
+      },
+      total_input_tokens: 31050,
+      total_output_tokens: 13780,
+      total_tokens: 44830,
+    },
+    estimated_cost: 0.30,
   }
 }
 
@@ -583,11 +692,111 @@ const urgencyBadgeClass = computed(() => {
 
 const recommendedTests = computed(() => diagnosisData.value?.recommended_tests || diagnosisData.value?.recommendedTests || [])
 const redFlags = computed(() => diagnosisData.value?.red_flags || diagnosisData.value?.redFlags || [])
-const actionChecklist = computed(() => diagnosisData.value?.action_checklist || diagnosisData.value?.actionChecklist || [])
+const actionChecklist = computed(() => {
+  const d = diagnosisData.value
+  if (!d) return []
+  // Try top-level keys first
+  const direct = d.action_checklist || d.actionChecklist || []
+  if (direct.length > 0) return direct
+  // Fallback: extract from agent_details.empathy
+  const empathy = d.agent_details?.empathy || {}
+  const fromEmpathy = empathy.action_checklist || empathy.actions || empathy.next_steps || empathy.recommendations || []
+  if (fromEmpathy.length > 0) return fromEmpathy
+  // Fallback: extract from treatment agent
+  const treatment = d.agent_details?.treatment || {}
+  const fromTreatment = treatment.action_items || treatment.action_checklist || treatment.next_steps || []
+  if (fromTreatment.length > 0) return fromTreatment
+  // Fallback: build from recommended tests + red flags
+  const items = []
+  const tests = d.recommended_tests || d.recommendedTests || []
+  if (tests.length > 0) items.push('Schedule recommended diagnostic tests (see Recommended Tests section)')
+  const flags = d.red_flags || d.redFlags || []
+  flags.forEach(f => items.push('Monitor: ' + f))
+  const meds = _extractMedications(d)
+  meds.forEach(m => {
+    const name = typeof m === 'string' ? m : m.name
+    if (name) items.push('Discuss with physician: ' + name)
+  })
+  if (items.length > 0) {
+    items.push('Schedule follow-up appointment with your physician')
+    return items
+  }
+  return []
+})
 const safetyWarnings = computed(() => diagnosisData.value?.safety_warnings || diagnosisData.value?.safetyWarnings || [])
-const medications = computed(() => diagnosisData.value?.medications || [])
-const lifestyleRecs = computed(() => diagnosisData.value?.lifestyle_recommendations || diagnosisData.value?.lifestyleRecommendations || [])
-const dietaryRecs = computed(() => diagnosisData.value?.dietary_recommendations || [])
+
+function _extractMedications(d) {
+  if (!d) return []
+  // Top-level
+  const direct = d.medications || []
+  if (direct.length > 0) return direct
+  // From agent_details.treatment
+  const treatment = d.agent_details?.treatment || {}
+  if (treatment.medications?.length > 0) return treatment.medications
+  // From nested treatment_plans
+  const plans = treatment.treatment_plans || treatment.treatmentPlans || []
+  if (Array.isArray(plans)) {
+    for (const plan of plans) {
+      if (plan.medications?.length > 0) return plan.medications
+      if (plan.pharmacological?.length > 0) return plan.pharmacological
+    }
+  }
+  // From stepped care
+  const stepped = treatment.stepped_care || treatment.steppedCare || {}
+  const firstLine = stepped.first_line || stepped.firstLine || {}
+  if (firstLine.medications?.length > 0) return firstLine.medications
+  return []
+}
+
+function _extractLifestyle(d) {
+  if (!d) return []
+  const direct = d.lifestyle_recommendations || d.lifestyleRecommendations || []
+  if (direct.length > 0) return direct
+  const treatment = d.agent_details?.treatment || {}
+  if (treatment.lifestyle_recommendations?.length > 0) return treatment.lifestyle_recommendations
+  if (treatment.lifestyle?.length > 0) return treatment.lifestyle
+  // From nested treatment_plans
+  const plans = treatment.treatment_plans || treatment.treatmentPlans || []
+  if (Array.isArray(plans)) {
+    for (const plan of plans) {
+      if (plan.lifestyle_recommendations?.length > 0) return plan.lifestyle_recommendations
+      if (plan.lifestyle?.length > 0) return plan.lifestyle
+      if (plan.conservative?.length > 0) return plan.conservative
+    }
+  }
+  return []
+}
+
+const medications = computed(() => _extractMedications(diagnosisData.value))
+const lifestyleRecs = computed(() => _extractLifestyle(diagnosisData.value))
+const dietaryRecs = computed(() => {
+  const d = diagnosisData.value
+  if (!d) return []
+  const direct = d.dietary_recommendations || []
+  if (direct.length > 0) return direct
+  // Try treatment agent
+  const treatment = d.agent_details?.treatment || {}
+  return treatment.dietary_recommendations || treatment.diet || []
+})
+
+const tokenUsage = computed(() => diagnosisData.value?.token_usage || { total_input_tokens: 0, total_output_tokens: 0, total_tokens: 0 })
+
+const estimatedCost = computed(() => {
+  const d = diagnosisData.value
+  if (!d) return '0.00'
+  // Use backend-calculated cost if available
+  if (d.estimated_cost != null && d.estimated_cost > 0) return d.estimated_cost.toFixed(2)
+  // Fallback: estimate from token usage
+  const usage = d.token_usage
+  if (usage && usage.total_tokens > 0) {
+    const inputCost = (usage.total_input_tokens / 1_000_000) * 3.00
+    const outputCost = (usage.total_output_tokens / 1_000_000) * 15.00
+    return (inputCost + outputCost).toFixed(2)
+  }
+  // Fallback: rough estimate from pipeline time
+  if (d.total_time) return (d.total_time * 0.002).toFixed(2)
+  return '0.00'
+})
 
 const defaultDietaryTips = [
   { icon: '💧', text: 'Stay well hydrated — aim for 8+ glasses of water daily to support healing' },
@@ -611,11 +820,41 @@ const uniqueSpecialties = computed(() => {
 const searchZip = ref('')
 const selectedSpecForMap = ref('')
 const mapSearchQuery = ref('')
+const doctorResults = ref([])
+const doctorsLoading = ref(false)
+const doctorsSearched = ref(false)
 
 function updateMapSearch() {
   const spec = selectedSpecForMap.value || uniqueSpecialties.value[0] || 'doctor'
   const location = searchZip.value.trim() || 'near me'
   mapSearchQuery.value = spec + ' ' + location
+  fetchDoctors()
+}
+
+async function fetchDoctors() {
+  const zip = searchZip.value.trim()
+  const spec = selectedSpecForMap.value || uniqueSpecialties.value[0] || 'Primary Care'
+  if (!zip) return
+  doctorsLoading.value = true
+  doctorsSearched.value = true
+  try {
+    const params = new URLSearchParams({ specialty: spec, location: zip, limit: '12' })
+    const resp = await fetch('http://localhost:8000/api/find-doctors?' + params)
+    const data = await resp.json()
+    doctorResults.value = data.results || []
+  } catch (e) {
+    console.error('Doctor search failed:', e)
+    doctorResults.value = []
+  } finally {
+    doctorsLoading.value = false
+  }
+}
+
+function formatPhone(phone) {
+  if (!phone) return ''
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length === 10) return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`
+  return phone
 }
 
 const mapSrc = computed(() => {
@@ -700,15 +939,18 @@ function formatTime(seconds) {
 const chartData = computed(() => {
   const labels = causes.value.map(c => c.cause || c.condition || 'Unknown')
   const values = causes.value.map(c => c.value || c.confidence || 0)
+  const dark = isDark.value
   const colors = values.map(v => {
-    if (v >= 70) return 'rgba(16, 185, 129, 0.8)'
-    if (v >= 40) return 'rgba(245, 158, 11, 0.8)'
-    return 'rgba(100, 116, 139, 0.8)'
+    if (v >= 70) return dark ? 'rgba(16, 185, 129, 0.8)' : 'rgba(5, 150, 105, 0.85)'
+    if (v >= 40) return dark ? 'rgba(245, 158, 11, 0.8)' : 'rgba(217, 119, 6, 0.85)'
+    if (v >= 15) return dark ? 'rgba(100, 116, 139, 0.8)' : 'rgba(59, 130, 246, 0.7)'
+    return dark ? 'rgba(100, 116, 139, 0.8)' : 'rgba(148, 163, 184, 0.7)'
   })
   const borderColors = values.map(v => {
-    if (v >= 70) return 'rgba(16, 185, 129, 1)'
-    if (v >= 40) return 'rgba(245, 158, 11, 1)'
-    return 'rgba(100, 116, 139, 1)'
+    if (v >= 70) return dark ? 'rgba(16, 185, 129, 1)' : 'rgba(5, 150, 105, 1)'
+    if (v >= 40) return dark ? 'rgba(245, 158, 11, 1)' : 'rgba(217, 119, 6, 1)'
+    if (v >= 15) return dark ? 'rgba(100, 116, 139, 1)' : 'rgba(59, 130, 246, 1)'
+    return dark ? 'rgba(100, 116, 139, 1)' : 'rgba(148, 163, 184, 1)'
   })
 
   return {
@@ -718,7 +960,7 @@ const chartData = computed(() => {
       data: values,
       backgroundColor: colors,
       borderColor: borderColors,
-      borderWidth: 1,
+      borderWidth: dark ? 1 : 2,
       borderRadius: 6,
       barThickness: 28
     }]
@@ -748,14 +990,14 @@ const chartOptions = computed(() => ({
     x: {
       min: 0,
       max: 100,
-      grid: { color: isDark.value ? 'rgba(51, 65, 85, 0.3)' : 'rgba(203, 213, 225, 0.5)' },
-      ticks: { color: isDark.value ? '#94a3b8' : '#64748b', callback: (v) => v + '%' }
+      grid: { color: isDark.value ? 'rgba(51, 65, 85, 0.3)' : 'rgba(148, 163, 184, 0.4)' },
+      ticks: { color: isDark.value ? '#94a3b8' : '#475569', font: { weight: isDark.value ? 'normal' : '500' }, callback: (v) => v + '%' }
     },
     y: {
       grid: { display: false },
       ticks: {
-        color: isDark.value ? '#cbd5e1' : '#334155',
-        font: { size: 11 },
+        color: isDark.value ? '#cbd5e1' : '#1e293b',
+        font: { size: 11, weight: isDark.value ? 'normal' : '600' },
         callback: function(value) {
           const label = this.getLabelForValue(value)
           return label.length > 30 ? label.substring(0, 28) + '...' : label
@@ -774,15 +1016,15 @@ const allBodySystems = [
   { name: 'Heart', icon: '\u2764\uFE0F', keywords: ['heart', 'cardiac', 'cardio', 'chest pain', 'palpitation', 'cardiovascular'] },
   { name: 'Brain', icon: '\uD83E\uDDE0', keywords: ['brain', 'neuro', 'headache', 'migraine', 'dizzy', 'cognitive', 'mental'] },
   { name: 'Lungs', icon: '\uD83E\uDEC1', keywords: ['lung', 'respiratory', 'breath', 'cough', 'pulmonary', 'asthma'] },
-  { name: 'GI Tract', icon: '\uD83E\uDE79', keywords: ['stomach', 'digest', 'gastro', 'bowel', 'abdominal', 'nausea', 'gi'] },
-  { name: 'MSK', icon: '\uD83E\uDDB4', keywords: ['muscle', 'joint', 'bone', 'musculoskeletal', 'back', 'arthritis', 'pain'] },
+  { name: 'Digestive', icon: '\uD83E\uDE79', full: 'Gastrointestinal Tract', keywords: ['stomach', 'digest', 'gastro', 'bowel', 'abdominal', 'nausea', 'gi'] },
+  { name: 'Muscles & Joints', icon: '\uD83E\uDDB4', full: 'Musculoskeletal System', keywords: ['muscle', 'joint', 'bone', 'musculoskeletal', 'back', 'arthritis', 'pain'] },
   { name: 'Skin', icon: '\uD83E\uDE7A', keywords: ['skin', 'dermat', 'rash', 'itch', 'eczema', 'psoriasis'] },
   { name: 'Kidneys', icon: '\uD83E\uDEC0', keywords: ['kidney', 'renal', 'urinary', 'bladder'] },
   { name: 'Liver', icon: '\uD83E\uDEDB', keywords: ['liver', 'hepat', 'biliary', 'gallbladder'] },
   { name: 'Endocrine', icon: '\uD83E\uDDEA', keywords: ['thyroid', 'diabetes', 'hormone', 'endocrine', 'adrenal'] },
   { name: 'Immune', icon: '\uD83D\uDEE1\uFE0F', keywords: ['immune', 'autoimmune', 'allergy', 'infection', 'virus', 'bacteria', 'fungal'] },
   { name: 'Eyes', icon: '\uD83D\uDC41\uFE0F', keywords: ['eye', 'vision', 'ophthalm', 'retina'] },
-  { name: 'ENT', icon: '\uD83D\uDC42', keywords: ['ear', 'nose', 'throat', 'sinus', 'tonsil'] },
+  { name: 'Ear, Nose & Throat', icon: '\uD83D\uDC42', full: 'ENT / Otolaryngology', keywords: ['ear', 'nose', 'throat', 'sinus', 'tonsil'] },
 ]
 
 const bodySystems = computed(() => {

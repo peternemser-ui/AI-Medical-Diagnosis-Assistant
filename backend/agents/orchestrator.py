@@ -156,6 +156,7 @@ class OrchestratorAgent:
             agent_results["triage"] = self._extract_agent_data(triage_result)
             agent_results["triage_raw"] = triage_result["text"]
             agent_results["triage_tool_calls"] = triage_result["tool_calls"]
+            agent_results["_token_triage"] = triage_result.get("token_usage", {})
         except Exception as e:
             logger.error("Triage agent failed: %s", e)
             agent_results["triage"] = {"urgency_level": "routine", "red_flags": [], "error": str(e)}
@@ -193,6 +194,7 @@ class OrchestratorAgent:
             agent_results["diagnosis"] = self._extract_agent_data(diag_result)
             agent_results["diagnosis_raw"] = diag_result["text"]
             agent_results["diagnosis_tool_calls"] = diag_result["tool_calls"]
+            agent_results["_token_diagnostician"] = diag_result.get("token_usage", {})
 
         # Process research result
         if isinstance(research_result, Exception):
@@ -202,6 +204,7 @@ class OrchestratorAgent:
             agent_results["research"] = self._extract_agent_data(research_result)
             agent_results["research_raw"] = research_result["text"]
             agent_results["research_tool_calls"] = research_result["tool_calls"]
+            agent_results["_token_research"] = research_result.get("token_usage", {})
 
         agent_timings["diagnostician_and_research"] = round(time.time() - t0, 2)
 
@@ -234,6 +237,7 @@ class OrchestratorAgent:
             agent_results["specialist"] = self._extract_agent_data(spec_result)
             agent_results["specialist_raw"] = spec_result["text"]
             agent_results["specialist_tool_calls"] = spec_result["tool_calls"]
+            agent_results["_token_specialist"] = spec_result.get("token_usage", {})
         except Exception as e:
             logger.error("Specialist agent failed: %s", e)
             agent_results["specialist"] = {"specialist_assessment": "Not available", "error": str(e)}
@@ -258,6 +262,7 @@ class OrchestratorAgent:
             agent_results["treatment"] = self._extract_agent_data(treat_result)
             agent_results["treatment_raw"] = treat_result["text"]
             agent_results["treatment_tool_calls"] = treat_result["tool_calls"]
+            agent_results["_token_treatment"] = treat_result.get("token_usage", {})
         except Exception as e:
             logger.error("Treatment agent failed: %s", e)
             agent_results["treatment"] = {"treatment_plans": [], "error": str(e)}
@@ -284,6 +289,7 @@ class OrchestratorAgent:
             agent_results["safety"] = self._extract_agent_data(safety_result)
             agent_results["safety_raw"] = safety_result["text"]
             agent_results["safety_tool_calls"] = safety_result["tool_calls"]
+            agent_results["_token_safety"] = safety_result.get("token_usage", {})
         except Exception as e:
             logger.error("Safety agent failed: %s", e)
             agent_results["safety"] = {"safety_status": "UNKNOWN", "error": str(e)}
@@ -312,6 +318,7 @@ class OrchestratorAgent:
             agent_results["empathy"] = self._extract_agent_data(empathy_result)
             agent_results["empathy_raw"] = empathy_result["text"]
             agent_results["empathy_tool_calls"] = empathy_result["tool_calls"]
+            agent_results["_token_empathy"] = empathy_result.get("token_usage", {})
         except Exception as e:
             logger.error("Empathy agent failed: %s", e)
             agent_results["empathy"] = {"patient_summary": "Summary not available.", "error": str(e)}
@@ -320,9 +327,136 @@ class OrchestratorAgent:
         total_time = round(time.time() - start, 2)
 
         # ── Synthesize final response ───────────────────────────────
-        return self._synthesize(agent_results, agent_timings, total_time, symptoms, age, gender)
+        result = self._synthesize(agent_results, agent_timings, total_time, symptoms, age, gender)
+
+        # ── Collect token usage from all raw results ──────────────
+        token_usage = self._collect_token_usage(agent_results)
+        result["token_usage"] = token_usage
+        result["estimated_cost"] = self._calculate_cost(token_usage)
+
+        return result
 
     # ------------------------------------------------------------------
+    # Token usage & cost calculation
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _collect_token_usage(agent_results: dict) -> dict:
+        """Collect token usage from all agents into a summary."""
+        agents = ["triage", "diagnostician", "research", "specialist", "treatment", "safety", "empathy"]
+        per_agent = {}
+        total_input = 0
+        total_output = 0
+
+        for agent_name in agents:
+            usage = agent_results.get(f"_token_{agent_name}", {})
+            inp = usage.get("input_tokens", 0)
+            out = usage.get("output_tokens", 0)
+            per_agent[agent_name] = {"input_tokens": inp, "output_tokens": out}
+            total_input += inp
+            total_output += out
+
+        return {
+            "per_agent": per_agent,
+            "total_input_tokens": total_input,
+            "total_output_tokens": total_output,
+            "total_tokens": total_input + total_output,
+        }
+
+    @staticmethod
+    def _calculate_cost(token_usage: dict) -> float:
+        """Calculate estimated cost based on Claude Sonnet pricing.
+
+        Claude Sonnet 4 pricing (as of 2025):
+          Input:  $3.00 per 1M tokens
+          Output: $15.00 per 1M tokens
+        """
+        input_tokens = token_usage.get("total_input_tokens", 0)
+        output_tokens = token_usage.get("total_output_tokens", 0)
+
+        input_cost = (input_tokens / 1_000_000) * 3.00
+        output_cost = (output_tokens / 1_000_000) * 15.00
+
+        return round(input_cost + output_cost, 4)
+
+    # ------------------------------------------------------------------
+    # Deep extraction helpers for treatment data
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _extract_medications(treatment: dict) -> list:
+        """Extract medications from treatment agent output, handling nested structures."""
+        # Direct top-level
+        meds = treatment.get("medications", [])
+        if isinstance(meds, list) and len(meds) > 0:
+            return meds
+
+        # Nested under treatment_plans
+        for key in ("treatment_plans", "treatment_algorithm", "stepped_care"):
+            plans = treatment.get(key, {})
+            if isinstance(plans, list):
+                for plan in plans:
+                    if isinstance(plan, dict):
+                        m = plan.get("medications", [])
+                        if isinstance(m, list) and len(m) > 0:
+                            return m
+                        # Check pharmacological sub-key
+                        m = plan.get("pharmacological", plan.get("first_line", []))
+                        if isinstance(m, list) and len(m) > 0:
+                            return m
+            elif isinstance(plans, dict):
+                # stepped_care -> first_line -> medications
+                for step_key in ("first_line", "second_line", "pharmacological"):
+                    step = plans.get(step_key, {})
+                    if isinstance(step, dict):
+                        m = step.get("medications", [])
+                        if isinstance(m, list) and len(m) > 0:
+                            return m
+                    elif isinstance(step, list) and len(step) > 0:
+                        return step
+
+        # Nested under immediate_actions
+        immediate = treatment.get("immediate_actions", [])
+        if isinstance(immediate, list):
+            med_items = [a for a in immediate if isinstance(a, dict) and a.get("name")]
+            if med_items:
+                return med_items
+
+        return []
+
+    @staticmethod
+    def _extract_lifestyle(treatment: dict) -> list:
+        """Extract lifestyle recommendations from treatment agent output."""
+        for key in ("lifestyle_recommendations", "lifestyle", "conservative_measures"):
+            recs = treatment.get(key, [])
+            if isinstance(recs, list) and len(recs) > 0:
+                return recs
+
+        # Nested under treatment_plans
+        for key in ("treatment_plans", "treatment_algorithm"):
+            plans = treatment.get(key, {})
+            if isinstance(plans, list):
+                for plan in plans:
+                    if isinstance(plan, dict):
+                        for rkey in ("lifestyle_recommendations", "lifestyle", "conservative", "conservative_measures"):
+                            r = plan.get(rkey, [])
+                            if isinstance(r, list) and len(r) > 0:
+                                return r
+            elif isinstance(plans, dict):
+                conservative = plans.get("conservative", plans.get("conservative_measures", []))
+                if isinstance(conservative, list) and len(conservative) > 0:
+                    return conservative
+
+        # Fallback: care_plan lifestyle section
+        care = treatment.get("care_plan", {})
+        if isinstance(care, dict):
+            for rkey in ("lifestyle", "lifestyle_modifications", "recommendations"):
+                r = care.get(rkey, [])
+                if isinstance(r, list) and len(r) > 0:
+                    return r
+
+        return []
+
     # Streaming diagnosis (SSE support)
     # ------------------------------------------------------------------
 
@@ -455,6 +589,7 @@ class OrchestratorAgent:
             agent_results["triage"] = self._extract_agent_data(triage_result)
             agent_results["triage_raw"] = triage_result["text"]
             agent_results["triage_tool_calls"] = triage_result["tool_calls"]
+            agent_results["_token_triage"] = triage_result.get("token_usage", {})
         except Exception as e:
             logger.error("Triage agent failed: %s", e)
             agent_results["triage"] = {"urgency_level": "routine", "red_flags": [], "error": str(e)}
@@ -503,6 +638,7 @@ class OrchestratorAgent:
             agent_results["diagnosis"] = self._extract_agent_data(diag_result)
             agent_results["diagnosis_raw"] = diag_result["text"]
             agent_results["diagnosis_tool_calls"] = diag_result["tool_calls"]
+            agent_results["_token_diagnostician"] = diag_result.get("token_usage", {})
 
         # Process research result
         if isinstance(research_result, Exception):
@@ -512,6 +648,7 @@ class OrchestratorAgent:
             agent_results["research"] = self._extract_agent_data(research_result)
             agent_results["research_raw"] = research_result["text"]
             agent_results["research_tool_calls"] = research_result["tool_calls"]
+            agent_results["_token_research"] = research_result.get("token_usage", {})
 
         agent_timings["diagnostician"] = parallel_elapsed
         agent_timings["research"] = parallel_elapsed
@@ -559,6 +696,7 @@ class OrchestratorAgent:
             agent_results["specialist"] = self._extract_agent_data(spec_result)
             agent_results["specialist_raw"] = spec_result["text"]
             agent_results["specialist_tool_calls"] = spec_result["tool_calls"]
+            agent_results["_token_specialist"] = spec_result.get("token_usage", {})
         except Exception as e:
             logger.error("Specialist agent failed: %s", e)
             agent_results["specialist"] = {"specialist_assessment": "Not available", "error": str(e)}
@@ -592,6 +730,7 @@ class OrchestratorAgent:
             agent_results["treatment"] = self._extract_agent_data(treat_result)
             agent_results["treatment_raw"] = treat_result["text"]
             agent_results["treatment_tool_calls"] = treat_result["tool_calls"]
+            agent_results["_token_treatment"] = treat_result.get("token_usage", {})
         except Exception as e:
             logger.error("Treatment agent failed: %s", e)
             agent_results["treatment"] = {"treatment_plans": [], "error": str(e)}
@@ -627,6 +766,7 @@ class OrchestratorAgent:
             agent_results["safety"] = self._extract_agent_data(safety_result)
             agent_results["safety_raw"] = safety_result["text"]
             agent_results["safety_tool_calls"] = safety_result["tool_calls"]
+            agent_results["_token_safety"] = safety_result.get("token_usage", {})
         except Exception as e:
             logger.error("Safety agent failed: %s", e)
             agent_results["safety"] = {"safety_status": "UNKNOWN", "error": str(e)}
@@ -664,6 +804,7 @@ class OrchestratorAgent:
             agent_results["empathy"] = self._extract_agent_data(empathy_result)
             agent_results["empathy_raw"] = empathy_result["text"]
             agent_results["empathy_tool_calls"] = empathy_result["tool_calls"]
+            agent_results["_token_empathy"] = empathy_result.get("token_usage", {})
         except Exception as e:
             logger.error("Empathy agent failed: %s", e)
             agent_results["empathy"] = {"patient_summary": "Summary not available.", "error": str(e)}
@@ -683,6 +824,9 @@ class OrchestratorAgent:
         # ── Synthesize final response ───────────────────────────────
         try:
             final_result = self._synthesize(agent_results, agent_timings, total_time, symptoms, age, gender)
+            token_usage = self._collect_token_usage(agent_results)
+            final_result["token_usage"] = token_usage
+            final_result["estimated_cost"] = self._calculate_cost(token_usage)
         except Exception as e:
             logger.error("[stream] Synthesis failed: %s", e, exc_info=True)
             final_result = {
@@ -1001,8 +1145,8 @@ class OrchestratorAgent:
             elif isinstance(w, str):
                 flat_safety.append(w)
 
-        medications = treatment.get("medications", [])
-        lifestyle = treatment.get("lifestyle_recommendations", [])
+        medications = self._extract_medications(treatment)
+        lifestyle = self._extract_lifestyle(treatment)
         warning_signs = treatment.get("warning_signs", [])
         follow_up = treatment.get("follow_up_timeline", "")
 
@@ -1040,7 +1184,6 @@ class OrchestratorAgent:
                 "triage", "diagnostician", "research",
                 "specialist", "treatment", "safety", "empathy",
             ],
-            "estimated_cost": round(total_time * 0.002, 4),
         }
 
     def _build_text_answer(
