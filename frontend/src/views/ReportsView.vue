@@ -50,16 +50,28 @@
             </span>
           </div>
         </div>
-        <button v-if="allSessions.length > 0" @click="exportAllJson"
-          class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium border transition-colors self-start"
-          :class="isDark
-            ? 'border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800'
-            : 'border-slate-300 text-slate-500 hover:text-slate-900 hover:bg-slate-100'">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-          </svg>
-          Export All as JSON
-        </button>
+        <div class="flex items-center gap-2 self-start">
+          <router-link v-if="allSessions.length >= 2" to="/compare"
+            class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium border transition-colors"
+            :class="isDark
+              ? 'border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800'
+              : 'border-slate-300 text-slate-500 hover:text-slate-900 hover:bg-slate-100'">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+            </svg>
+            Compare
+          </router-link>
+          <button v-if="allSessions.length > 0" @click="exportAllJson"
+            class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium border transition-colors"
+            :class="isDark
+              ? 'border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800'
+              : 'border-slate-300 text-slate-500 hover:text-slate-900 hover:bg-slate-100'">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Export All as JSON
+          </button>
+        </div>
       </div>
 
       <!-- Search bar -->

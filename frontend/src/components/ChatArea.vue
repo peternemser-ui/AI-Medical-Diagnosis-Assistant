@@ -8,28 +8,39 @@
     >
       <!-- Welcome screen if no messages -->
       <div v-if="messages.length === 0" class="flex flex-col items-center justify-center py-16 px-4">
-        <!-- Logo -->
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/25 mb-6">
-          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
-          </svg>
+        <!-- Skeleton loading state for welcome screen -->
+        <div v-if="welcomeLoading" class="w-full max-w-2xl space-y-6 animate-fadeIn">
+          <div class="flex flex-col items-center">
+            <SkeletonLoader type="chat-message" />
+          </div>
+          <SkeletonLoader type="card" count="3" />
         </div>
-        <!-- Title -->
-        <h2 class="text-2xl font-bold mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">Medical Diagnosis AI</h2>
-        <p class="text-sm mb-8" :class="isDark ? 'text-slate-400' : 'text-gray-500'">Powered by 7 autonomous agents</p>
-        <!-- Example prompt cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-2xl">
-          <button
-            v-for="prompt in examplePrompts"
-            :key="prompt"
-            @click="$emit('followup-selected', prompt)"
-            class="rounded-xl px-4 py-3 text-left text-sm transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/5 border"
-            :class="isDark ? 'bg-slate-800 hover:bg-slate-700 border-slate-700/50 hover:border-blue-500/40 text-slate-300 hover:text-white' : 'bg-white hover:bg-gray-50 border-gray-200 hover:border-blue-400 text-gray-600 hover:text-gray-900'"
-          >
-            {{ prompt }}
-          </button>
-        </div>
+
+        <!-- Actual welcome content -->
+        <template v-else>
+          <!-- Logo -->
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/25 mb-6">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
+            </svg>
+          </div>
+          <!-- Title -->
+          <h2 class="text-2xl font-bold mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">Medical Diagnosis AI</h2>
+          <p class="text-sm mb-8" :class="isDark ? 'text-slate-400' : 'text-gray-500'">Powered by 7 autonomous agents</p>
+          <!-- Example prompt cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-2xl">
+            <button
+              v-for="prompt in examplePrompts"
+              :key="prompt"
+              @click="$emit('followup-selected', prompt)"
+              class="rounded-xl px-4 py-3 text-left text-sm transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/5 border"
+              :class="isDark ? 'bg-slate-800 hover:bg-slate-700 border-slate-700/50 hover:border-blue-500/40 text-slate-300 hover:text-white' : 'bg-white hover:bg-gray-50 border-gray-200 hover:border-blue-400 text-gray-600 hover:text-gray-900'"
+            >
+              {{ prompt }}
+            </button>
+          </div>
+        </template>
       </div>
 
       <!-- Message list -->
@@ -274,13 +285,21 @@
 </template>
 
 <script setup>
-import { ref, nextTick, watch, createApp, h } from 'vue'
+import { ref, nextTick, watch, createApp, h, onMounted } from 'vue'
 import DiagnosisCard from '@/components/DiagnosisCard.vue'
 import DiagnosisReport from '@/components/DiagnosisReport.vue'
 import SkeletonLoader from '@/components/SkeletonLoader.vue'
 import { useTheme } from '@/composables/useTheme.js'
 
 const { isDark } = useTheme()
+
+// Brief skeleton loading state for welcome screen
+const welcomeLoading = ref(true)
+onMounted(() => {
+  setTimeout(() => {
+    welcomeLoading.value = false
+  }, 600)
+})
 
 const props = defineProps({
   messages: {

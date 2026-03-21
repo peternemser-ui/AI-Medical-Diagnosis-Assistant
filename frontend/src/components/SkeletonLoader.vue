@@ -1,59 +1,71 @@
 <template>
   <div class="skeleton-loader">
-    <!-- Text type: renders lines of varying widths -->
-    <div v-if="type === 'text'" class="space-y-2.5">
-      <div
-        v-for="(w, i) in textLineWidths"
-        :key="i"
-        class="h-3 rounded-lg animate-pulse"
-        :class="skeletonBg"
-        :style="{ width: w }"
-      />
-    </div>
+    <div v-for="n in count" :key="n" :class="n > 1 ? 'mt-4' : ''">
 
-    <!-- Circle type: renders a circular avatar placeholder -->
-    <div
-      v-else-if="type === 'circle'"
-      class="rounded-full animate-pulse"
-      :class="skeletonBg"
-      :style="{ width: resolvedWidth, height: resolvedWidth }"
-    />
-
-    <!-- Card type: header bar + 3 text lines -->
-    <div v-else-if="type === 'card'" class="space-y-3">
-      <div
-        class="h-5 rounded-lg animate-pulse"
-        :class="skeletonBg"
-        style="width: 45%"
-      />
-      <div class="space-y-2.5">
+      <!-- chat-message: circle avatar + 3 lines of varying width -->
+      <div v-if="type === 'chat-message'" class="flex items-start gap-3">
         <div
-          class="h-3 rounded-lg animate-pulse"
-          :class="skeletonBg"
-          style="width: 100%"
+          class="w-9 h-9 rounded-full flex-shrink-0 skeleton-shimmer"
+          :class="shimmerBg"
         />
-        <div
-          class="h-3 rounded-lg animate-pulse"
-          :class="skeletonBg"
-          style="width: 85%"
-        />
-        <div
-          class="h-3 rounded-lg animate-pulse"
-          :class="skeletonBg"
-          style="width: 70%"
-        />
+        <div class="flex-1 space-y-2.5 pt-1">
+          <div class="h-3 rounded-lg skeleton-shimmer" :class="shimmerBg" style="width: 75%" />
+          <div class="h-3 rounded-lg skeleton-shimmer" :class="shimmerBg" style="width: 90%" />
+          <div class="h-3 rounded-lg skeleton-shimmer" :class="shimmerBg" style="width: 55%" />
+        </div>
       </div>
-    </div>
 
-    <!-- Chart type: 5 horizontal bars of varying lengths -->
-    <div v-else-if="type === 'chart'" class="space-y-2">
+      <!-- card: rounded rectangle with title bar + 2 body lines -->
       <div
-        v-for="(w, i) in chartBarWidths"
-        :key="i"
-        class="h-4 rounded-lg animate-pulse"
-        :class="skeletonBg"
-        :style="{ width: w }"
-      />
+        v-else-if="type === 'card'"
+        class="rounded-xl border p-4"
+        :class="isDark ? 'border-slate-700/40 bg-slate-800/30' : 'border-slate-200 bg-white'"
+      >
+        <div class="h-5 rounded-lg skeleton-shimmer mb-3" :class="shimmerBg" style="width: 45%" />
+        <div class="space-y-2.5">
+          <div class="h-3 rounded-lg skeleton-shimmer" :class="shimmerBg" style="width: 100%" />
+          <div class="h-3 rounded-lg skeleton-shimmer" :class="shimmerBg" style="width: 80%" />
+        </div>
+      </div>
+
+      <!-- list: 4-5 rows with icon placeholder + text -->
+      <div v-else-if="type === 'list'" class="space-y-3">
+        <div
+          v-for="(w, i) in listWidths"
+          :key="'list-' + i"
+          class="flex items-center gap-3"
+        >
+          <div
+            class="w-7 h-7 rounded-lg flex-shrink-0 skeleton-shimmer"
+            :class="shimmerBg"
+          />
+          <div class="h-3 rounded-lg skeleton-shimmer flex-1" :class="shimmerBg" :style="{ maxWidth: w }" />
+        </div>
+      </div>
+
+      <!-- report-header: large title + 3 metadata pills + badge -->
+      <div v-else-if="type === 'report-header'" class="space-y-4">
+        <div class="h-7 rounded-lg skeleton-shimmer" :class="shimmerBg" style="width: 55%" />
+        <div class="flex items-center gap-3 flex-wrap">
+          <div
+            v-for="pw in pillWidths"
+            :key="'pill-' + pw"
+            class="h-6 rounded-full skeleton-shimmer"
+            :class="shimmerBg"
+            :style="{ width: pw }"
+          />
+          <div class="h-6 w-16 rounded-md skeleton-shimmer" :class="shimmerBg" />
+        </div>
+      </div>
+
+      <!-- text-block: 4 lines of varying width -->
+      <div v-else-if="type === 'text-block'" class="space-y-2.5">
+        <div class="h-3 rounded-lg skeleton-shimmer" :class="shimmerBg" style="width: 100%" />
+        <div class="h-3 rounded-lg skeleton-shimmer" :class="shimmerBg" style="width: 85%" />
+        <div class="h-3 rounded-lg skeleton-shimmer" :class="shimmerBg" style="width: 92%" />
+        <div class="h-3 rounded-lg skeleton-shimmer" :class="shimmerBg" style="width: 60%" />
+      </div>
+
     </div>
   </div>
 </template>
@@ -64,37 +76,76 @@ import { useTheme } from '@/composables/useTheme.js'
 
 const { isDark } = useTheme()
 
-const props = defineProps({
+defineProps({
   type: {
     type: String,
-    default: 'text',
-    validator: (v) => ['text', 'circle', 'card', 'chart'].includes(v)
+    default: 'text-block',
+    validator: (v) => ['chat-message', 'card', 'list', 'report-header', 'text-block'].includes(v)
   },
-  lines: {
+  count: {
     type: Number,
-    default: 3
-  },
-  width: {
-    type: String,
-    default: 'full'
+    default: 1
   }
 })
 
-const skeletonBg = computed(() =>
-  isDark.value ? 'bg-slate-700/30' : 'bg-slate-200'
+const shimmerBg = computed(() =>
+  isDark.value ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'
 )
 
-const resolvedWidth = computed(() => {
-  if (props.width === 'full') return '100%'
-  return props.width
-})
-
-// Cycle through 100%, 85%, 70% for text lines
-const widthCycle = ['100%', '85%', '70%']
-
-const textLineWidths = computed(() =>
-  Array.from({ length: props.lines }, (_, i) => widthCycle[i % widthCycle.length])
-)
-
-const chartBarWidths = ['90%', '65%', '80%', '50%', '75%']
+const listWidths = ['85%', '70%', '90%', '60%', '75%']
+const pillWidths = ['6rem', '7.5rem', '5.5rem']
 </script>
+
+<style scoped>
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-shimmer-dark {
+  background: rgba(51, 65, 85, 0.35);
+}
+
+.skeleton-shimmer-light {
+  background: rgba(203, 213, 225, 0.6);
+}
+
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  animation: shimmer 1.8s infinite ease-in-out;
+}
+
+.skeleton-shimmer-dark::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(148, 163, 184, 0.08) 40%,
+    rgba(148, 163, 184, 0.14) 50%,
+    rgba(148, 163, 184, 0.08) 60%,
+    transparent 100%
+  );
+}
+
+.skeleton-shimmer-light::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.5) 40%,
+    rgba(255, 255, 255, 0.7) 50%,
+    rgba(255, 255, 255, 0.5) 60%,
+    transparent 100%
+  );
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+</style>

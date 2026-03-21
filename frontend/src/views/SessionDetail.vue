@@ -49,8 +49,46 @@
       <span v-if="topUrgency" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase" :class="urgencyClass">{{ topUrgency }}</span>
     </div>
 
+    <!-- Skeleton loading state -->
+    <div v-if="loading" class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <!-- Report header skeleton -->
+      <SkeletonLoader type="report-header" />
+
+      <!-- Chief complaint skeleton -->
+      <div class="rounded-xl border p-4" :class="isDark ? 'border-slate-700/40 bg-slate-800/40' : 'border-slate-200 bg-slate-50'">
+        <SkeletonLoader type="text-block" />
+      </div>
+
+      <!-- Row 1 skeleton: chart + agent panel -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 rounded-xl border p-5" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200'">
+          <SkeletonLoader type="list" />
+        </div>
+        <div class="rounded-xl border p-4" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200'">
+          <SkeletonLoader type="list" />
+        </div>
+      </div>
+
+      <!-- Row 2 skeleton: diagnosis cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <SkeletonLoader type="card" />
+        <SkeletonLoader type="card" />
+        <SkeletonLoader type="card" />
+      </div>
+
+      <!-- Row 3 skeleton -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="rounded-xl border p-4" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200'">
+          <SkeletonLoader type="list" />
+        </div>
+        <div class="rounded-xl border p-4" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200'">
+          <SkeletonLoader type="text-block" />
+        </div>
+      </div>
+    </div>
+
     <!-- Content -->
-    <div class="max-w-7xl mx-auto px-4 py-6 space-y-6" ref="reportContent">
+    <div v-else class="max-w-7xl mx-auto px-4 py-6 space-y-6" ref="reportContent">
       <!-- Not found -->
       <div v-if="!session" class="flex flex-col items-center text-center py-20 px-4">
         <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-5" :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
@@ -451,11 +489,13 @@ import { getSession } from '@/services/historyService.js'
 import { getProfile } from '@/services/userService.js'
 import ThemeLangControls from '@/components/ThemeLangControls.vue'
 import DiagnosisCard from '@/components/DiagnosisCard.vue'
+import SkeletonLoader from '@/components/SkeletonLoader.vue'
 import { useTheme } from '@/composables/useTheme.js'
 
 const { isDark } = useTheme()
 const route = useRoute()
 const session = ref(null)
+const loading = ref(true)
 const isExporting = ref(false)
 const reportContent = ref(null)
 
@@ -470,6 +510,11 @@ onMounted(() => {
   } else if (profile.city) {
     searchZip.value = profile.city + (profile.stateRegion ? ', ' + profile.stateRegion : '')
   }
+
+  // Show skeleton briefly while rendering, then reveal content
+  setTimeout(() => {
+    loading.value = false
+  }, 500)
 })
 
 const diagnosisData = computed(() => session.value?.diagnosisResult || {})

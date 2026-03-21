@@ -162,8 +162,8 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </button>
-        <router-link
-          to="/dashboard"
+        <button
+          @click="viewSampleReport"
           class="font-medium text-sm px-6 py-3.5 rounded-xl border backdrop-blur-sm transition-all duration-200 flex items-center gap-2"
           :class="isDark
             ? 'text-slate-400 hover:text-white border-slate-700/50 hover:border-slate-600 bg-slate-900/30 hover:bg-slate-800/50'
@@ -173,7 +173,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
           </svg>
           {{ t('hero.reportBtn') }}
-        </router-link>
+        </button>
       </div>
     </div>
 
@@ -749,6 +749,135 @@ const features = [
 function startConsultation() {
   const hasKey = localStorage.getItem('api_key_configured')
   router.push(hasKey ? '/consult' : '/setup')
+}
+
+function viewSampleReport() {
+  const sampleData = {
+    age: 42,
+    gender: 'female',
+    date: new Date().toISOString(),
+    causes: [
+      {
+        cause: 'Gastroesophageal Reflux Disease (GERD)',
+        value: 78,
+        urgency: 'soon',
+        specialty: 'Gastroenterology',
+        explanation: 'Recurrent substernal burning pain worsening after meals and when lying down, with acid regurgitation. Duration of 3 weeks and response pattern consistent with acid-mediated injury. GERD accounts for ~60% of non-cardiac chest pain presentations in this demographic.'
+      },
+      {
+        cause: 'Costochondritis',
+        value: 52,
+        urgency: 'routine',
+        specialty: 'Rheumatology',
+        explanation: 'Reproducible chest wall tenderness on palpation, worsened by deep breathing and certain movements. Common musculoskeletal cause of chest pain in younger patients. Tietze syndrome variant possible given localized swelling reported.'
+      },
+      {
+        cause: 'Anxiety Disorder with Somatic Symptoms',
+        value: 41,
+        urgency: 'routine',
+        specialty: 'Psychiatry',
+        explanation: 'Patient reports recent work-related stress, sleep disturbance, and episodes of chest tightness with palpitations not correlated with exertion. PHQ-9 screening suggests moderate anxiety. Somatic symptom disorder should be considered after organic causes are excluded.'
+      },
+      {
+        cause: 'Peptic Ulcer Disease',
+        value: 28,
+        urgency: 'soon',
+        specialty: 'Gastroenterology',
+        explanation: 'Epigastric pain with nocturnal symptoms and NSAID use (ibuprofen for back pain). H. pylori prevalence in this population is ~30%. Ulcer cannot be excluded without endoscopy. Alarm features absent but duration warrants investigation.'
+      },
+      {
+        cause: 'Stable Angina Pectoris',
+        value: 15,
+        urgency: 'urgent',
+        specialty: 'Cardiology',
+        explanation: 'Low pre-test probability given age, sex, and atypical features (non-exertional, postprandial). However, family history of premature CAD (father, age 55) and dyslipidemia elevate baseline risk. HEART score: 3 (low risk). Cannot be fully excluded without stress testing.'
+      }
+    ],
+    agent_timings: {
+      'Symptom Analyzer': 1.2,
+      'Medical Diagnostician': 3.8,
+      'Specialist Consultant': 2.9,
+      'Test Recommender': 1.5,
+      'Treatment Planner': 2.1,
+      'Safety Checker': 0.8,
+      'Empathy Agent': 1.1,
+    },
+    total_time: 13.4,
+    recommended_tests: [
+      'Complete Blood Count (CBC) with differential',
+      'Comprehensive Metabolic Panel (CMP) including liver function',
+      'Lipid panel (total cholesterol, LDL, HDL, triglycerides)',
+      'H. pylori stool antigen test or urea breath test',
+      'Troponin I — to rule out acute coronary syndrome',
+      'ECG (12-lead electrocardiogram) at rest',
+      'Upper GI endoscopy (EGD) if symptoms persist beyond 4 weeks',
+      'Exercise stress test if cardiac risk factors warrant',
+      'Chest X-ray (PA and lateral) to exclude pulmonary pathology',
+    ],
+    red_flags: [
+      'Family history of premature coronary artery disease (father, MI at age 55)',
+      'Unintentional weight loss of 4 lbs over 3 weeks — warrants monitoring',
+      'Nocturnal symptoms disrupting sleep — possible Barrett\'s esophagus risk',
+    ],
+    action_checklist: [
+      'Schedule appointment with primary care physician within 1 week',
+      'Begin empiric PPI trial (omeprazole 20mg daily x 8 weeks) — discuss with physician first',
+      'Avoid NSAIDs (ibuprofen) — switch to acetaminophen for back pain',
+      'Elevate head of bed 6-8 inches; avoid eating within 3 hours of bedtime',
+      'Reduce caffeine, alcohol, and spicy food intake',
+      'Track symptoms in a food/symptom diary for 2 weeks',
+      'Schedule fasting lipid panel and CBC lab work',
+      'If chest pain occurs with exertion, shortness of breath, or radiation to arm/jaw — seek emergency care immediately',
+      'Follow up with gastroenterologist if PPI trial does not resolve symptoms',
+      'Consider stress management techniques — CBT referral if anxiety persists',
+    ],
+    safety_status: 'caution',
+    safety_warnings: [
+      'Cardiac causes not fully excluded — patient should seek immediate emergency care if symptoms change in character (exertional, radiating, associated with dyspnea or diaphoresis)',
+      'NSAID use with possible peptic ulcer disease increases GI bleeding risk — discontinue ibuprofen and switch to acetaminophen',
+      'PPI therapy should be time-limited (8 weeks) and reassessed — long-term use associated with magnesium deficiency and increased fracture risk',
+    ],
+    medications: [
+      { name: 'Omeprazole (Prilosec)', dose: '20mg once daily', frequency: 'Before breakfast', warnings: 'Limit to 8 weeks; reassess if symptoms persist' },
+      { name: 'Calcium Carbonate (Tums)', dose: '500mg as needed', frequency: 'After meals', warnings: 'Do not exceed 6 tablets/day' },
+    ],
+    lifestyle_recommendations: [
+      'Elevate the head of your bed 6-8 inches to reduce nighttime acid reflux',
+      'Avoid eating within 3 hours of bedtime',
+      'Reduce caffeine, alcohol, chocolate, and spicy food intake',
+      'Maintain a healthy weight — excess abdominal fat increases reflux',
+      'Quit smoking — nicotine relaxes the lower esophageal sphincter',
+      'Wear loose-fitting clothing to reduce abdominal pressure',
+      'Practice stress management — yoga, meditation, or deep breathing exercises',
+    ],
+    dietary_recommendations: [
+      'Eat smaller, more frequent meals instead of 3 large meals',
+      'Include alkaline foods: bananas, melons, oatmeal, and green vegetables',
+      'Increase fiber intake with whole grains, fruits, and vegetables',
+      'Choose lean proteins: chicken, fish, tofu — avoid fried or fatty meats',
+      'Drink ginger or chamomile tea to soothe the digestive tract',
+      'Avoid acidic foods: tomatoes, citrus, vinegar, and carbonated drinks',
+      'Include probiotic-rich foods: yogurt, kefir, sauerkraut, kimchi',
+      'Stay hydrated with water between meals (not during) to aid digestion',
+    ],
+    token_usage: {
+      per_agent: {
+        triage: { input_tokens: 1250, output_tokens: 580 },
+        diagnostician: { input_tokens: 4800, output_tokens: 2100 },
+        research: { input_tokens: 3900, output_tokens: 1800 },
+        specialist: { input_tokens: 5200, output_tokens: 2400 },
+        treatment: { input_tokens: 6100, output_tokens: 2800 },
+        safety: { input_tokens: 5500, output_tokens: 1900 },
+        empathy: { input_tokens: 4300, output_tokens: 2200 },
+      },
+      total_input_tokens: 31050,
+      total_output_tokens: 13780,
+      total_tokens: 44830,
+    },
+    estimated_cost: 0.30,
+  }
+  localStorage.setItem('latest_diagnosis_result', JSON.stringify(sampleData))
+  router.push('/dashboard')
 }
 </script>
 

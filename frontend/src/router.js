@@ -49,6 +49,11 @@ const routes = [
     component: () => import('@/views/SessionDetail.vue')
   },
   {
+    path: '/compare',
+    name: 'Compare',
+    component: () => import('@/views/CompareView.vue')
+  },
+  {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/components/DiagnosisDashboard.vue')

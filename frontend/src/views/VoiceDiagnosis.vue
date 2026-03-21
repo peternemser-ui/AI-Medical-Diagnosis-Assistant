@@ -233,6 +233,37 @@
       v-model="showHistory"
       @view-session="handleViewHistorySession"
     />
+
+    <!-- Session Timeout Warning Modal -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="sessionWarningVisible" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div class="rounded-2xl shadow-2xl p-6 max-w-sm mx-4 text-center border"
+            :class="isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'">
+            <div class="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center"
+              :class="isDark ? 'bg-amber-500/20' : 'bg-amber-100'">
+              <svg class="w-7 h-7 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold mb-2">Session Expiring Soon</h3>
+            <p class="text-sm mb-5" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+              Your session will expire in about 2 minutes due to inactivity. Move your mouse, press a key, or click below to stay logged in.
+            </p>
+            <button @click="sessionWarningVisible = false"
+              class="px-5 py-2.5 rounded-xl text-sm font-medium transition-colors bg-blue-600 hover:bg-blue-700 text-white">
+              Stay Logged In
+            </button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Onboarding Tour -->
+    <OnboardingTour
+      :visible="showOnboarding"
+      @close="showOnboarding = false"
+    />
   </div>
 </template>
 
@@ -257,14 +288,17 @@ import AvatarCustomizer from '@/components/AvatarCustomizer.vue'
 import HistoryDrawer from '@/components/HistoryDrawer.vue'
 import SymptomChips from '@/components/SymptomChips.vue'
 import ThemeLangControls from '@/components/ThemeLangControls.vue'
+import OnboardingTour from '@/components/OnboardingTour.vue'
 import { saveSession } from '@/services/historyService.js'
 import { useTheme } from '@/composables/useTheme.js'
 import { useI18n } from '@/composables/useI18n.js'
 import { useToast } from '@/composables/useToast.js'
+import { useSessionTimeout } from '@/composables/useSessionTimeout.js'
 
 const { isDark } = useTheme()
 const { t, lang } = useI18n()
 const toast = useToast()
+const { startSessionTimer, stopTimer: stopSessionTimer, isWarningVisible: sessionWarningVisible } = useSessionTimeout()
 
 // When language changes mid-conversation, update the greeting if it's the only message
 watch(lang, () => {
@@ -352,6 +386,7 @@ const showTyping = ref(false)
 const showHelp = ref(false)
 const showSettings = ref(false)
 const showHistory = ref(false)
+const showOnboarding = ref(localStorage.getItem('onboarding_complete') !== 'true')
 const viewingHistorySession = ref(false)
 const apiStatus = ref(null) // null = checking, true = AI enabled, false = fallback mode
 
@@ -601,6 +636,9 @@ const handleResize = () => { isMobile.value = window.innerWidth < 640 }
 onMounted(async () => {
   window.addEventListener('resize', handleResize)
 
+  // Start session inactivity timer (auto-logout after 30 min)
+  startSessionTimer()
+
   // Initialize voice capabilities FIRST
   setupVoiceCapabilities()
   
@@ -640,6 +678,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
+  stopSessionTimer()
   cleanup()
   // Clean up TTS
   if (speakAbort) speakAbort.cancelled = true

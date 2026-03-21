@@ -1,100 +1,184 @@
 /**
  * Generates a clean, print-optimized HTML report for PDF export.
+ * Branded, structured, and suitable for sharing with healthcare providers.
  */
-export function buildPrintReport({ causes, redFlags, recommendedTests, actionChecklist, safetyWarnings, safetyStatusLabel, agentList, totalPipelineTime, formatTime, patientAge, patientGender, formattedDate, overallUrgency }) {
+export function buildPrintReport({
+  causes, redFlags, recommendedTests, actionChecklist,
+  safetyWarnings, safetyStatusLabel, agentList, totalPipelineTime,
+  formatTime, patientAge, patientGender, formattedDate, overallUrgency,
+  chiefComplaint, medications, lifestyleRecs, dietaryRecs,
+}) {
   const age = patientAge || '—'
   const gender = patientGender || '—'
-  const date = formattedDate
+  const date = formattedDate || new Date().toLocaleDateString()
   const urgency = (overallUrgency || 'routine').toUpperCase()
+  const urgencyColor = (urgency === 'URGENT' || urgency === 'EMERGENCY') ? '#dc2626' : urgency === 'SOON' ? '#d97706' : '#059669'
+  const urgencyBg = (urgency === 'URGENT' || urgency === 'EMERGENCY') ? '#fef2f2' : urgency === 'SOON' ? '#fffbeb' : '#f0fdf4'
 
-  // Diagnoses
+  // ── Header ──
+  const headerHtml = `
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #3b82f6; padding-bottom:16px; margin-bottom:24px;">
+      <div>
+        <div style="font-size:24px; font-weight:800; color:#1e293b; letter-spacing:-0.5px;">Medical Diagnosis Report</div>
+        <div style="font-size:12px; color:#64748b; margin-top:4px;">MedDiagnose AI — Multi-Agent Clinical Analysis</div>
+        <div style="font-size:11px; color:#94a3b8; margin-top:2px;">${date}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:12px; color:#475569; font-weight:600;">Patient: ${age} y/o ${gender}</div>
+        <div style="display:inline-block; background:${urgencyBg}; color:${urgencyColor}; padding:4px 14px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; margin-top:6px; border:1px solid ${urgencyColor}20;">${urgency}</div>
+      </div>
+    </div>`
+
+  // ── Chief Complaint ──
+  let complaintHtml = ''
+  if (chiefComplaint) {
+    complaintHtml = `
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #3b82f6; border-radius:8px; padding:14px 16px; margin-bottom:20px; page-break-inside:avoid;">
+      <div style="font-size:10px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Chief Complaint</div>
+      <div style="font-size:13px; color:#334155; line-height:1.5;">${chiefComplaint}</div>
+    </div>`
+  }
+
+  // ── Diagnoses ──
   let diagnosesHtml = ''
   for (let i = 0; i < causes.length; i++) {
     const c = causes[i]
-    const urgColor = (c.urgency === 'urgent' || c.urgency === 'emergency') ? '#dc2626' : '#16a34a'
-    const urgBg = (c.urgency === 'urgent' || c.urgency === 'emergency') ? '#fef2f2' : '#f0fdf4'
+    const urgC = (c.urgency === 'urgent' || c.urgency === 'emergency') ? '#dc2626' : '#16a34a'
+    const urgBg2 = (c.urgency === 'urgent' || c.urgency === 'emergency') ? '#fef2f2' : '#f0fdf4'
     const confColor = c.value >= 70 ? '#059669' : c.value >= 40 ? '#d97706' : '#64748b'
-    diagnosesHtml += '<div style="border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:8px; page-break-inside:avoid;">'
-    diagnosesHtml += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">'
-    diagnosesHtml += '<div>'
-    diagnosesHtml += '<span style="font-weight:700; color:#1e293b;">#' + (i+1) + ' ' + c.cause + '</span>'
-    diagnosesHtml += '<span style="background:' + urgBg + '; color:' + urgColor + '; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:600; text-transform:uppercase; margin-left:8px;">' + c.urgency + '</span>'
-    diagnosesHtml += '</div>'
-    diagnosesHtml += '<span style="font-size:20px; font-weight:800; color:' + confColor + '">' + c.value + '%</span>'
-    diagnosesHtml += '</div>'
-    diagnosesHtml += '<div style="font-size:11px; color:#475569; margin-bottom:4px;">' + (c.specialty || '') + '</div>'
-    diagnosesHtml += '<div style="font-size:11px; color:#64748b; line-height:1.5;">' + (c.explanation || '') + '</div>'
-    diagnosesHtml += '</div>'
+    const barWidth = Math.max(c.value, 3)
+    const barColor = c.value >= 70 ? '#10b981' : c.value >= 40 ? '#f59e0b' : '#94a3b8'
+
+    diagnosesHtml += `
+    <div style="border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin-bottom:10px; page-break-inside:avoid;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div style="flex:1;">
+          <span style="font-weight:700; color:#1e293b; font-size:13px;">${c.cause}</span>
+          <span style="background:${urgBg2}; color:${urgC}; padding:2px 10px; border-radius:12px; font-size:9px; font-weight:700; text-transform:uppercase; margin-left:8px;">${c.urgency}</span>
+        </div>
+        <span style="font-size:22px; font-weight:800; color:${confColor};">${c.value}%</span>
+      </div>
+      <div style="background:#f1f5f9; border-radius:4px; height:6px; margin-bottom:8px; overflow:hidden;">
+        <div style="background:${barColor}; height:100%; border-radius:4px; width:${barWidth}%;"></div>
+      </div>
+      <div style="font-size:10px; color:#6366f1; font-weight:600; margin-bottom:4px;">${c.specialty || ''}</div>
+      <div style="font-size:11px; color:#64748b; line-height:1.6;">${c.explanation || ''}</div>
+    </div>`
   }
 
-  // Red flags
+  // ── Red Flags ──
   let redFlagsHtml = ''
-  if (redFlags.length > 0) {
-    redFlagsHtml = '<div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:12px; margin-bottom:16px; page-break-inside:avoid;">'
-    redFlagsHtml += '<div style="font-weight:700; color:#dc2626; font-size:12px; text-transform:uppercase; margin-bottom:6px;">Warning Signs</div>'
-    redFlags.forEach(f => { redFlagsHtml += '<div style="font-size:11px; color:#991b1b; margin-bottom:3px;">⚠ ' + f + '</div>' })
-    redFlagsHtml += '</div>'
+  if (redFlags && redFlags.length > 0) {
+    redFlagsHtml = `
+    <div style="background:#fef2f2; border:1px solid #fecaca; border-left:4px solid #dc2626; border-radius:8px; padding:14px 16px; margin-bottom:20px; page-break-inside:avoid;">
+      <div style="font-weight:700; color:#dc2626; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">⚠ Warning Signs Detected</div>
+      ${redFlags.map(f => `<div style="font-size:11px; color:#991b1b; margin-bottom:4px; padding-left:8px;">• ${f}</div>`).join('')}
+    </div>`
   }
 
-  // Tests
+  // ── Recommended Tests ──
   let testsHtml = ''
-  if (recommendedTests.length > 0) {
-    testsHtml = '<div style="margin-bottom:16px; page-break-inside:avoid;">'
-    testsHtml += '<div style="font-weight:700; color:#1e293b; font-size:12px; text-transform:uppercase; margin-bottom:8px;">Recommended Tests</div>'
-    recommendedTests.forEach((t, i) => { testsHtml += '<div style="font-size:11px; color:#475569; margin-bottom:3px; padding-left:8px;">' + (i+1) + '. ' + t + '</div>' })
-    testsHtml += '</div>'
+  if (recommendedTests && recommendedTests.length > 0) {
+    testsHtml = `
+    <div style="margin-bottom:20px; page-break-inside:avoid;">
+      <div style="font-weight:700; color:#1e293b; font-size:13px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">Recommended Tests</div>
+      ${recommendedTests.map((t, i) => `<div style="font-size:11px; color:#475569; margin-bottom:5px; padding-left:4px; line-height:1.5;">☐ ${t}</div>`).join('')}
+    </div>`
   }
 
-  // Actions
+  // ── Action Items ──
   let actionsHtml = ''
-  if (actionChecklist.length > 0) {
-    actionsHtml = '<div style="margin-bottom:16px; page-break-inside:avoid;">'
-    actionsHtml += '<div style="font-weight:700; color:#1e293b; font-size:12px; text-transform:uppercase; margin-bottom:8px;">Action Items</div>'
-    actionChecklist.forEach(a => {
-      const text = typeof a === 'string' ? a : (a.action || JSON.stringify(a))
-      actionsHtml += '<div style="font-size:11px; color:#475569; margin-bottom:3px; padding-left:8px;">☐ ' + text + '</div>'
-    })
-    actionsHtml += '</div>'
+  if (actionChecklist && actionChecklist.length > 0) {
+    actionsHtml = `
+    <div style="margin-bottom:20px; page-break-inside:avoid;">
+      <div style="font-weight:700; color:#1e293b; font-size:13px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">Action Items</div>
+      ${actionChecklist.map(a => {
+        const text = typeof a === 'string' ? a : (a.action || JSON.stringify(a))
+        return `<div style="font-size:11px; color:#475569; margin-bottom:5px; padding-left:4px; line-height:1.5;">☐ ${text}</div>`
+      }).join('')}
+    </div>`
   }
 
-  // Safety
+  // ── Treatment Plan ──
+  let treatmentHtml = ''
+  if ((medications && medications.length > 0) || (lifestyleRecs && lifestyleRecs.length > 0)) {
+    treatmentHtml = `<div style="margin-bottom:20px; page-break-inside:avoid;">
+      <div style="font-weight:700; color:#1e293b; font-size:13px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">Treatment Recommendations</div>`
+    if (medications && medications.length > 0) {
+      treatmentHtml += `<div style="font-size:10px; color:#3b82f6; font-weight:700; text-transform:uppercase; margin-bottom:6px;">Medications</div>`
+      medications.forEach(med => {
+        const name = typeof med === 'string' ? med : med.name
+        const dose = med.dose || ''
+        const warn = med.warnings || ''
+        treatmentHtml += `<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:8px 12px; margin-bottom:6px;">
+          <div style="font-size:12px; font-weight:600; color:#1e293b;">${name}</div>
+          ${dose ? `<div style="font-size:10px; color:#64748b; margin-top:2px;">${dose}${med.frequency ? ' — ' + med.frequency : ''}</div>` : ''}
+          ${warn ? `<div style="font-size:10px; color:#d97706; margin-top:2px;">⚠ ${warn}</div>` : ''}
+        </div>`
+      })
+    }
+    if (lifestyleRecs && lifestyleRecs.length > 0) {
+      treatmentHtml += `<div style="font-size:10px; color:#059669; font-weight:700; text-transform:uppercase; margin-top:12px; margin-bottom:6px;">Lifestyle Recommendations</div>`
+      lifestyleRecs.forEach(rec => {
+        treatmentHtml += `<div style="font-size:11px; color:#475569; margin-bottom:4px; padding-left:4px;">✓ ${rec}</div>`
+      })
+    }
+    treatmentHtml += `</div>`
+  }
+
+  // ── Safety Review ──
   let safetyHtml = ''
-  if (safetyWarnings.length > 0) {
-    safetyHtml = '<div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:12px; margin-bottom:16px; page-break-inside:avoid;">'
-    safetyHtml += '<div style="font-weight:700; color:#d97706; font-size:12px; text-transform:uppercase; margin-bottom:6px;">Safety Review — ' + safetyStatusLabel + '</div>'
-    safetyWarnings.forEach(w => { safetyHtml += '<div style="font-size:11px; color:#92400e; margin-bottom:3px;">⚠ ' + w + '</div>' })
-    safetyHtml += '</div>'
+  if (safetyWarnings && safetyWarnings.length > 0) {
+    const safetyColor = safetyStatusLabel === 'FAIL' ? '#dc2626' : safetyStatusLabel === 'CAUTION' ? '#d97706' : '#059669'
+    safetyHtml = `
+    <div style="background:#fffbeb; border:1px solid #fde68a; border-left:4px solid ${safetyColor}; border-radius:8px; padding:14px 16px; margin-bottom:20px; page-break-inside:avoid;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <span style="font-weight:700; color:${safetyColor}; font-size:12px; text-transform:uppercase;">Safety Review</span>
+        <span style="background:${safetyColor}15; color:${safetyColor}; padding:2px 10px; border-radius:12px; font-size:10px; font-weight:700;">${safetyStatusLabel}</span>
+      </div>
+      ${safetyWarnings.map(w => `<div style="font-size:11px; color:#92400e; margin-bottom:4px;">⚠ ${w}</div>`).join('')}
+    </div>`
   }
 
-  // Agent performance + cost
-  let agentHtml = '<div style="margin-bottom:16px; page-break-inside:avoid;">'
-  agentHtml += '<div style="font-weight:700; color:#1e293b; font-size:12px; text-transform:uppercase; margin-bottom:8px;">Agent Performance</div>'
-  agentHtml += '<table style="width:100%; font-size:11px; border-collapse:collapse;">'
-  agentList.forEach(agent => {
-    agentHtml += '<tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:4px 0; color:#475569;">' + agent.name + '</td><td style="padding:4px 0; text-align:right; color:#1e293b; font-weight:600;">' + agent.timeStr + '</td></tr>'
-  })
-  agentHtml += '<tr style="border-top:2px solid #e2e8f0;"><td style="padding:6px 0; color:#1e293b; font-weight:700;">Total Pipeline</td><td style="padding:6px 0; text-align:right; color:#1e293b; font-weight:700;">' + formatTime(totalPipelineTime) + '</td></tr>'
+  // ── Agent Performance ──
+  let agentHtml = `
+  <div style="margin-bottom:20px; page-break-inside:avoid;">
+    <div style="font-weight:700; color:#1e293b; font-size:13px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">Agent Performance</div>
+    <table style="width:100%; font-size:11px; border-collapse:collapse;">`
+  if (agentList) {
+    agentList.forEach(agent => {
+      agentHtml += `<tr style="border-bottom:1px solid #f1f5f9;">
+        <td style="padding:5px 0; color:#475569;">${agent.name}</td>
+        <td style="padding:5px 0; text-align:right; color:#1e293b; font-weight:600; font-family:monospace;">${agent.timeStr}</td>
+      </tr>`
+    })
+  }
+  agentHtml += `<tr style="border-top:2px solid #e2e8f0;">
+    <td style="padding:8px 0; color:#1e293b; font-weight:700;">Total Pipeline</td>
+    <td style="padding:8px 0; text-align:right; color:#1e293b; font-weight:700; font-family:monospace;">${formatTime ? formatTime(totalPipelineTime) : (totalPipelineTime || 0).toFixed(1) + 's'}</td>
+  </tr></table></div>`
 
-  const modelPref = localStorage.getItem('model_preference') || 'auto'
-  const costMap = { auto: 0.015, opus: 0.075, sonnet: 0.015, haiku: 0.005, 'gpt-4o': 0.025, 'gpt-4o-mini': 0.003, 'o3': 0.10, 'gemini-2.5-pro': 0.02, 'gemini-2.5-flash': 0.005 }
-  const totalCost = (causes.length > 0 ? 7 : 0) * (costMap[modelPref] || 0.015)
-  agentHtml += '<tr><td style="padding:4px 0; color:#64748b; font-size:10px;">Estimated cost</td><td style="padding:4px 0; text-align:right; color:#64748b; font-size:10px;">~$' + totalCost.toFixed(3) + '</td></tr>'
-  agentHtml += '</table></div>'
-
-  const urgencyColor = (urgency === 'URGENT' || urgency === 'EMERGENCY') ? '#dc2626' : '#059669'
-
-  return '<div style="font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif; max-width:700px; margin:0 auto; padding:20px; color:#1e293b; background:#fff;">'
-    + '<div style="border-bottom:2px solid #3b82f6; padding-bottom:12px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:flex-end;">'
-    + '<div><div style="font-size:22px; font-weight:800; color:#1e293b;">Medical Diagnosis Report</div>'
-    + '<div style="font-size:11px; color:#64748b; margin-top:2px;">MedDiagnose AI — Multi-Agent Analysis</div></div>'
-    + '<div style="text-align:right; font-size:11px; color:#64748b;">'
-    + '<div>Patient: ' + age + ' ' + gender + '</div>'
-    + '<div>' + date + '</div>'
-    + '<div style="font-weight:600; color:' + urgencyColor + ';">' + urgency + '</div>'
-    + '</div></div>'
-    + redFlagsHtml
-    + '<div style="margin-bottom:16px;"><div style="font-weight:700; color:#1e293b; font-size:14px; margin-bottom:10px;">Differential Diagnoses</div>' + diagnosesHtml + '</div>'
-    + testsHtml + actionsHtml + safetyHtml + agentHtml
-    + '<div style="margin-top:24px; padding-top:12px; border-top:1px solid #e2e8f0; font-size:9px; color:#94a3b8; line-height:1.4;">This report is generated by AI for informational purposes only. It does not constitute medical advice, diagnosis, or treatment. Always consult a qualified healthcare professional.</div>'
-    + '</div>'
+  // ── Assemble Full Report ──
+  return `
+  <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width:720px; margin:0 auto; padding:24px 28px; color:#1e293b; background:#ffffff;">
+    ${headerHtml}
+    ${complaintHtml}
+    ${redFlagsHtml}
+    <div style="margin-bottom:20px;">
+      <div style="font-weight:700; color:#1e293b; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">Differential Diagnoses</div>
+      ${diagnosesHtml}
+    </div>
+    ${testsHtml}
+    ${actionsHtml}
+    ${treatmentHtml}
+    ${safetyHtml}
+    ${agentHtml}
+    <div style="margin-top:28px; padding-top:14px; border-top:2px solid #e2e8f0; text-align:center;">
+      <div style="font-size:9px; color:#94a3b8; line-height:1.6; max-width:500px; margin:0 auto;">
+        This report is generated by MedDiagnose AI for informational purposes only. It does not constitute medical advice, diagnosis, or treatment.
+        Always consult a qualified healthcare professional for medical decisions. In emergencies, call local emergency services immediately.
+      </div>
+      <div style="font-size:8px; color:#cbd5e1; margin-top:8px;">Generated by MedDiagnose AI — Multi-Agent Clinical Analysis Platform</div>
+    </div>
+  </div>`
 }
