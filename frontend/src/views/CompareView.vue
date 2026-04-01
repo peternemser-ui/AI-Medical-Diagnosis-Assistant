@@ -9,8 +9,8 @@
     </div>
 
     <!-- Nav bar -->
-    <nav class="relative z-20 flex items-center justify-between px-6 py-3 border-b"
-      :class="isDark ? 'border-slate-800 bg-slate-950/80 backdrop-blur-xl' : 'border-slate-200 bg-white/80 backdrop-blur-xl'">
+    <nav class="relative z-20 flex items-center justify-between px-6 py-3 border-b backdrop-blur-xl"
+      style="background: color-mix(in srgb, var(--clinical-surface) 85%, transparent); border-color: var(--clinical-border)">
       <div class="flex items-center gap-3">
         <router-link to="/" class="flex items-center gap-2.5 group">
           <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
@@ -18,10 +18,10 @@
               <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" />
             </svg>
           </div>
-          <span class="text-sm font-semibold hidden sm:inline" :class="isDark ? 'text-white' : 'text-slate-900'">Medical AI</span>
+          <span class="text-sm font-semibold hidden sm:inline text-[var(--text-primary)]">Medical AI</span>
         </router-link>
         <div class="w-px h-5 hidden sm:block" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
-        <span class="text-sm font-medium hidden sm:inline" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Compare Sessions</span>
+        <span class="text-sm font-medium hidden sm:inline text-[var(--text-secondary)]">Compare Sessions</span>
       </div>
       <div class="flex items-center gap-2">
         <ThemeLangControls />
@@ -37,7 +37,7 @@
 
     <!-- Main content -->
     <div class="relative z-10 max-w-6xl mx-auto px-4 py-6">
-      <h1 class="text-2xl font-bold mb-1" :class="isDark ? 'text-white' : 'text-slate-900'">Compare Diagnoses</h1>
+      <h1 class="text-2xl font-bold mb-1 text-[var(--text-primary)]">Compare Diagnoses</h1>
       <p class="text-xs mb-6" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
         Select two past sessions to compare side by side.
       </p>
@@ -45,7 +45,7 @@
       <!-- Session selectors -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <div v-for="(side, idx) in ['A', 'B']" :key="side">
-          <label class="block text-xs font-medium mb-1.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+          <label class="block text-xs font-medium mb-1.5 text-[var(--text-secondary)]">
             Session {{ side }}
           </label>
           <select
@@ -74,10 +74,10 @@
         <svg class="w-16 h-16 mb-4" :class="isDark ? 'text-slate-700' : 'text-slate-300'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
         </svg>
-        <h2 class="text-lg font-semibold mb-2" :class="isDark ? 'text-white' : 'text-slate-900'">
+        <h2 class="text-lg font-semibold mb-2 text-[var(--text-primary)]">
           Need at least 2 sessions
         </h2>
-        <p class="text-sm" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+        <p class="text-sm text-[var(--text-secondary)]">
           Complete more consultations to compare diagnoses.
         </p>
       </div>
@@ -87,8 +87,7 @@
         <!-- Side by side: Date & Chief Complaint -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div v-for="(session, idx) in [sessionA, sessionB]" :key="idx"
-            class="rounded-2xl border p-4"
-            :class="isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white/80 border-slate-200 shadow-sm'">
+            class="rounded-2xl border p-4 surface-card">
             <div class="flex items-center gap-2 mb-2">
               <span class="text-detail font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
                 :class="idx === 0
@@ -100,7 +99,7 @@
                 {{ formatDate(session.timestamp) }}
               </span>
             </div>
-            <p class="text-sm font-medium leading-snug" :class="isDark ? 'text-white' : 'text-slate-900'">
+            <p class="text-sm font-medium leading-snug text-[var(--text-primary)]">
               {{ session.symptoms || 'No symptoms recorded' }}
             </p>
             <div class="flex items-center gap-3 mt-2 text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
@@ -111,9 +110,8 @@
         </div>
 
         <!-- Severity Comparison -->
-        <div class="rounded-2xl border p-4 mb-6"
-          :class="isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white/80 border-slate-200 shadow-sm'">
-          <h3 class="text-sm font-bold mb-3" :class="isDark ? 'text-white' : 'text-slate-900'">Severity Comparison</h3>
+        <div class="rounded-2xl border p-4 mb-6 surface-card">
+          <h3 class="text-sm font-bold mb-3 text-[var(--text-primary)]">Severity Comparison</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div v-for="(data, idx) in [causesA, causesB]" :key="idx">
               <div class="text-detail font-bold uppercase tracking-wider mb-2"
@@ -127,7 +125,7 @@
                   :class="urgencyClass(getTopUrgency(data))">
                   {{ getTopUrgency(data) }}
                 </span>
-                <span class="text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+                <span class="text-xs text-[var(--text-secondary)]">
                   Top confidence: {{ data.length > 0 ? (data[0].value || data[0].confidence || 0) : 0 }}%
                 </span>
               </div>
@@ -158,9 +156,8 @@
         </div>
 
         <!-- Confidence Bars Side by Side -->
-        <div class="rounded-2xl border p-4 mb-6"
-          :class="isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white/80 border-slate-200 shadow-sm'">
-          <h3 class="text-sm font-bold mb-4" :class="isDark ? 'text-white' : 'text-slate-900'">Diagnosis Confidence</h3>
+        <div class="rounded-2xl border p-4 mb-6 surface-card">
+          <h3 class="text-sm font-bold mb-4 text-[var(--text-primary)]">Diagnosis Confidence</h3>
           <div class="space-y-3">
             <div v-for="condition in allConditions" :key="condition" class="space-y-1">
               <div class="text-xs font-medium flex items-center gap-2"
@@ -180,7 +177,7 @@
                       :class="isDark ? 'bg-blue-500' : 'bg-blue-500'"
                       :style="{ width: getConditionConfidence(causesA, condition) + '%' }"></div>
                   </div>
-                  <span class="text-detail w-8 text-right font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+                  <span class="text-detail w-8 text-right font-medium text-[var(--text-secondary)]">
                     {{ getConditionConfidence(causesA, condition) }}%
                   </span>
                 </div>
@@ -192,7 +189,7 @@
                       :class="isDark ? 'bg-purple-500' : 'bg-purple-500'"
                       :style="{ width: getConditionConfidence(causesB, condition) + '%' }"></div>
                   </div>
-                  <span class="text-detail w-8 text-right font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+                  <span class="text-detail w-8 text-right font-medium text-[var(--text-secondary)]">
                     {{ getConditionConfidence(causesB, condition) }}%
                   </span>
                 </div>
@@ -206,9 +203,8 @@
         </div>
 
         <!-- Recommended Tests Comparison -->
-        <div class="rounded-2xl border p-4 mb-6"
-          :class="isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white/80 border-slate-200 shadow-sm'">
-          <h3 class="text-sm font-bold mb-3" :class="isDark ? 'text-white' : 'text-slate-900'">Recommended Tests</h3>
+        <div class="rounded-2xl border p-4 mb-6 surface-card">
+          <h3 class="text-sm font-bold mb-3 text-[var(--text-primary)]">Recommended Tests</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div v-for="(tests, idx) in [testsA, testsB]" :key="idx">
               <div class="text-detail font-bold uppercase tracking-wider mb-2"
@@ -236,9 +232,8 @@
         </div>
 
         <!-- Changes Summary -->
-        <div class="rounded-2xl border p-4"
-          :class="isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white/80 border-slate-200 shadow-sm'">
-          <h3 class="text-sm font-bold mb-4" :class="isDark ? 'text-white' : 'text-slate-900'">Changes Summary</h3>
+        <div class="rounded-2xl border p-4 surface-card">
+          <h3 class="text-sm font-bold mb-4 text-[var(--text-primary)]">Changes Summary</h3>
 
           <!-- New Conditions (in B but not A) -->
           <div class="mb-4" v-if="newConditions.length > 0">
@@ -307,10 +302,10 @@
         <svg class="w-16 h-16 mb-4" :class="isDark ? 'text-slate-700' : 'text-slate-300'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
         </svg>
-        <h2 class="text-lg font-semibold mb-2" :class="isDark ? 'text-white' : 'text-slate-900'">
+        <h2 class="text-lg font-semibold mb-2 text-[var(--text-primary)]">
           Select Two Sessions
         </h2>
-        <p class="text-sm" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+        <p class="text-sm text-[var(--text-secondary)]">
           Pick a session from each dropdown above to compare.
         </p>
       </div>
