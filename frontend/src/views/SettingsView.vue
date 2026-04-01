@@ -18,7 +18,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
           </svg>
         </button>
-        <h1 class="text-lg font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Settings</h1>
+        <h1 class="text-lg font-bold text-[var(--text-primary)]">Settings</h1>
       </div>
       <ThemeLangControls />
     </nav>
@@ -31,7 +31,7 @@
         <section class="backdrop-blur-xl rounded-2xl border shadow-lg overflow-hidden"
           :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'">
           <div class="px-6 py-4 border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
-            <h2 class="text-sm font-semibold flex items-center gap-2" :class="isDark ? 'text-white' : 'text-slate-900'">
+            <h2 class="text-sm font-semibold flex items-center gap-2 text-[var(--text-primary)]">
               <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
               </svg>
@@ -41,7 +41,7 @@
           <div class="p-6">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">
+                <p class="text-sm font-medium text-[var(--text-primary)]">
                   {{ profile.name || 'No name set' }}
                 </p>
                 <p class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
@@ -63,7 +63,7 @@
         <section class="backdrop-blur-xl rounded-2xl border shadow-lg overflow-hidden"
           :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'">
           <div class="px-6 py-4 border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
-            <h2 class="text-sm font-semibold flex items-center gap-2" :class="isDark ? 'text-white' : 'text-slate-900'">
+            <h2 class="text-sm font-semibold flex items-center gap-2 text-[var(--text-primary)]">
               <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
               </svg>
@@ -74,7 +74,7 @@
             <!-- Theme -->
             <div class="flex items-center justify-between">
               <div>
-                <label class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">Theme</label>
+                <label class="text-sm font-medium text-[var(--text-primary)]">Theme</label>
                 <p class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Switch between light and dark mode</p>
               </div>
               <button @click="toggleTheme"
@@ -87,7 +87,7 @@
             <!-- Language -->
             <div class="flex items-center justify-between">
               <div>
-                <label class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">Language</label>
+                <label class="text-sm font-medium text-[var(--text-primary)]">Language</label>
                 <p class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ currentLanguage.name }}</p>
               </div>
               <select @change="setLang($event.target.value)" :value="lang"
@@ -105,7 +105,7 @@
         <section class="backdrop-blur-xl rounded-2xl border shadow-lg overflow-hidden"
           :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'">
           <div class="px-6 py-4 border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
-            <h2 class="text-sm font-semibold flex items-center gap-2" :class="isDark ? 'text-white' : 'text-slate-900'">
+            <h2 class="text-sm font-semibold flex items-center gap-2 text-[var(--text-primary)]">
               <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
               </svg>
@@ -116,7 +116,7 @@
             <!-- Voice Input -->
             <div class="flex items-center justify-between">
               <div>
-                <label class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">Voice Input</label>
+                <label class="text-sm font-medium text-[var(--text-primary)]">Voice Input</label>
                 <p class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Enable microphone for voice recording</p>
               </div>
               <label class="relative inline-flex items-center cursor-pointer">
@@ -128,7 +128,7 @@
             <!-- Audio Responses -->
             <div class="flex items-center justify-between">
               <div>
-                <label class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">Audio Responses</label>
+                <label class="text-sm font-medium text-[var(--text-primary)]">Audio Responses</label>
                 <p class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Play AI responses as audio</p>
               </div>
               <label class="relative inline-flex items-center cursor-pointer">
@@ -139,7 +139,7 @@
             </div>
             <!-- Speech Rate -->
             <div v-if="settings.audioResponses">
-              <label class="text-sm font-medium block mb-2" :class="isDark ? 'text-white' : 'text-slate-900'">Speech Rate</label>
+              <label class="text-sm font-medium block mb-2 text-[var(--text-primary)]">Speech Rate</label>
               <div class="flex items-center gap-4">
                 <span class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Slow</span>
                 <input
@@ -161,7 +161,7 @@
         <section class="backdrop-blur-xl rounded-2xl border shadow-lg overflow-hidden"
           :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'">
           <div class="px-6 py-4 border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
-            <h2 class="text-sm font-semibold flex items-center gap-2" :class="isDark ? 'text-white' : 'text-slate-900'">
+            <h2 class="text-sm font-semibold flex items-center gap-2 text-[var(--text-primary)]">
               <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
               </svg>
@@ -172,7 +172,7 @@
             <!-- Auto-scroll -->
             <div class="flex items-center justify-between">
               <div>
-                <label class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">Auto-scroll Chat</label>
+                <label class="text-sm font-medium text-[var(--text-primary)]">Auto-scroll Chat</label>
                 <p class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Automatically scroll to new messages</p>
               </div>
               <label class="relative inline-flex items-center cursor-pointer">
@@ -184,7 +184,7 @@
             <!-- Sound Effects -->
             <div class="flex items-center justify-between">
               <div>
-                <label class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">Sound Effects</label>
+                <label class="text-sm font-medium text-[var(--text-primary)]">Sound Effects</label>
                 <p class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Play sounds for notifications</p>
               </div>
               <label class="relative inline-flex items-center cursor-pointer">
@@ -200,7 +200,7 @@
         <section class="backdrop-blur-xl rounded-2xl border shadow-lg overflow-hidden"
           :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'">
           <div class="px-6 py-4 border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
-            <h2 class="text-sm font-semibold flex items-center gap-2" :class="isDark ? 'text-white' : 'text-slate-900'">
+            <h2 class="text-sm font-semibold flex items-center gap-2 text-[var(--text-primary)]">
               <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
               </svg>
@@ -210,7 +210,7 @@
           <div class="p-6 space-y-5">
             <!-- Provider tabs -->
             <div>
-              <label class="text-xs font-medium mb-2 block" :class="isDark ? 'text-slate-400' : 'text-slate-500'">API Keys (add keys for the vendors you want to use)</label>
+              <label class="text-xs font-medium mb-2 block text-[var(--text-secondary)]">API Keys (add keys for the vendors you want to use)</label>
               <div class="flex gap-2">
                 <button v-for="p in providers" :key="p.id" @click="apiProvider = p.id; loadProviderKey()"
                   class="flex-1 py-2 text-xs font-medium rounded-lg border transition-colors text-center"
@@ -226,7 +226,7 @@
             <div v-if="apiProvider === 'ollama'" class="space-y-3">
               <div v-if="ollamaChecking" class="flex items-center gap-2 py-3">
                 <svg class="w-4 h-4 animate-spin text-orange-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                <span class="text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Detecting Ollama...</span>
+                <span class="text-xs text-[var(--text-secondary)]">Detecting Ollama...</span>
               </div>
               <div v-else-if="ollamaAvailable" class="space-y-3">
                 <div class="flex items-center gap-2 py-1">
@@ -252,14 +252,14 @@
                   <div class="w-2.5 h-2.5 rounded-full bg-red-400"></div>
                   <span class="text-sm font-medium" :class="isDark ? 'text-red-400' : 'text-red-500'">Ollama not detected</span>
                 </div>
-                <p class="text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Install Ollama from ollama.com, run it, then pull a model with: <code class="px-1.5 py-0.5 rounded text-orange-400" :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">ollama pull llama3.1:8b</code></p>
+                <p class="text-xs text-[var(--text-secondary)]">Install Ollama from ollama.com, run it, then pull a model with: <code class="px-1.5 py-0.5 rounded text-orange-400" :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">ollama pull llama3.1:8b</code></p>
                 <button @click="checkOllamaStatus" class="text-xs text-orange-400 hover:text-orange-300 underline underline-offset-2">Retry Detection</button>
               </div>
             </div>
 
             <!-- API Key Input (non-Ollama providers) -->
             <div v-else>
-              <label class="text-xs font-medium mb-1.5 block" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+              <label class="text-xs font-medium mb-1.5 block text-[var(--text-secondary)]">
                 {{ currentProviderLabel }} API Key
               </label>
               <div class="relative">
@@ -317,7 +317,7 @@
                     <span v-if="result.valid" class="text-emerald-400 text-sm">&#10003;</span>
                     <span v-else-if="result.message === 'No key provided'" class="text-slate-500 text-sm">&#8212;</span>
                     <span v-else class="text-red-400 text-sm">&#10007;</span>
-                    <span class="capitalize font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ vendor }}</span>
+                    <span class="capitalize font-medium text-[var(--text-primary)]">{{ vendor }}</span>
                   </div>
                   <span :class="result.valid ? 'text-emerald-400' : (result.message === 'No key provided' ? (isDark ? 'text-slate-500' : 'text-slate-400') : 'text-red-400')">
                     {{ result.message }}
@@ -332,7 +332,7 @@
         <section class="backdrop-blur-xl rounded-2xl border shadow-lg overflow-hidden"
           :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'">
           <div class="px-6 py-4 border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
-            <h2 class="text-sm font-semibold flex items-center gap-2" :class="isDark ? 'text-white' : 'text-slate-900'">
+            <h2 class="text-sm font-semibold flex items-center gap-2 text-[var(--text-primary)]">
               <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
               </svg>
@@ -351,7 +351,7 @@
                   : (isDark ? 'border-slate-700 hover:border-slate-600' : 'border-slate-200 hover:border-slate-300')">
                 <input type="radio" :value="m.id" v-model="modelPreference" @change="saveModelPreference" class="mt-1 text-blue-600">
                 <div>
-                  <div class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ m.name }}</div>
+                  <div class="text-sm font-medium text-[var(--text-primary)]">{{ m.name }}</div>
                   <div class="text-detail mt-0.5" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ m.desc }}</div>
                   <span v-if="m.badge" class="inline-block mt-1 text-tiny px-1.5 py-0.5 rounded-full" :class="m.badgeClass">{{ m.badge }}</span>
                 </div>
@@ -425,7 +425,7 @@
       <div v-if="confirmDialog.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
         <div class="rounded-2xl border shadow-2xl max-w-sm w-full p-6"
           :class="isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'">
-          <p class="text-sm mb-5" :class="isDark ? 'text-white' : 'text-slate-900'">{{ confirmDialog.message }}</p>
+          <p class="text-sm mb-5 text-[var(--text-primary)]">{{ confirmDialog.message }}</p>
           <div class="flex gap-3 justify-end">
             <button @click="confirmDialog.show = false"
               class="px-4 py-2 text-xs rounded-lg transition-colors"
