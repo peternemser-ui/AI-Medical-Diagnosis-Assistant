@@ -317,6 +317,7 @@
 
 <script setup>
 import { ref, computed, nextTick, watch, createApp, h, onMounted } from 'vue'
+import DOMPurify from 'dompurify'
 import DiagnosisCard from '@/components/DiagnosisCard.vue'
 import DiagnosisReport from '@/components/DiagnosisReport.vue'
 import SkeletonLoader from '@/components/SkeletonLoader.vue'
@@ -423,18 +424,21 @@ const formatMessageText = (text) => {
   // Convert URLs to clickable links
   const urlPattern = /(https?:\/\/[^\s]+)/g
   text = text.replace(urlPattern, '<a href="$1" target="_blank" class="text-blue-400 hover:text-blue-300 underline">$1</a>')
-  
+
   // Convert **bold** to bold
   text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-  
+
   // Convert *italic* to italic
   text = text.replace(/\*(.*?)\*/g, '<em>$1</em>')
-  
-  // Do NOT convert line breaks to <br> here — we rely on CSS (whitespace-pre-wrap) to preserve formatting
-  // Collapse excessive blank lines (3 or more) into a single blank line to avoid huge vertical gaps
+
+  // Collapse excessive blank lines
   text = text.replace(/(\n\s*){3,}/g, '\n\n')
-  
-  return text
+
+  // Sanitize to prevent XSS — only allow safe formatting tags
+  return DOMPurify.sanitize(text, {
+    ALLOWED_TAGS: ['a', 'strong', 'em', 'br', 'p', 'ul', 'ol', 'li'],
+    ALLOWED_ATTR: ['href', 'target', 'class', 'rel'],
+  })
 }
 
 const formatTimestamp = (timestamp) => {

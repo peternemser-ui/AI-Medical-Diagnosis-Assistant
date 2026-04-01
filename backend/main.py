@@ -16,6 +16,9 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from models import DiagnosisRequest, FollowupRequest, QuestionGenerationRequest, InterviewRequest
 from agents import OrchestratorAgent
@@ -26,20 +29,37 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message)s")
 logger = logging.getLogger(__name__)
 
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI(
     title="AI Medical Diagnosis API",
     version="3.0.0",
     description="Multi-agent medical diagnosis powered by Claude AI",
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-_cors_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",")]
+_cors_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003").split(",")]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Anthropic-API-Key", "X-OpenAI-API-Key", "X-Google-API-Key"],
 )
+
+# ── Security headers middleware ──────────────────────────────
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    if os.getenv("ENFORCE_HTTPS", "").lower() == "true":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
 
 from admin.router import admin_router, billing_router
 app.include_router(admin_router)
@@ -309,6 +329,7 @@ async def health_check():
 
 
 @app.post("/api/validate-key")
+@limiter.limit("10/minute")
 async def validate_api_key(
     http_request: Request,
     x_openai_api_key: Optional[str] = Header(None),
@@ -430,6 +451,7 @@ async def validate_api_key(
 
 
 @app.post("/api/diagnose")
+@limiter.limit("20/hour")
 async def diagnose_symptoms(
     diagnosis_request: DiagnosisRequest,
     http_request: Request,

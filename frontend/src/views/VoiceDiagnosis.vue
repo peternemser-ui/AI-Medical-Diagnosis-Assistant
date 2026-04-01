@@ -697,6 +697,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import DOMPurify from 'dompurify'
 import { diagnose, diagnoseStream, followup, generateQuestion, interview, healthCheck, ApiError } from '@/services/api.js'
 import { getProfile } from '@/services/userService.js'
 
@@ -1176,7 +1177,7 @@ function formatSubtitle(text) {
 
   // Bold key terms
   t = t.replace(/\*\*(.*?)\*\*/g, '<strong class="text-blue-300">$1</strong>')
-  return t
+  return DOMPurify.sanitize(t, { ALLOWED_TAGS: ['strong', 'em'], ALLOWED_ATTR: ['class'] })
 }
 
 function saveDoctorAvatar(avatar) {
