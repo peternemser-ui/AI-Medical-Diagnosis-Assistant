@@ -17,8 +17,9 @@ from fastapi import FastAPI, HTTPException, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
-from models import DiagnosisRequest, FollowupRequest, QuestionGenerationRequest
+from models import DiagnosisRequest, FollowupRequest, QuestionGenerationRequest, InterviewRequest
 from agents import OrchestratorAgent
+from config import OLLAMA_VERSION_URL, OLLAMA_TAGS_URL, OLLAMA_API_URL, OLLAMA_HEALTH_CHECK_TIMEOUT
 
 # ── Setup ────────────────────────────────────────────────────────────
 load_dotenv()
@@ -31,13 +32,24 @@ app = FastAPI(
     description="Multi-agent medical diagnosis powered by Claude AI",
 )
 
+_cors_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",")]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from admin.router import admin_router, billing_router
+app.include_router(admin_router)
+app.include_router(billing_router)
+
+from auth_routes import auth_router
+app.include_router(auth_router)
+
+from medication_routes import medication_router
+app.include_router(medication_router)
 
 
 # ── Helpers ──────────────────────────────────────────────────────────
@@ -52,11 +64,11 @@ def _get_api_key(header_key: Optional[str] = None) -> tuple[Optional[str], str]:
         # Check if Ollama is running locally
         try:
             import httpx
-            resp = httpx.get("http://localhost:11434/api/version", timeout=2.0)
+            resp = httpx.get(OLLAMA_VERSION_URL, timeout=OLLAMA_HEALTH_CHECK_TIMEOUT)
             if resp.status_code == 200:
                 return "ollama", "ollama"
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Ollama not reachable: %s", e)
         if not key:
             return None, "none"
     if key.startswith("sk-ant-"):
@@ -73,6 +85,43 @@ def _get_all_api_keys(request: Request) -> dict[str, Optional[str]]:
         "openai": request.headers.get("x-openai-api-key") or os.getenv("OPENAI_API_KEY"),
         "google": request.headers.get("x-google-api-key") or os.getenv("GOOGLE_API_KEY"),
     }
+
+
+def _resolve_key_with_fallback(model_pref: str, all_keys: dict, fallback_key=None) -> tuple[Optional[str], str]:
+    """Resolve API key based on model preference with fallback to any available key.
+
+    Priority order based on model_pref:
+    - gpt-*    → openai > anthropic > google > ollama
+    - gemini-* → google > anthropic > openai > ollama
+    - opus/sonnet/haiku → anthropic > openai > google > ollama
+    - auto     → anthropic > openai > google > ollama
+    """
+    # Build priority order based on model preference
+    if model_pref.startswith('gpt'):
+        order = ['openai', 'anthropic', 'google']
+    elif model_pref.startswith('gemini'):
+        order = ['google', 'anthropic', 'openai']
+    elif model_pref in ('opus', 'sonnet', 'haiku'):
+        order = ['anthropic', 'openai', 'google']
+    else:
+        order = ['anthropic', 'openai', 'google']
+
+    # Try each key in priority order
+    for vendor in order:
+        key = all_keys.get(vendor)
+        if key:
+            return key, vendor
+
+    # Try Ollama as last resort
+    try:
+        import httpx
+        resp = httpx.get(OLLAMA_VERSION_URL, timeout=OLLAMA_HEALTH_CHECK_TIMEOUT)
+        if resp.status_code == 200:
+            return "ollama", "ollama"
+    except Exception:
+        pass
+
+    return None, "none"
 
 
 def _fallback_diagnosis(req: DiagnosisRequest) -> dict:
@@ -242,12 +291,12 @@ async def health_check():
     ollama_models = []
     try:
         import httpx
-        resp = httpx.get("http://localhost:11434/api/tags", timeout=2.0)
+        resp = httpx.get(OLLAMA_TAGS_URL, timeout=OLLAMA_HEALTH_CHECK_TIMEOUT)
         if resp.status_code == 200:
             ollama_available = True
             ollama_models = [m["name"] for m in resp.json().get("models", [])]
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Ollama health check unavailable: %s", e)
     return {
         "status": "healthy",
         "api_key_configured": has_key or ollama_available,
@@ -274,6 +323,18 @@ async def validate_api_key(
     if anthropic_key:
         try:
             from anthropic import AsyncAnthropic
+        except ImportError:
+            results["anthropic"] = {"valid": False, "message": "anthropic package not installed on server"}
+            anthropic_key = None
+    if anthropic_key:
+        try:
+            from anthropic import AuthenticationError as AnthropicAuthError, RateLimitError as AnthropicRateLimit, PermissionDeniedError as AnthropicPermError
+        except ImportError:
+            results["anthropic"] = {"valid": False, "message": "anthropic package not installed on server"}
+            anthropic_key = None
+
+    if anthropic_key:
+        try:
             client = AsyncAnthropic(api_key=anthropic_key)
             resp = await client.messages.create(
                 model="claude-haiku-4-5-20251001",
@@ -281,14 +342,25 @@ async def validate_api_key(
                 messages=[{"role": "user", "content": "Hi"}],
             )
             results["anthropic"] = {"valid": True, "model": "claude-haiku-4-5", "message": "Key is valid"}
+        except AnthropicAuthError:
+            results["anthropic"] = {"valid": False, "message": "Invalid API key"}
+        except AnthropicPermError:
+            results["anthropic"] = {"valid": False, "message": "API key lacks permission for this model"}
+        except AnthropicRateLimit:
+            results["anthropic"] = {"valid": True, "message": "Key valid (rate limited)"}
         except Exception as e:
             err = str(e)
-            if "401" in err or "auth" in err.lower() or "invalid" in err.lower():
+            etype = type(e).__name__
+            if "401" in err:
                 results["anthropic"] = {"valid": False, "message": "Invalid API key"}
-            elif "429" in err or "rate" in err.lower():
-                results["anthropic"] = {"valid": True, "message": "Key valid (rate limited)"}
+            elif "overloaded" in err.lower() or "529" in err or "503" in err:
+                results["anthropic"] = {"valid": True, "message": "Key valid (API temporarily overloaded)"}
+            elif "timeout" in err.lower() or "timed out" in err.lower():
+                results["anthropic"] = {"valid": True, "message": "Key likely valid (request timed out)"}
+            elif "connect" in err.lower():
+                results["anthropic"] = {"valid": False, "message": "Cannot reach Anthropic API — check network"}
             else:
-                results["anthropic"] = {"valid": False, "message": f"Error: {err[:100]}"}
+                results["anthropic"] = {"valid": False, "message": f"{etype}: {err[:120]}"}
     else:
         results["anthropic"] = {"valid": False, "message": "No key provided"}
 
@@ -297,6 +369,12 @@ async def validate_api_key(
     if openai_key:
         try:
             from openai import AsyncOpenAI
+        except ImportError:
+            results["openai"] = {"valid": False, "message": "openai package not installed on server"}
+            openai_key = None
+    if openai_key:
+        try:
+            from openai import AuthenticationError as OpenAIAuthError, RateLimitError as OpenAIRateLimit
             client = AsyncOpenAI(api_key=openai_key)
             resp = await client.chat.completions.create(
                 model="gpt-4o-mini",
@@ -304,14 +382,19 @@ async def validate_api_key(
                 messages=[{"role": "user", "content": "Hi"}],
             )
             results["openai"] = {"valid": True, "model": "gpt-4o-mini", "message": "Key is valid"}
+        except OpenAIAuthError:
+            results["openai"] = {"valid": False, "message": "Invalid API key"}
+        except OpenAIRateLimit:
+            results["openai"] = {"valid": True, "message": "Key valid (rate limited)"}
         except Exception as e:
             err = str(e)
-            if "401" in err or "auth" in err.lower() or "invalid" in err.lower():
+            etype = type(e).__name__
+            if "401" in err:
                 results["openai"] = {"valid": False, "message": "Invalid API key"}
-            elif "429" in err or "rate" in err.lower():
-                results["openai"] = {"valid": True, "message": "Key valid (rate limited)"}
+            elif "timeout" in err.lower() or "timed out" in err.lower():
+                results["openai"] = {"valid": True, "message": "Key likely valid (request timed out)"}
             else:
-                results["openai"] = {"valid": False, "message": f"Error: {err[:100]}"}
+                results["openai"] = {"valid": False, "message": f"{etype}: {err[:120]}"}
     else:
         results["openai"] = {"valid": False, "message": "No key provided"}
 
@@ -320,18 +403,23 @@ async def validate_api_key(
     if google_key:
         try:
             from google import genai
-            client = genai.Client(api_key=google_key)
-            resp = await client.aio.models.generate_content(
-                model="gemini-2.0-flash",
-                contents="Hi",
-            )
-            results["google"] = {"valid": True, "model": "gemini-2.0-flash", "message": "Key is valid"}
-        except Exception as e:
-            err = str(e)
-            if "401" in err or "403" in err or "auth" in err.lower() or "invalid" in err.lower():
-                results["google"] = {"valid": False, "message": "Invalid API key"}
-            elif "429" in err or "rate" in err.lower():
-                results["google"] = {"valid": True, "message": "Key valid (rate limited)"}
+        except ImportError:
+            results["google"] = {"valid": False, "message": "google-genai package not installed on server"}
+            google_key = None
+        if google_key:
+            try:
+                client = genai.Client(api_key=google_key)
+                resp = await client.aio.models.generate_content(
+                    model="gemini-2.0-flash",
+                    contents="Hi",
+                )
+                results["google"] = {"valid": True, "model": "gemini-2.0-flash", "message": "Key is valid"}
+            except Exception as e:
+                err = str(e)
+                if "401" in err or "403" in err or "API_KEY_INVALID" in err:
+                    results["google"] = {"valid": False, "message": "Invalid API key"}
+                elif "429" in err or "rate" in err.lower():
+                    results["google"] = {"valid": True, "message": "Key valid (rate limited)"}
             else:
                 results["google"] = {"valid": False, "message": f"Error: {err[:100]}"}
     else:
@@ -355,7 +443,12 @@ async def diagnose_symptoms(
     Triage → Diagnostician → Specialist → Treatment
     """
     try:
-        api_key, provider = _get_api_key(x_anthropic_api_key or x_openai_api_key)
+        # Resolve API key based on model preference with automatic fallback
+        model_pref = diagnosis_request.model_preference or 'auto'
+        all_keys = _get_all_api_keys(http_request)
+        api_key, provider = _resolve_key_with_fallback(model_pref, all_keys)
+        logger.info("Resolved provider=%s for model_pref=%s (keys available: %s)",
+                     provider, model_pref, [k for k, v in all_keys.items() if v])
 
         if not api_key:
             logger.warning("No API key — returning fallback diagnosis")
@@ -391,6 +484,7 @@ async def diagnose_symptoms(
             gender=diagnosis_request.gender,
             duration=diagnosis_request.duration,
             severity=diagnosis_request.severity,
+            language=diagnosis_request.language,
             image_base64=diagnosis_request.image_base64,
             medical_history=diagnosis_request.medical_history,
             current_medications=diagnosis_request.current_medications,
@@ -398,13 +492,24 @@ async def diagnose_symptoms(
             family_history=diagnosis_request.family_history,
             social_history=diagnosis_request.social_history,
             model_preference=diagnosis_request.model_preference,
+            specialist_routing=diagnosis_request.specialist_routing,
         )
 
         logger.info(
-            "Multi-agent diagnosis complete in %.1fs (agents: %s)",
+            "Multi-agent diagnosis complete in %.1fs (agents: %s, specialist: %s)",
             result.get("total_time", 0),
             ", ".join(result.get("agents_used", [])),
+            diagnosis_request.specialist_routing or "generic",
         )
+
+        # Debug: dump result to file for inspection
+        try:
+            import pathlib
+            debug_path = pathlib.Path(__file__).parent / "_debug_last_result.json"
+            debug_path.write_text(json.dumps(result, indent=2, default=str), encoding="utf-8")
+            logger.info("Debug result written to %s", debug_path)
+        except Exception as dbg_err:
+            logger.warning("Failed to write debug result: %s", dbg_err)
 
         return result
 
@@ -430,7 +535,12 @@ async def diagnose_symptoms_stream(
       data: {"event": "complete", "result": { ... }}\n\n
     """
     try:
-        api_key, provider = _get_api_key(x_anthropic_api_key or x_openai_api_key)
+        # Resolve API key based on model preference with automatic fallback
+        model_pref = diagnosis_request.model_preference or 'auto'
+        all_keys = _get_all_api_keys(http_request)
+        api_key, provider = _resolve_key_with_fallback(model_pref, all_keys)
+        logger.info("Stream: resolved provider=%s for model_pref=%s (keys available: %s)",
+                     provider, model_pref, [k for k, v in all_keys.items() if v])
 
         if not api_key:
             logger.warning("No API key — returning fallback diagnosis via SSE")
@@ -471,31 +581,58 @@ async def diagnose_symptoms_stream(
             google_key=all_keys.get("google"),
         )
 
-        # Spawn the streaming pipeline as a background task
-        asyncio.create_task(orchestrator.run_diagnosis_streaming(
-            event_queue=event_queue,
-            symptoms=diagnosis_request.symptoms,
-            age=diagnosis_request.age,
-            gender=diagnosis_request.gender,
-            duration=diagnosis_request.duration,
-            severity=diagnosis_request.severity,
-            image_base64=getattr(diagnosis_request, 'image_base64', None),
-            medical_history=diagnosis_request.medical_history,
-            current_medications=diagnosis_request.current_medications,
-            allergies=diagnosis_request.allergies,
-            family_history=diagnosis_request.family_history,
-            social_history=diagnosis_request.social_history,
-            model_preference=diagnosis_request.model_preference,
-        ))
+        # Spawn the streaming pipeline as a background task with error handling
+        async def _run_streaming_pipeline():
+            try:
+                await orchestrator.run_diagnosis_streaming(
+                    event_queue=event_queue,
+                    symptoms=diagnosis_request.symptoms,
+                    age=diagnosis_request.age,
+                    gender=diagnosis_request.gender,
+                    duration=diagnosis_request.duration,
+                    severity=diagnosis_request.severity,
+                    image_base64=getattr(diagnosis_request, 'image_base64', None),
+                    medical_history=diagnosis_request.medical_history,
+                    current_medications=diagnosis_request.current_medications,
+                    allergies=diagnosis_request.allergies,
+                    family_history=diagnosis_request.family_history,
+                    social_history=diagnosis_request.social_history,
+                    model_preference=diagnosis_request.model_preference,
+                )
+            except Exception as exc:
+                logger.error("Streaming pipeline crashed: %s", exc, exc_info=True)
+                await event_queue.put({
+                    "event": "complete",
+                    "result": {
+                        "answer": f"Diagnosis pipeline error: {exc}",
+                        "causes": [],
+                        "red_flags": [],
+                        "recommended_tests": [],
+                        "agent_timings": {},
+                        "total_time": 0,
+                        "multi_agent": True,
+                        "agents_used": [],
+                        "estimated_cost": 0,
+                        "error": str(exc),
+                    },
+                })
+
+        asyncio.create_task(_run_streaming_pipeline())
 
         async def event_generator():
+            # Immediate first event to establish connection in browser
+            yield {"data": json.dumps({"event": "started", "message": "Pipeline started"})}
             while True:
-                event = await event_queue.get()
-                yield f"data: {json.dumps(event)}\n\n"
-                if event.get("event") == "complete":
-                    break
+                try:
+                    event = await asyncio.wait_for(event_queue.get(), timeout=10.0)
+                    yield {"data": json.dumps(event)}
+                    if event.get("event") == "complete":
+                        break
+                except asyncio.TimeoutError:
+                    yield {"comment": "keepalive"}
 
-        return StreamingResponse(event_generator(), media_type="text/event-stream")
+        from sse_starlette.sse import EventSourceResponse
+        return EventSourceResponse(event_generator(), ping=5)
 
     except Exception as e:
         logger.error("Streaming diagnosis error: %s", e, exc_info=True)
@@ -552,6 +689,106 @@ async def followup_question(
         raise HTTPException(status_code=500, detail=f"Followup failed: {str(e)}")
 
 
+@app.post("/api/interview")
+async def pa_interview(
+    request_data: InterviewRequest,
+    http_request: Request,
+    x_openai_api_key: Optional[str] = Header(None),
+    x_anthropic_api_key: Optional[str] = Header(None),
+):
+    """Run one round of the PA clinical interview."""
+    try:
+        api_key, provider = _get_api_key(x_anthropic_api_key or x_openai_api_key)
+
+        if not api_key:
+            # No API key — return scripted follow-up questions
+            # The first user message is the chief complaint (already provided)
+            exchange_count = len([m for m in request_data.conversation if m.get("role") == "user"])
+            followup_questions = [
+                # index 0 = already answered (chief complaint), so start from index 1
+                "When did this start? Was it sudden or gradual?",
+                "How severe would you rate this on a scale of 1-10?",
+                "Have you noticed any other symptoms alongside this?",
+                "Do you have any medical conditions or take any medications?",
+                "Do you have any allergies to medications?",
+                "Does anything make it better or worse?",
+                "Is there any relevant family history of similar conditions?",
+            ]
+            # exchange_count starts at 1 (chief complaint already in conversation)
+            q_index = exchange_count - 1  # offset since chief complaint is already exchange 0
+            if q_index >= 0 and q_index < len(followup_questions):
+                return {"action": "ask", "question": followup_questions[q_index], "exchange_count": exchange_count}
+            else:
+                # Enough questions asked — route to general medicine
+                chief = ""
+                for m in request_data.conversation:
+                    if m.get("role") == "user":
+                        chief = m.get("content", "")
+                        break
+                return {
+                    "action": "route",
+                    "routing": {
+                        "specialties": ["general_medicine"],
+                        "urgency": "routine",
+                        "patient_summary": "Basic interview completed. See conversation for clinical details.",
+                        "chief_complaint": chief
+                    },
+                    "exchange_count": exchange_count
+                }
+
+        # Determine model preference
+        model_pref = request_data.model_preference
+        if model_pref == "auto":
+            model_pref = None
+        if provider == "ollama":
+            model_pref = "llama3.1:8b"
+
+        # Create PA agent
+        from agents.pa_agent import PAInterviewAgent
+        from agents.message_bus import MessageBus
+        from agents.llm_client import LLMClient
+
+        bus = MessageBus()
+        all_keys = _get_all_api_keys(http_request)
+        llm_client = LLMClient(
+            anthropic_key=api_key if provider == "anthropic" else None,
+            openai_key=all_keys.get("openai"),
+            google_key=all_keys.get("google"),
+        )
+
+        pa = PAInterviewAgent(
+            api_key=api_key if provider != "ollama" else "ollama",
+            bus=bus,
+            llm_client=llm_client,
+        )
+
+        # Inject language instruction into the conversation context
+        lang = getattr(request_data, 'language', 'en') or 'en'
+        LANG_NAMES = {"en":"English","zh":"Chinese (Simplified)","es":"Spanish","fr":"French","hi":"Hindi","de":"German","pt":"Portuguese","ja":"Japanese","ko":"Korean","ar":"Arabic","ru":"Russian","it":"Italian"}
+        lang_instruction = ""
+        if lang != "en" and lang in LANG_NAMES:
+            lang_instruction = f"\n[LANGUAGE: Respond in {LANG_NAMES[lang]}. Ask questions and provide all text in {LANG_NAMES[lang]}.]"
+
+        result = await pa.interview(
+            conversation=request_data.conversation,
+            age=request_data.age,
+            gender=request_data.gender,
+            model_preference=model_pref,
+            language_instruction=lang_instruction,
+        )
+
+        return result
+
+    except Exception as e:
+        logger.error("PA interview error: %s", e, exc_info=True)
+        # On error, return a safe fallback
+        return {
+            "action": "ask",
+            "question": "I apologize for the interruption. Could you tell me more about your symptoms?",
+            "exchange_count": len([m for m in request_data.conversation if m.get("role") == "user"])
+        }
+
+
 @app.post("/api/generate-question")
 async def generate_question(
     request_data: QuestionGenerationRequest,
@@ -569,18 +806,52 @@ async def generate_question(
                 "estimated_cost": 0.0,
             }
 
+        # Language instruction for non-English
+        gen_lang = getattr(request_data, 'language', 'en') or 'en'
+        GEN_LANG_NAMES = {"en":"English","zh":"Chinese (Simplified)","es":"Spanish","fr":"French","hi":"Hindi","de":"German","pt":"Portuguese","ja":"Japanese","ko":"Korean","ar":"Arabic","ru":"Russian","it":"Italian"}
+        gen_lang_suffix = ""
+        if gen_lang != "en" and gen_lang in GEN_LANG_NAMES:
+            gen_lang_suffix = f" IMPORTANT: Write the question in {GEN_LANG_NAMES[gen_lang]}."
+
+        # HPI detail mode: generate multiple context-aware questions at once
+        if request_data.mode == "hpi_detail" and request_data.context:
+            if provider == "openai" or provider == "ollama":
+                from openai import OpenAI
+                client_kwargs = {"api_key": api_key}
+                model_name = "gpt-4o"
+                if provider == "ollama":
+                    client_kwargs = {"api_key": "ollama", "base_url": OLLAMA_API_URL}
+                    model_name = "llama3.1:8b"
+                client = OpenAI(**client_kwargs)
+                resp = client.chat.completions.create(
+                    model=model_name,
+                    messages=[{"role": "user", "content": request_data.context + gen_lang_suffix}],
+                    max_tokens=500, temperature=0.5,
+                )
+                return {"question": resp.choices[0].message.content.strip(), "estimated_cost": 0.0}
+            else:
+                import anthropic
+                client = anthropic.Anthropic(api_key=api_key)
+                resp = client.messages.create(
+                    model="claude-sonnet-4-20250514",
+                    max_tokens=500,
+                    temperature=0.5,
+                    messages=[{"role": "user", "content": request_data.context + gen_lang_suffix}],
+                )
+                return {"question": resp.content[0].text.strip(), "estimated_cost": 0.01}
+
         if provider == "openai" or provider == "ollama":
             from openai import OpenAI
             client_kwargs = {"api_key": api_key}
             model_name = "gpt-4o"
             if provider == "ollama":
-                client_kwargs = {"api_key": "ollama", "base_url": "http://localhost:11434/v1"}
+                client_kwargs = {"api_key": "ollama", "base_url": OLLAMA_API_URL}
                 model_name = "llama3.1:8b"
             client = OpenAI(**client_kwargs)
             prompt = (
                 f"Generate ONE specific follow-up question for a {request_data.age}-year-old {request_data.gender} "
                 f"with symptoms: {request_data.symptoms}. Question {request_data.questions_asked + 1} of {request_data.total_ai_questions}. "
-                f"Previously asked: {request_data.previous_questions}. Return ONLY the question, no preamble."
+                f"Previously asked: {request_data.previous_questions}. Return ONLY the question, no preamble.{gen_lang_suffix}"
             )
             resp = client.chat.completions.create(
                 model=model_name,
@@ -832,3 +1103,5 @@ async def find_doctors(
 @app.options("/{full_path:path}")
 async def options_handler():
     return {"message": "CORS preflight OK"}
+
+

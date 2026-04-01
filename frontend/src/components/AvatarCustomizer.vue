@@ -12,14 +12,107 @@
       </div>
 
       <div class="p-5 space-y-5">
-        <!-- Live Preview -->
-        <div class="flex justify-center py-4 bg-slate-800/50 rounded-xl">
-          <DoctorAvatar :avatar="localAvatar" :speaking="previewSpeaking" size="xl" />
+        <!-- Character Type Selector -->
+        <div>
+          <label class="text-caption text-slate-400 uppercase font-semibold mb-2 block">Choose Your PA Character</label>
+          <div class="grid grid-cols-4 gap-2">
+            <button
+              v-for="char in characterTypes" :key="char.id"
+              @click="localAvatar.characterType = char.id; localAvatar.name = char.defaultName"
+              class="flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl text-xs font-medium border transition-all"
+              :class="(localAvatar.characterType || 'bunny') === char.id
+                ? 'bg-purple-500/20 border-purple-500/50 text-purple-300 scale-105'
+                : 'bg-slate-800 border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-500'"
+            >
+              <span class="text-2xl">{{ char.emoji }}</span>
+              {{ char.label }}
+            </button>
+          </div>
         </div>
 
-        <!-- Avatar Style Toggle -->
-        <div>
-          <label class="text-[11px] text-slate-400 uppercase font-semibold mb-2 block">Avatar Style</label>
+        <!-- Bunny Color (only for bunny character) -->
+        <div v-if="(localAvatar.characterType || 'bunny') === 'bunny'">
+          <label class="text-caption text-slate-400 uppercase font-semibold mb-2 block">Outfit Color</label>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="color in bunnyColors" :key="color.value"
+              @click="localAvatar.bunnyColor = color.value"
+              class="w-9 h-9 rounded-full border-2 transition-all hover:scale-110"
+              :class="(localAvatar.bunnyColor || '#ce93d8') === color.value ? 'border-blue-400 scale-110 ring-2 ring-blue-400/30' : 'border-slate-600'"
+              :style="{ backgroundColor: color.value }"
+              :title="color.label"
+            ></button>
+          </div>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="flex justify-center py-4 bg-slate-800/50 rounded-xl">
+          <!-- Robotic Bunny Preview -->
+          <div v-if="(localAvatar.characterType || 'bunny') === 'bunny'" class="w-36 h-44">
+            <svg viewBox="-10 -30 260 380" class="w-full h-full" style="filter: drop-shadow(0 8px 20px rgba(0,0,0,0.2))">
+              <defs>
+                <linearGradient id="prevEarGlow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.3"/><stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/></linearGradient>
+                <linearGradient id="prevBodyGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" :stop-color="localAvatar.bunnyColor || '#a78bfa'"/><stop offset="100%" :stop-color="darkenColor(localAvatar.bunnyColor || '#7c3aed')"/></linearGradient>
+                <filter id="prevGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              </defs>
+              <!-- Ears -->
+              <ellipse cx="120" cy="55" rx="19" ry="65" fill="white" stroke="#64748b" stroke-width="2.5" transform="rotate(-8 120 110)"/>
+              <ellipse cx="120" cy="50" rx="10" ry="46" fill="url(#prevEarGlow)" transform="rotate(-8 120 110)"/>
+              <ellipse cx="160" cy="50" rx="19" ry="65" fill="white" stroke="#64748b" stroke-width="2.5" transform="rotate(8 160 110)"/>
+              <ellipse cx="160" cy="45" rx="10" ry="46" fill="url(#prevEarGlow)" transform="rotate(8 160 110)"/>
+              <!-- Antenna -->
+              <line x1="172" y1="30" x2="185" y2="5" stroke="#38bdf8" stroke-width="1.5" opacity="0.7"/>
+              <circle cx="185" cy="5" r="4" fill="#0ea5e9" opacity="0.9" filter="url(#prevGlow)">
+                <animate attributeName="r" values="3;5;3" dur="1.2s" repeatCount="indefinite"/>
+              </circle>
+              <!-- Head -->
+              <ellipse cx="140" cy="150" rx="65" ry="60" fill="white" stroke="#64748b" stroke-width="3"/>
+              <!-- Robotic eyes -->
+              <rect x="100" y="126" width="32" height="24" rx="12" fill="#0f172a" stroke="#94a3b8" stroke-width="1.5"/>
+              <circle cx="116" cy="138" r="7" fill="#3b82f6" filter="url(#prevGlow)"/>
+              <circle cx="114" cy="136" r="2.5" fill="white" opacity="0.85"/>
+              <rect x="148" y="126" width="32" height="24" rx="12" fill="#0f172a" stroke="#94a3b8" stroke-width="1.5"/>
+              <circle cx="164" cy="138" r="7" fill="#3b82f6" filter="url(#prevGlow)"/>
+              <circle cx="162" cy="136" r="2.5" fill="white" opacity="0.85"/>
+              <!-- Nose -->
+              <polygon points="140,155 136,161 144,161" fill="#94a3b8" stroke="#64748b" stroke-width="1"/>
+              <!-- Whiskers -->
+              <line x1="88" y1="152" x2="113" y2="156" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
+              <line x1="88" y1="162" x2="113" y2="161" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
+              <line x1="167" y1="156" x2="192" y2="152" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
+              <line x1="167" y1="161" x2="192" y2="162" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
+              <!-- Mouth -->
+              <rect x="122" y="167" width="36" height="8" rx="4" fill="#0f172a" stroke="#94a3b8" stroke-width="0.8"/>
+              <rect x="128" y="170" width="24" height="2" rx="1" fill="#3b82f6" opacity="0.4"/>
+              <!-- Body -->
+              <path d="M90 200 Q90 185 105 178 L120 195 Q140 205 160 195 L175 178 Q190 185 190 200 L195 290 L85 290 Z" fill="url(#prevBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
+              <path d="M110 195 L140 210 L170 195" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+              <!-- Heartbeat -->
+              <polyline fill="none" stroke="#38bdf8" stroke-width="1" stroke-linecap="round" points="105,225 120,225 128,215 131,235 134,220 137,230 140,225 175,225" opacity="0.4"/>
+              <!-- Arms + hands -->
+              <ellipse cx="88" cy="215" rx="15" ry="12" fill="url(#prevBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
+              <ellipse cx="192" cy="215" rx="15" ry="12" fill="url(#prevBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
+              <circle cx="80" cy="230" r="10" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
+              <circle cx="200" cy="230" r="10" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
+              <!-- Feet -->
+              <ellipse cx="115" cy="298" rx="18" ry="12" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
+              <ellipse cx="165" cy="298" rx="18" ry="12" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
+              <!-- Name tag -->
+              <rect x="118" y="250" width="44" height="14" rx="3" fill="white" stroke="#94a3b8" stroke-width="0.8"/>
+              <text x="140" y="261" text-anchor="middle" fill="#3b82f6" font-size="7.5" font-weight="bold" font-family="system-ui">DR. HOPPS</text>
+            </svg>
+          </div>
+          <!-- Cat Preview -->
+          <div v-else-if="(localAvatar.characterType || 'bunny') === 'cat'" class="text-8xl">🐱</div>
+          <!-- Dog Preview -->
+          <div v-else-if="(localAvatar.characterType || 'bunny') === 'dog'" class="text-8xl">🐶</div>
+          <!-- Human Preview -->
+          <DoctorAvatar v-else :avatar="localAvatar" :speaking="previewSpeaking" size="xl" />
+        </div>
+
+        <!-- Avatar Style Toggle (only for human character) -->
+        <div v-if="(localAvatar.characterType || 'bunny') === 'human'">
+          <label class="text-caption text-slate-400 uppercase font-semibold mb-2 block">Avatar Style</label>
           <div class="flex gap-2">
             <button
               v-for="s in avatarStyles" :key="s.id"
@@ -65,21 +158,21 @@
                 Remove
               </button>
             </div>
-            <p class="text-[10px] text-slate-500 text-center">Upload a photo for a realistic avatar. Square images work best.</p>
+            <p class="text-detail text-slate-500 text-center">Upload a photo for a realistic avatar. Square images work best.</p>
           </div>
           <input ref="photoFileRef" type="file" accept="image/*" class="hidden" @change="handlePhotoUpload" />
         </div>
 
-        <!-- Appearance options (hidden in photo mode) -->
-        <template v-if="localAvatar.avatarStyle !== 'photo'">
+        <!-- Appearance options (only for human character, hidden in photo mode) -->
+        <template v-if="(localAvatar.characterType || 'bunny') === 'human' && localAvatar.avatarStyle !== 'photo'">
           <!-- Name & Specialty -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="text-[11px] text-slate-400 uppercase font-semibold mb-1 block">Name</label>
+              <label class="text-caption text-slate-400 uppercase font-semibold mb-1 block">Name</label>
               <input v-model="localAvatar.name" class="w-full bg-slate-800 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
             <div>
-              <label class="text-[11px] text-slate-400 uppercase font-semibold mb-1 block">Specialty</label>
+              <label class="text-caption text-slate-400 uppercase font-semibold mb-1 block">Specialty</label>
               <select v-model="localAvatar.specialty" class="w-full bg-slate-800 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                 <option>General Practitioner</option>
                 <option>Internal Medicine</option>
@@ -97,7 +190,7 @@
 
           <!-- Skin Tone -->
           <div>
-            <label class="text-[11px] text-slate-400 uppercase font-semibold mb-2 block">Skin Tone</label>
+            <label class="text-caption text-slate-400 uppercase font-semibold mb-2 block">Skin Tone</label>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="tone in skinTones" :key="tone"
@@ -111,7 +204,7 @@
 
           <!-- Hair Style -->
           <div>
-            <label class="text-[11px] text-slate-400 uppercase font-semibold mb-2 block">Hair Style</label>
+            <label class="text-caption text-slate-400 uppercase font-semibold mb-2 block">Hair Style</label>
             <div class="flex gap-2 flex-wrap">
               <button
                 v-for="style in hairStyles" :key="style.id"
@@ -126,7 +219,7 @@
 
           <!-- Hair Color -->
           <div>
-            <label class="text-[11px] text-slate-400 uppercase font-semibold mb-2 block">Hair Color</label>
+            <label class="text-caption text-slate-400 uppercase font-semibold mb-2 block">Hair Color</label>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="color in hairColors" :key="color"
@@ -140,7 +233,7 @@
 
           <!-- Eye Color -->
           <div>
-            <label class="text-[11px] text-slate-400 uppercase font-semibold mb-2 block">Eye Color</label>
+            <label class="text-caption text-slate-400 uppercase font-semibold mb-2 block">Eye Color</label>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="color in eyeColors" :key="color"
@@ -154,7 +247,7 @@
 
           <!-- Coat Color -->
           <div>
-            <label class="text-[11px] text-slate-400 uppercase font-semibold mb-2 block">Coat Color</label>
+            <label class="text-caption text-slate-400 uppercase font-semibold mb-2 block">Coat Color</label>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="color in coatColors" :key="color.value"
@@ -169,7 +262,7 @@
 
           <!-- Accessories -->
           <div>
-            <label class="text-[11px] text-slate-400 uppercase font-semibold mb-2 block">Accessories</label>
+            <label class="text-caption text-slate-400 uppercase font-semibold mb-2 block">Accessories</label>
             <div class="flex gap-3">
               <label class="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" v-model="localAvatar.glasses" class="rounded bg-slate-800 border-slate-600 text-blue-500 focus:ring-blue-500" />
@@ -180,7 +273,7 @@
 
           <!-- Background Color -->
           <div>
-            <label class="text-[11px] text-slate-400 uppercase font-semibold mb-2 block">Background</label>
+            <label class="text-caption text-slate-400 uppercase font-semibold mb-2 block">Background</label>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="bg in bgColors" :key="bg"
@@ -196,11 +289,11 @@
         <!-- Name & Specialty (photo mode - still needed) -->
         <div v-if="localAvatar.avatarStyle === 'photo'" class="grid grid-cols-2 gap-3">
           <div>
-            <label class="text-[11px] text-slate-400 uppercase font-semibold mb-1 block">Name</label>
+            <label class="text-caption text-slate-400 uppercase font-semibold mb-1 block">Name</label>
             <input v-model="localAvatar.name" class="w-full bg-slate-800 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
           </div>
           <div>
-            <label class="text-[11px] text-slate-400 uppercase font-semibold mb-1 block">Specialty</label>
+            <label class="text-caption text-slate-400 uppercase font-semibold mb-1 block">Specialty</label>
             <select v-model="localAvatar.specialty" class="w-full bg-slate-800 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
               <option>General Practitioner</option>
               <option>Internal Medicine</option>
@@ -218,7 +311,7 @@
 
         <!-- Voice Settings -->
         <div>
-          <label class="text-[11px] text-slate-400 uppercase font-semibold mb-2 block">Doctor's Voice</label>
+          <label class="text-caption text-slate-400 uppercase font-semibold mb-2 block">Doctor's Voice</label>
           <div class="space-y-2">
             <select
               v-model="localAvatar.preferredVoice"
@@ -240,13 +333,13 @@
                 Preview Voice
               </button>
               <div class="flex items-center gap-2 flex-1">
-                <span class="text-[10px] text-slate-500 whitespace-nowrap">Speed</span>
+                <span class="text-detail text-slate-500 whitespace-nowrap">Speed</span>
                 <input
                   type="range" min="0.7" max="1.3" step="0.05"
                   v-model.number="localAvatar.voiceRate"
                   class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
                 />
-                <span class="text-[10px] text-slate-400 w-8">{{ (localAvatar.voiceRate || 0.95).toFixed(2) }}</span>
+                <span class="text-detail text-slate-400 w-8">{{ (localAvatar.voiceRate || 0.95).toFixed(2) }}</span>
               </div>
             </div>
           </div>
@@ -254,7 +347,7 @@
 
         <!-- Presets (not in photo mode) -->
         <div v-if="localAvatar.avatarStyle !== 'photo'">
-          <label class="text-[11px] text-slate-400 uppercase font-semibold mb-2 block">Quick Presets</label>
+          <label class="text-caption text-slate-400 uppercase font-semibold mb-2 block">Quick Presets</label>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
             <button
               v-for="preset in presets" :key="preset.name"
@@ -262,7 +355,7 @@
               class="bg-slate-800 hover:bg-slate-700 border border-slate-700/50 rounded-lg p-2 text-center transition-colors"
             >
               <div class="text-xs font-medium text-white">{{ preset.name }}</div>
-              <div class="text-[10px] text-slate-500">{{ preset.specialty }}</div>
+              <div class="text-detail text-slate-500">{{ preset.specialty }}</div>
             </button>
           </div>
         </div>
@@ -282,8 +375,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import DoctorAvatar from './DoctorAvatar.vue'
+import { useI18n } from '@/composables/useI18n.js'
+
+const { lang } = useI18n()
 
 const props = defineProps({
   currentAvatar: { type: Object, required: true }
@@ -302,6 +398,34 @@ const previewSpeaking = ref(false)
 const availableVoices = ref([])
 const photoFileRef = ref(null)
 
+const characterTypes = [
+  { id: 'bunny', label: 'Bunny', emoji: '🐰', defaultName: 'Dr. Hopps' },
+  { id: 'human', label: 'Human', emoji: '👨‍⚕️', defaultName: 'Dr. AI' },
+  { id: 'cat', label: 'Cat', emoji: '🐱', defaultName: 'Dr. Whiskers' },
+  { id: 'dog', label: 'Dog', emoji: '🐶', defaultName: 'Dr. Buddy' },
+]
+
+// Darken a hex color for gradient bottom
+function darkenColor(hex) {
+  try {
+    const r = Math.max(0, parseInt(hex.slice(1, 3), 16) - 40)
+    const g = Math.max(0, parseInt(hex.slice(3, 5), 16) - 40)
+    const b = Math.max(0, parseInt(hex.slice(5, 7), 16) - 40)
+    return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`
+  } catch { return hex }
+}
+
+const bunnyColors = [
+  { value: '#ce93d8', label: 'Lavender' },
+  { value: '#90caf9', label: 'Sky Blue' },
+  { value: '#a5d6a7', label: 'Mint' },
+  { value: '#ffcc80', label: 'Peach' },
+  { value: '#ef9a9a', label: 'Rose' },
+  { value: '#80cbc4', label: 'Teal' },
+  { value: '#b0bec5', label: 'Silver' },
+  { value: '#fff59d', label: 'Sunny' },
+]
+
 const avatarStyles = [
   { id: 'illustrated', label: 'Illustrated' },
   { id: 'realistic', label: 'Realistic' },
@@ -311,11 +435,31 @@ const avatarStyles = [
 onMounted(() => {
   setInterval(() => { previewSpeaking.value = !previewSpeaking.value }, 2000)
 
+  const LANG_BCP47 = {
+    en: ['en-US','en-GB','en-AU','en'],
+    es: ['es-ES','es-MX','es-US','es'],
+    fr: ['fr-FR','fr-CA','fr'],
+    zh: ['zh-CN','zh-TW','zh-HK','zh'],
+    hi: ['hi-IN','hi'],
+    ar: ['ar-SA','ar-EG','ar'],
+    de: ['de-DE','de-AT','de'],
+    pt: ['pt-BR','pt-PT','pt'],
+    ja: ['ja-JP','ja'],
+    ko: ['ko-KR','ko'],
+    ru: ['ru-RU','ru'],
+    it: ['it-IT','it'],
+  }
   const loadVoices = () => {
     if ('speechSynthesis' in window) {
       const voices = window.speechSynthesis.getVoices()
-      availableVoices.value = voices.filter(v => v.lang.startsWith('en'))
-      availableVoices.value.sort((a, b) => {
+      const prefixes = LANG_BCP47[lang.value] || LANG_BCP47.en
+      let filtered = voices.filter(v => prefixes.some(p => v.lang.startsWith(p)))
+      // If no voices for this language, show English + all voices
+      if (filtered.length === 0) {
+        filtered = voices.filter(v => v.lang.startsWith('en'))
+        if (filtered.length === 0) filtered = voices
+      }
+      availableVoices.value = filtered.sort((a, b) => {
         if (a.localService !== b.localService) return a.localService ? 1 : -1
         return a.name.localeCompare(b.name)
       })
@@ -325,6 +469,8 @@ onMounted(() => {
   if ('speechSynthesis' in window) {
     window.speechSynthesis.addEventListener('voiceschanged', loadVoices)
   }
+  // Reload voices when language changes
+  watch(lang, loadVoices)
 })
 
 function handlePhotoUpload(event) {

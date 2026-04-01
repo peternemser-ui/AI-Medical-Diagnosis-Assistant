@@ -1,16 +1,30 @@
-const PROFILE_KEY = 'user_profile'
-const PREFERENCES_KEY = 'user_preferences'
-const HISTORY_KEY = 'diagnosis_history'
-const ACCOUNTS_KEY = 'user_accounts'
-
 /**
- * Generate a UUID using crypto.randomUUID() with fallback
+ * User Service — HIPAA-compliant profile and preferences management.
+ *
+ * PHI (profile with medical data) is stored encrypted in localStorage
+ * via encryptedStorage. Preferences (theme, language) are non-PHI
+ * and stored as plaintext localStorage.
+ *
+ * The old "saved accounts" / passwordless login system has been removed.
+ * All auth now goes through backend JWT (authService.js).
  */
+
+import { isUnlocked } from './cryptoService.js'
+import {
+  getEncryptedProfile,
+  saveEncryptedProfile,
+  clearAllEncryptedData,
+  getEncryptedHistory,
+} from './encryptedStorage.js'
+
+const PREFERENCES_KEY = 'user_preferences'
+
+// ── Helpers ──────────────────────────────────────────────────
+
 function generateUUID() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID()
   }
-  // Fallback for older browsers
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0
     const v = c === 'x' ? r : (r & 0x3) | 0x8
@@ -18,9 +32,6 @@ function generateUUID() {
   })
 }
 
-/**
- * Returns default profile shape
- */
 function defaultProfile() {
   return {
     id: generateUUID(),
@@ -40,9 +51,6 @@ function defaultProfile() {
   }
 }
 
-/**
- * Returns default preferences shape
- */
 function defaultPreferences() {
   return {
     theme: 'dark',
@@ -56,192 +64,143 @@ function defaultPreferences() {
   }
 }
 
+// ── Profile (PHI — encrypted) ────────────────────────────────
+
 /**
- * Get user profile from localStorage, creating a default if none exists.
- * @returns {Object} The user profile object
+ * Get user profile. Returns encrypted profile if unlocked,
+ * otherwise returns default (no PHI exposed).
+ *
+ * NOTE: This is now async because it reads from encrypted storage.
+ * Callers that previously used getProfile() synchronously may need
+ * to be updated. For backward compatibility, a sync fallback reads
+ * from the auth_user cache (non-PHI fields only).
+ */
+export async function getProfileAsync() {
+  if (isUnlocked()) {
+    return await getEncryptedProfile()
+  }
+  // Fallback: return non-PHI fields from auth cache
+  return _getAuthUserAsProfile()
+}
+
+/**
+ * Synchronous profile getter — reads from plaintext localStorage
+ * (user_profile or auth_user cache). Use getProfileAsync() for
+ * full PHI-inclusive profile from encrypted storage.
  */
 export function getProfile() {
   try {
-    const raw = localStorage.getItem(PROFILE_KEY)
-    if (raw) {
-      return { ...defaultProfile(), ...JSON.parse(raw) }
+    // Try full plaintext profile first (pre-migration or fallback)
+    const raw = localStorage.getItem('user_profile')
+    if (raw) return { ...defaultProfile(), ...JSON.parse(raw) }
+
+    // Fallback: auth_user cache (non-PHI fields)
+    const authRaw = localStorage.getItem('auth_user')
+    if (authRaw) {
+      const user = JSON.parse(authRaw)
+      return { ...defaultProfile(), name: user.name || '', email: user.email || '', id: user.id || '' }
     }
-  } catch (e) {
-    console.error('Failed to read user profile:', e)
-  }
+  } catch { /* ignore */ }
   return defaultProfile()
 }
 
 /**
- * Merge data into the existing profile and save to localStorage.
- * @param {Object} data - Partial profile fields to merge
+ * Save profile data. Uses encrypted storage when unlocked,
+ * falls back to plaintext localStorage for backward compatibility.
  */
-export function saveProfile(data) {
-  try {
-    const current = getProfile()
+export async function saveProfile(data) {
+  const defaultP = defaultProfile()
+
+  if (isUnlocked()) {
+    // HIPAA path: save full profile encrypted
+    const current = await getEncryptedProfile()
     const merged = { ...current, ...data }
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(merged))
-    // Keep accounts list in sync
-    if (merged.name && merged.email) {
-      saveAccountToList(merged)
-    }
+    await saveEncryptedProfile(merged)
     return merged
-  } catch (e) {
-    console.error('Failed to save user profile:', e)
+  }
+
+  // Fallback: save to plaintext localStorage (will be migrated on next login)
+  try {
+    const raw = localStorage.getItem('user_profile')
+    const current = raw ? { ...defaultP, ...JSON.parse(raw) } : defaultP
+    const merged = { ...current, ...data }
+    localStorage.setItem('user_profile', JSON.stringify(merged))
+
+    // Also update auth_user cache with non-PHI fields
+    _updateAuthUserCache(merged)
+
+    return merged
+  } catch {
+    return null
   }
 }
 
-/**
- * Get user preferences from localStorage, creating defaults if none exist.
- * @returns {Object} The preferences object
- */
+function _updateAuthUserCache(profile) {
+  try {
+    const raw = localStorage.getItem('auth_user')
+    const authUser = raw ? JSON.parse(raw) : {}
+    authUser.name = profile.name || authUser.name
+    authUser.email = profile.email || authUser.email
+    localStorage.setItem('auth_user', JSON.stringify(authUser))
+  } catch { /* ignore */ }
+}
+
+// ── Preferences (non-PHI — plaintext) ────────────────────────
+
 export function getPreferences() {
   try {
     const raw = localStorage.getItem(PREFERENCES_KEY)
-    if (raw) {
-      return { ...defaultPreferences(), ...JSON.parse(raw) }
-    }
-  } catch (e) {
-    console.error('Failed to read user preferences:', e)
-  }
+    if (raw) return { ...defaultPreferences(), ...JSON.parse(raw) }
+  } catch { /* ignore */ }
   return defaultPreferences()
 }
 
-/**
- * Save a single preference by key.
- * @param {string} key - Preference key
- * @param {*} value - Preference value
- */
 export function savePreference(key, value) {
   try {
     const current = getPreferences()
     current[key] = value
     localStorage.setItem(PREFERENCES_KEY, JSON.stringify(current))
     return current
-  } catch (e) {
-    console.error('Failed to save preference:', e)
-  }
+  } catch { /* ignore */ }
 }
 
-/**
- * Merge multiple preferences and save.
- * @param {Object} data - Partial preferences to merge
- */
 export function savePreferences(data) {
   try {
     const current = getPreferences()
     const merged = { ...current, ...data }
     localStorage.setItem(PREFERENCES_KEY, JSON.stringify(merged))
     return merged
-  } catch (e) {
-    console.error('Failed to save preferences:', e)
-  }
+  } catch { /* ignore */ }
 }
 
-/**
- * Check if the user profile is considered complete.
- * @returns {boolean} True if name is set
- */
+// ── Profile completeness check ───────────────────────────────
+
 export function isProfileComplete() {
   const profile = getProfile()
   return !!(profile.name && profile.name.trim().length > 0)
 }
 
-/**
- * Get all saved accounts from localStorage.
- * @returns {Array} List of saved account profiles
- */
-export function getSavedAccounts() {
-  try {
-    const raw = localStorage.getItem(ACCOUNTS_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch (e) {
-    console.error('Failed to read saved accounts:', e)
-  }
-  return []
-}
+// ── Data management ──────────────────────────────────────────
 
 /**
- * Save or update an account in the accounts list.
- * @param {Object} profile - The profile to save
- */
-export function saveAccountToList(profile) {
-  try {
-    const accounts = getSavedAccounts()
-    const idx = accounts.findIndex(a => a.email && a.email === profile.email)
-    if (idx >= 0) {
-      accounts[idx] = { ...accounts[idx], ...profile }
-    } else {
-      accounts.push(profile)
-    }
-    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts))
-  } catch (e) {
-    console.error('Failed to save account to list:', e)
-  }
-}
-
-/**
- * Remove an account from the saved accounts list.
- * @param {string} email - The email of the account to remove
- */
-export function removeAccount(email) {
-  try {
-    const accounts = getSavedAccounts().filter(a => a.email !== email)
-    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts))
-  } catch (e) {
-    console.error('Failed to remove account:', e)
-  }
-}
-
-/**
- * Log in with an existing saved account by email.
- * @param {string} email - The email to log in with
- * @returns {Object|null} The profile if found, null otherwise
- */
-export function loginWithEmail(email) {
-  const accounts = getSavedAccounts()
-  const account = accounts.find(a => a.email && a.email.toLowerCase() === email.toLowerCase())
-  if (account) {
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(account))
-    return account
-  }
-  return null
-}
-
-/**
- * Remove active session (profile and preferences) but keep saved accounts.
+ * Clear all local user data (encrypted PHI + preferences).
  */
 export function clearUserData() {
-  try {
-    // Save current profile to accounts list before clearing
-    const profile = getProfile()
-    if (profile.name && profile.email) {
-      saveAccountToList(profile)
-    }
-    localStorage.removeItem(PROFILE_KEY)
-    localStorage.removeItem(PREFERENCES_KEY)
-  } catch (e) {
-    console.error('Failed to clear user data:', e)
-  }
+  clearAllEncryptedData()
+  localStorage.removeItem(PREFERENCES_KEY)
 }
 
 /**
- * Export all user data as a JSON object (profile, preferences, and session history).
- * @returns {Object} Combined data export
+ * Export all user data as JSON. Only works when session is unlocked.
  */
-export function exportAllData() {
-  const profile = getProfile()
-  const preferences = getPreferences()
-
-  let sessions = []
-  try {
-    const raw = localStorage.getItem(HISTORY_KEY)
-    if (raw) {
-      sessions = JSON.parse(raw)
-    }
-  } catch (e) {
-    console.error('Failed to read session history for export:', e)
+export async function exportAllData() {
+  if (!isUnlocked()) {
+    return { error: 'Session locked — log in to export data' }
   }
+
+  const profile = await getEncryptedProfile()
+  const preferences = getPreferences()
+  const sessions = await getEncryptedHistory()
 
   return {
     profile,

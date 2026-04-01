@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen transition-colors duration-300" :class="isDark ? 'bg-slate-950' : 'bg-white'">
+  <div class="min-h-screen transition-colors duration-300 surface-page">
     <!-- Ambient background -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
       <div class="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[120px]"
@@ -13,10 +13,9 @@
       :class="isDark ? 'border-slate-800 bg-slate-950/80 backdrop-blur-xl' : 'border-slate-200 bg-white/80 backdrop-blur-xl'">
       <div class="flex items-center gap-3">
         <router-link to="/" class="flex items-center gap-2.5 group">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" />
             </svg>
           </div>
           <span class="text-sm font-semibold hidden sm:inline" :class="isDark ? 'text-white' : 'text-slate-900'">Medical AI</span>
@@ -129,11 +128,11 @@
                 <span class="text-xs font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
                   {{ formatDate(session.timestamp) }}
                 </span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
+                <span class="px-2 py-0.5 rounded-full text-detail font-bold uppercase tracking-wide"
                   :class="urgencyClass(session.urgency)">
                   {{ session.urgency }}
                 </span>
-                <span v-if="getMessageCount(session.id)" class="text-[10px] px-1.5 py-0.5 rounded-full"
+                <span v-if="getMessageCount(session.id)" class="text-detail px-1.5 py-0.5 rounded-full"
                   :class="isDark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400'">
                   {{ getMessageCount(session.id) }} messages
                 </span>

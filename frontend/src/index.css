@@ -2,6 +2,377 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════════
+   DESIGN SYSTEM — Clinical theme tokens
+   ═══════════════════════════════════════════════════════════ */
+
+@layer base {
+  /* ── Light mode (default) ──────────────────────────────── */
+  :root {
+    --clinical-bg:       #f8fafc;
+    --clinical-surface:  #ffffff;
+    --clinical-elevated: #ffffff;
+    --clinical-border:   #e2e8f0;
+    --clinical-divider:  #f1f5f9;
+
+    --text-primary:      #0f172a;
+    --text-secondary:    #475569;
+    --text-tertiary:     #94a3b8;
+    --text-muted:        #cbd5e1;
+
+    --surface-hover:     #f1f5f9;
+    --surface-active:    #e2e8f0;
+
+    --accent-primary:    #10b981;
+    --accent-blue:       #3b82f6;
+    --accent-purple:     #8b5cf6;
+  }
+
+  /* ── Dark mode ─────────────────────────────────────────── */
+  .dark {
+    --clinical-bg:       #020617;
+    --clinical-surface:  #0f172a;
+    --clinical-elevated: #1e293b;
+    --clinical-border:   #1e293b;
+    --clinical-divider:  #1e293b80;
+
+    --text-primary:      #f1f5f9;
+    --text-secondary:    #94a3b8;
+    --text-tertiary:     #64748b;
+    --text-muted:        #334155;
+
+    --surface-hover:     #1e293b;
+    --surface-active:    #334155;
+
+    --accent-primary:    #34d399;
+    --accent-blue:       #60a5fa;
+    --accent-purple:     #a78bfa;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COMPONENT LAYER — Reusable class-based primitives
+
+   Encode dark/light logic once so components can use a
+   single class instead of isDark ternaries everywhere.
+   ═══════════════════════════════════════════════════════════ */
+
+@layer components {
+
+  /* ── Surfaces ──────────────────────────────────────────── */
+  .surface-page {
+    @apply bg-slate-50 text-slate-900;
+  }
+  .dark .surface-page {
+    @apply bg-slate-950 text-slate-100;
+  }
+
+  .surface-card {
+    background: var(--clinical-surface);
+    border: 1px solid var(--clinical-border);
+    box-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.06), 0 1px 3px -1px rgb(0 0 0 / 0.04);
+  }
+  .dark .surface-card {
+    box-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.3), 0 1px 3px -1px rgb(0 0 0 / 0.2);
+  }
+
+  .surface-elevated {
+    background: var(--clinical-surface);
+    border: 1px solid var(--clinical-border);
+    box-shadow: 0 4px 16px -4px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.04);
+  }
+  .dark .surface-elevated {
+    background: var(--clinical-elevated);
+    border-color: rgba(51, 65, 85, 0.6);
+    box-shadow: 0 4px 16px -4px rgb(0 0 0 / 0.4), 0 2px 6px -2px rgb(0 0 0 / 0.2);
+  }
+
+  .surface-panel {
+    background: var(--clinical-surface);
+    border: 1px solid var(--clinical-border);
+    box-shadow: 0 8px 30px -6px rgb(0 0 0 / 0.12), 0 4px 12px -4px rgb(0 0 0 / 0.06);
+  }
+  .dark .surface-panel {
+    background: rgba(15, 23, 42, 0.95);
+    border-color: rgba(51, 65, 85, 0.5);
+    box-shadow: 0 8px 30px -6px rgb(0 0 0 / 0.5), 0 4px 12px -4px rgb(0 0 0 / 0.3);
+  }
+
+  .surface-soft {
+    @apply bg-slate-50 border border-slate-100;
+  }
+  .dark .surface-soft {
+    background: rgba(30, 41, 59, 0.4);
+    border-color: rgba(51, 65, 85, 0.4);
+  }
+
+  .surface-modal {
+    background: var(--clinical-surface);
+    border: 1px solid var(--clinical-border);
+    box-shadow: 0 16px 48px -8px rgb(0 0 0 / 0.16), 0 8px 24px -6px rgb(0 0 0 / 0.08);
+  }
+  .dark .surface-modal {
+    background: #0f172a;
+    border-color: #334155;
+  }
+
+  /* ── Cards ─────────────────────────────────────────────── */
+  .card {
+    @apply surface-card rounded-card p-card-px;
+    transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+  }
+
+  .card-interactive {
+    @apply card cursor-pointer;
+  }
+  .card-interactive:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 16px -4px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.04);
+  }
+  .dark .card-interactive:hover {
+    border-color: #475569;
+    box-shadow: 0 4px 16px -4px rgb(0 0 0 / 0.4), 0 2px 6px -2px rgb(0 0 0 / 0.2);
+  }
+
+  .card-clinical {
+    @apply surface-card rounded-card overflow-hidden;
+  }
+
+  /* ── Buttons ───────────────────────────────────────────── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-medium
+           rounded-btn text-body-sm cursor-pointer select-none;
+    transition: all 0.15s ease;
+  }
+  .btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+  .btn:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+
+  .btn-primary {
+    @apply btn px-5 py-2.5 text-white;
+    background-color: #059669;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: #047857;
+  }
+  .dark .btn-primary {
+    background-color: #10b981;
+  }
+  .dark .btn-primary:hover:not(:disabled) {
+    background-color: #059669;
+  }
+
+  .btn-blue {
+    @apply btn px-5 py-2.5 text-white;
+    background-color: #2563eb;
+  }
+  .btn-blue:hover:not(:disabled) {
+    background-color: #1d4ed8;
+  }
+
+  .btn-secondary {
+    @apply btn px-5 py-2.5;
+    color: #334155;
+    background: white;
+    border: 1px solid #cbd5e1;
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: #f8fafc;
+  }
+  .dark .btn-secondary {
+    color: #cbd5e1;
+    background: #1e293b;
+    border-color: #475569;
+  }
+  .dark .btn-secondary:hover:not(:disabled) {
+    background: #334155;
+  }
+
+  .btn-ghost {
+    @apply btn px-4 py-2;
+    color: #475569;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+  .dark .btn-ghost {
+    color: #94a3b8;
+  }
+  .dark .btn-ghost:hover:not(:disabled) {
+    background: #1e293b;
+    color: #e2e8f0;
+  }
+
+  .btn-danger {
+    @apply btn px-5 py-2.5 text-white;
+    background-color: #dc2626;
+  }
+  .btn-danger:hover:not(:disabled) {
+    background-color: #b91c1c;
+  }
+
+  .btn-icon {
+    @apply btn p-2 rounded-btn;
+    color: #64748b;
+  }
+  .btn-icon:hover:not(:disabled) {
+    background: #f1f5f9;
+    color: #334155;
+  }
+  .dark .btn-icon {
+    color: #94a3b8;
+  }
+  .dark .btn-icon:hover:not(:disabled) {
+    background: #1e293b;
+    color: #e2e8f0;
+  }
+
+  .btn-sm {
+    @apply text-caption px-3 py-1.5;
+  }
+  .btn-lg {
+    @apply text-body-lg px-6 py-3;
+  }
+
+  /* ── Badges / Chips / Pills ────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center gap-1 text-detail font-semibold px-2 py-0.5 rounded-pill;
+  }
+
+  .badge-success  { background: rgb(16 185 129 / 0.1);  color: #059669; }
+  .dark .badge-success  { background: rgb(16 185 129 / 0.15); color: #34d399; }
+
+  .badge-warning  { background: rgb(245 158 11 / 0.1);  color: #d97706; }
+  .dark .badge-warning  { background: rgb(245 158 11 / 0.15); color: #fbbf24; }
+
+  .badge-danger   { background: rgb(239 68 68 / 0.1);   color: #dc2626; }
+  .dark .badge-danger   { background: rgb(239 68 68 / 0.15);  color: #f87171; }
+
+  .badge-info     { background: rgb(59 130 246 / 0.1);  color: #2563eb; }
+  .dark .badge-info     { background: rgb(59 130 246 / 0.15); color: #60a5fa; }
+
+  .badge-neutral  { background: rgb(100 116 139 / 0.1); color: #475569; }
+  .dark .badge-neutral  { background: rgb(100 116 139 / 0.15); color: #94a3b8; }
+
+  .badge-purple   { background: rgb(139 92 246 / 0.1);  color: #7c3aed; }
+  .dark .badge-purple   { background: rgb(139 92 246 / 0.15); color: #a78bfa; }
+
+  .badge-brand    { background: rgb(16 185 129 / 0.1);  color: #047857; }
+  .dark .badge-brand    { background: rgb(16 185 129 / 0.15); color: #34d399; }
+
+  /* Urgency badges */
+  .badge-routine   { background: rgb(16 185 129 / 0.1);  color: #059669; }
+  .dark .badge-routine   { background: rgb(16 185 129 / 0.15); color: #34d399; }
+  .badge-moderate  { background: rgb(245 158 11 / 0.1);  color: #d97706; }
+  .dark .badge-moderate  { background: rgb(245 158 11 / 0.15); color: #fbbf24; }
+  .badge-urgent    { background: rgb(249 115 22 / 0.1);  color: #ea580c; }
+  .dark .badge-urgent    { background: rgb(249 115 22 / 0.15); color: #fb923c; }
+  .badge-emergency { background: rgb(239 68 68 / 0.1);   color: #dc2626; }
+  .dark .badge-emergency { background: rgb(239 68 68 / 0.15);  color: #f87171; }
+
+  /* ── Inputs ────────────────────────────────────────────── */
+  .input {
+    @apply w-full rounded-input px-4 py-2.5 text-body border;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    background: white;
+    border-color: #cbd5e1;
+    color: #0f172a;
+  }
+  .input::placeholder { color: #94a3b8; }
+  .input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgb(59 130 246 / 0.15);
+  }
+  .dark .input {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(51, 65, 85, 0.6);
+    color: #f1f5f9;
+  }
+  .dark .input::placeholder { color: #64748b; }
+  .dark .input:focus {
+    border-color: rgba(59, 130, 246, 0.6);
+    box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
+  }
+
+  .input-sm {
+    @apply text-body-sm px-3 py-2;
+  }
+
+  /* ── Section headers ───────────────────────────────────── */
+  .section-header {
+    @apply flex items-center gap-2 mb-4;
+  }
+  .section-title {
+    font-size: 1.125rem;
+    line-height: 1.625rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .section-subtitle {
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+    color: var(--text-secondary);
+  }
+
+  /* ── Text hierarchy ────────────────────────────────────── */
+  .text-heading {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .text-label {
+    font-size: 0.6875rem;
+    line-height: 1rem;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .text-meta {
+    font-size: 0.625rem;
+    line-height: 1rem;
+    color: var(--text-tertiary);
+  }
+
+  /* ── Dividers ──────────────────────────────────────────── */
+  .divider {
+    border-color: var(--clinical-border);
+  }
+
+  /* ── Confidence meter ──────────────────────────────────── */
+  .confidence-bar {
+    @apply h-1.5 rounded-full overflow-hidden;
+    background: var(--clinical-divider);
+  }
+
+  /* ── Scrollbar ─────────────────────────────────────────── */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply rounded-full;
+    background: #cbd5e1;
+  }
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #334155;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GLOBAL UTILITIES
+   ═══════════════════════════════════════════════════════════ */
+
 /* Focus ring for keyboard navigation */
 *:focus-visible {
   outline: 2px solid #3b82f6;
@@ -26,3 +397,7 @@ html {
     min-width: 44px;
   }
 }
+
+/* No-scrollbar utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

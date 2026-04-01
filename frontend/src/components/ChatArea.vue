@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-1 overflow-hidden flex flex-col">
+  <div class="flex-1 overflow-hidden flex flex-col relative">
     <!-- Conversation messages -->
     <div
       ref="chatContainer"
@@ -21,25 +21,31 @@
         <!-- Actual welcome content -->
         <template v-else>
           <!-- Logo -->
-          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/25 mb-6">
-            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
+          <div class="w-14 h-14 rounded-panel bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 mb-5">
+            <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" />
             </svg>
           </div>
           <!-- Title -->
-          <h2 class="text-2xl font-bold mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">Medical Diagnosis AI</h2>
-          <p class="text-sm mb-8" :class="isDark ? 'text-slate-400' : 'text-gray-500'">Powered by 7 autonomous agents</p>
+          <h2 class="text-display font-bold mb-2 text-[var(--text-primary)]">{{ t('chat.welcomeTitle') }}</h2>
+          <p class="text-body mb-3 text-[var(--text-secondary)]">{{ t('chat.welcomeSubtitle') }}</p>
+
+          <!-- Clinical intelligence note -->
+          <div class="flex items-center gap-2 mb-8 px-3 py-2 rounded-pill text-detail"
+            :class="isDark ? 'bg-purple-500/10 text-purple-300 border border-purple-500/15' : 'bg-purple-50 text-purple-600 border border-purple-200'">
+            <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+            {{ t('hero.sevenAgents') }} — {{ t('hero.subtitle') }}
+          </div>
+
           <!-- Example prompt cards -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-2xl">
             <button
               v-for="prompt in examplePrompts"
               :key="prompt"
               @click="$emit('followup-selected', prompt)"
-              class="rounded-xl px-4 py-3 text-left text-sm transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/5 border"
-              :class="isDark ? 'bg-slate-800 hover:bg-slate-700 border-slate-700/50 hover:border-blue-500/40 text-slate-300 hover:text-white' : 'bg-white hover:bg-gray-50 border-gray-200 hover:border-blue-400 text-gray-600 hover:text-gray-900'"
+              class="card-interactive rounded-card px-4 py-3.5 text-left text-body-sm group"
             >
-              {{ prompt }}
+              <span class="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">{{ prompt }}</span>
             </button>
           </div>
         </template>
@@ -62,22 +68,31 @@
           <!-- Assistant messages -->
           <div
             v-if="message.sender === 'assistant'"
-            class="backdrop-blur-sm rounded-xl rounded-tl-sm p-4 sm:p-5 shadow-lg border-l-3 border"
+            class="rounded-card rounded-tl-sm p-4 sm:p-5 border-l-3 surface-card"
             :class="[
-              isDark ? 'bg-slate-800/80 text-slate-100 border-slate-700/50' : 'bg-white text-gray-800 border-gray-200',
-              message.causes && message.causes.length ? 'border-l-blue-500' : (isDark ? 'border-l-slate-600' : 'border-l-gray-300')
+              message.causes && message.causes.length ? 'border-l-blue-500' : 'border-l-[var(--clinical-border)]'
             ]"
           >
             <!-- Message header -->
             <div class="flex items-center mb-3 gap-2">
-              <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
+              <!-- PA Character Avatar -->
+              <div v-if="paMode && !message.causes" class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-lg shadow-sm border"
+                :class="isDark ? 'bg-slate-700 border-slate-600' : 'bg-amber-50 border-amber-200'">
+                {{ paCharacter === 'cat' ? '🐱' : paCharacter === 'dog' ? '🐶' : paCharacter === 'human' ? '👨‍⚕️' : '🐰' }}
+              </div>
+              <!-- Medical AI Avatar (for diagnosis results) -->
+              <div v-else class="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center flex-shrink-0">
+                <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" />
                 </svg>
               </div>
-              <span class="text-xs text-slate-500 font-medium">Medical AI</span>
-              <span v-if="message.multiAgent" class="text-[9px] text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded-full">Multi-Agent</span>
+              <span class="text-xs font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+                {{ paMode && !message.causes ? paAvatarName + ', PA' : t('chat.medicalAI') }}
+              </span>
+              <span v-if="message.multiAgent" class="text-tiny font-semibold tracking-wide px-2 py-0.5 rounded-full inline-flex items-center gap-1" style="background: rgba(139,92,246,0.1); color: #a78bfa; border: 1px solid rgba(139,92,246,0.15)">
+                <span class="w-1 h-1 rounded-full bg-violet-400 animate-pulse" style="box-shadow: 0 0 4px rgba(139,92,246,0.5)"></span>
+                {{ t('chat.multiAgent') }}
+              </span>
             </div>
 
             <!-- Message content -->
@@ -85,17 +100,20 @@
               <!-- Structured diagnosis cards (when multi-agent data present) -->
               <div v-if="message.causes && message.causes.length > 0" class="space-y-3">
                 <!-- Agent summary banner -->
-                <div v-if="message.totalTime" class="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-[11px] rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 mb-3" :class="isDark ? 'text-slate-400 bg-slate-900/50' : 'text-gray-500 bg-gray-100'">
-                  <span>Analyzed by {{ (message.agentsUsed || []).length }} agents in {{ message.totalTime.toFixed(1) }}s</span>
+                <div v-if="message.totalTime" class="flex items-center gap-2.5 text-detail sm:text-caption rounded-xl px-3 py-2 mb-3 border" style="background: linear-gradient(135deg, rgba(139,92,246,0.06), rgba(6,182,212,0.04)); border-color: rgba(139,92,246,0.1)">
+                  <div class="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style="background: rgba(139,92,246,0.15)">
+                    <svg class="w-3 h-3" style="color: #a78bfa" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  </div>
+                  <span style="color: rgba(255,255,255,0.5)">{{ t('chat.analyzedBy') }} <strong class="font-semibold" style="color: rgba(255,255,255,0.7)">{{ (message.agentsUsed || []).length }} {{ t('chat.agentsWord') }}</strong> in <strong class="font-semibold tabular-nums" style="color: #a78bfa">{{ message.totalTime.toFixed(1) }}s</strong></span>
                 </div>
 
                 <!-- Red flags alert -->
                 <div v-if="message.redFlags && message.redFlags.length > 0" class="bg-red-500/10 border border-red-500/30 rounded-lg p-2 sm:p-3 mb-3">
-                  <div class="text-xs font-bold text-red-400 uppercase mb-1.5">Warning Signs Detected</div>
+                  <div class="text-xs font-bold text-red-400 uppercase mb-1.5">{{ t('chat.warningSignsDetected') }}</div>
                   <ul class="space-y-1">
                     <li v-for="flag in message.redFlags" :key="flag" class="text-xs text-red-300 flex items-start gap-1.5">
                       <span class="text-red-500 font-bold flex-shrink-0">!</span>
-                      <span>{{ flag }}</span>
+                      <span>{{ typeof flag === 'object' ? (flag.title || flag.message || flag.issue || JSON.stringify(flag)) : flag }}</span>
                     </li>
                   </ul>
                 </div>
@@ -112,13 +130,13 @@
 
                 <!-- Patient Summary (from Empathy Agent) -->
                 <div v-if="message.patientSummary" class="bg-blue-500/5 border border-blue-500/20 rounded-lg p-2 sm:p-3 mt-3">
-                  <div class="text-[10px] font-semibold text-blue-400 uppercase mb-1.5">Patient Summary</div>
+                  <div class="text-detail font-semibold text-blue-400 uppercase mb-1.5">{{ t('chat.patientSummary') }}</div>
                   <p class="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">{{ message.patientSummary }}</p>
                 </div>
 
                 <!-- Action Checklist -->
                 <div v-if="message.actionChecklist && message.actionChecklist.length > 0" class="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3 mt-2">
-                  <div class="text-[10px] font-semibold text-emerald-400 uppercase mb-1.5">Your Action Checklist</div>
+                  <div class="text-detail font-semibold text-emerald-400 uppercase mb-1.5">{{ t('chat.actionChecklist') }}</div>
                   <ol class="space-y-1">
                     <li v-for="(item, i) in message.actionChecklist" :key="i" class="text-xs text-slate-300 flex gap-2">
                       <span class="text-emerald-400 font-bold flex-shrink-0">{{ i + 1 }}.</span>
@@ -130,8 +148,8 @@
                 <!-- Safety Review -->
                 <div v-if="message.safetyWarnings && message.safetyWarnings.length > 0" class="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3 mt-2">
                   <div class="flex items-center gap-2 mb-1.5">
-                    <div class="text-[10px] font-semibold text-amber-400 uppercase">Safety Review</div>
-                    <span class="text-[9px] px-1.5 py-0.5 rounded" :class="message.safetyStatus === 'PASS' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'">
+                    <div class="text-detail font-semibold text-amber-400 uppercase">{{ t('chat.safetyReview') }}</div>
+                    <span class="text-tiny px-1.5 py-0.5 rounded" :class="message.safetyStatus === 'PASS' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'">
                       {{ message.safetyStatus || 'REVIEWED' }}
                     </span>
                   </div>
@@ -145,7 +163,7 @@
 
                 <!-- Warning Signs -->
                 <div v-if="message.warningSignsList && message.warningSignsList.length > 0" class="bg-red-500/5 border border-red-500/20 rounded-lg p-3 mt-2">
-                  <div class="text-[10px] font-semibold text-red-400 uppercase mb-1.5">When to Seek Immediate Care</div>
+                  <div class="text-detail font-semibold text-red-400 uppercase mb-1.5">{{ t('chat.seekImmediateCare') }}</div>
                   <ul class="space-y-0.5">
                     <li v-for="s in message.warningSignsList" :key="s" class="text-xs text-red-300 flex items-start gap-1.5">
                       <span class="text-red-500 flex-shrink-0">&bull;</span>
@@ -156,9 +174,9 @@
 
                 <!-- Recommended Tests -->
                 <div v-if="message.recommendedTests && message.recommendedTests.length > 0" class="rounded-lg p-3 mt-2 border" :class="isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-gray-50 border-gray-200'">
-                  <div class="text-[10px] font-semibold uppercase mb-1.5" :class="isDark ? 'text-slate-400' : 'text-gray-500'">Recommended Tests</div>
+                  <div class="text-detail font-semibold uppercase mb-1.5" :class="isDark ? 'text-slate-400' : 'text-gray-500'">{{ t('chat.recommendedTests') }}</div>
                   <div class="flex flex-wrap gap-1.5">
-                    <span v-for="t in message.recommendedTests" :key="t" class="text-[11px] px-2 py-0.5 rounded" :class="isDark ? 'text-slate-300 bg-slate-700/50' : 'text-gray-700 bg-gray-200'">
+                    <span v-for="t in message.recommendedTests" :key="t" class="text-caption px-2 py-0.5 rounded" :class="isDark ? 'text-slate-300 bg-slate-700/50' : 'text-gray-700 bg-gray-200'">
                       {{ t }}
                     </span>
                   </div>
@@ -166,13 +184,13 @@
 
                 <!-- Additional questions -->
                 <div v-if="message.additionalQuestions && message.additionalQuestions.length > 0" class="mt-3">
-                  <div class="text-[10px] font-semibold uppercase mb-2" :class="isDark ? 'text-slate-400' : 'text-gray-500'">Ask a Follow-up</div>
+                  <div class="text-detail font-semibold uppercase mb-2" :class="isDark ? 'text-slate-400' : 'text-gray-500'">{{ t('chat.askFollowup') }}</div>
                   <div class="flex flex-wrap gap-1.5">
                     <button
                       v-for="q in message.additionalQuestions"
                       :key="q"
                       @click="$emit('followup-selected', q)"
-                      class="text-[11px] bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 px-2.5 py-1 rounded-lg border border-blue-500/20 transition-colors"
+                      class="text-caption bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 px-2.5 py-1 rounded-lg border border-blue-500/20 transition-colors"
                     >
                       {{ q }}
                     </button>
@@ -188,7 +206,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
-                    View Full Dashboard
+                    {{ t('chat.viewDashboard') }}
                   </router-link>
                   <button
                     @click="generatePDF(message)"
@@ -198,7 +216,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    Export PDF
+                    {{ t('chat.exportPdf') }}
                   </button>
                 </div>
               </div>
@@ -215,13 +233,13 @@
 
               <!-- Follow-up options (legacy) -->
               <div v-if="message.followUpOptions && message.followUpOptions.length > 0" class="mt-3">
-                <p class="text-xs mb-2" :class="isDark ? 'text-slate-500' : 'text-gray-500'">You can ask me about:</p>
+                <p class="text-xs mb-2" :class="isDark ? 'text-slate-500' : 'text-gray-500'">{{ t('chat.youCanAsk') }}</p>
                 <div class="flex flex-wrap gap-1.5">
                   <button
                     v-for="option in message.followUpOptions"
                     :key="option"
                     @click="$emit('followup-selected', option)"
-                    class="text-[11px] bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 px-2.5 py-1 rounded-lg border border-blue-500/20 transition-colors"
+                    class="text-caption bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 px-2.5 py-1 rounded-lg border border-blue-500/20 transition-colors"
                   >
                     {{ option }}
                   </button>
@@ -236,13 +254,13 @@
               <button
                 v-if="soundEnabled"
                 @click="$emit('replay-message', message.text)"
-                class="flex items-center gap-1 text-[10px] transition-colors px-1.5 py-0.5 rounded"
+                class="flex items-center gap-1 text-detail transition-colors px-1.5 py-0.5 rounded"
                 :class="isDark ? 'text-slate-500 hover:text-blue-400 hover:bg-slate-700/50' : 'text-gray-400 hover:text-blue-500 hover:bg-gray-100'"
               >
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
                 </svg>
-                Replay
+                {{ t('chat.replay') }}
               </button>
             </div>
           </div>
@@ -269,9 +287,13 @@
       <div v-if="isTyping" class="flex justify-start">
         <div class="rounded-xl p-4 max-w-[80%] border" :class="isDark ? 'bg-slate-800/80 border-slate-700/50' : 'bg-white border-gray-200'">
           <div class="flex items-center space-x-2">
-            <div class="w-5 h-5 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-              <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            <div v-if="paMode" class="w-6 h-6 rounded-full flex items-center justify-center text-sm"
+              :class="isDark ? 'bg-slate-700' : 'bg-amber-50'">
+              {{ paCharacter === 'cat' ? '🐱' : paCharacter === 'dog' ? '🐶' : paCharacter === 'human' ? '👨‍⚕️' : '🐰' }}
+            </div>
+            <div v-else class="w-5 h-5 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+              <svg class="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" />
               </svg>
             </div>
             <div class="typing-indicator">
@@ -279,7 +301,7 @@
               <span></span>
               <span></span>
             </div>
-            <span class="text-[11px]" :class="isDark ? 'text-slate-500' : 'text-gray-500'">Agents analyzing your case...</span>
+            <span class="text-caption" :class="isDark ? 'text-slate-500' : 'text-gray-500'">{{ t('chat.agentsAnalyzing') }}</span>
           </div>
           <!-- Skeleton preview of upcoming response -->
           <div v-if="messages.length > 0" class="mt-3 pt-3 border-t" :class="isDark ? 'border-slate-700/40' : 'border-gray-200'">
@@ -287,18 +309,22 @@
           </div>
         </div>
       </div>
+
+    <!-- (Avatar mode button removed — Dr. Buddy is shown in avatar mode automatically) -->
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, nextTick, watch, createApp, h, onMounted } from 'vue'
+import { ref, computed, nextTick, watch, createApp, h, onMounted } from 'vue'
 import DiagnosisCard from '@/components/DiagnosisCard.vue'
 import DiagnosisReport from '@/components/DiagnosisReport.vue'
 import SkeletonLoader from '@/components/SkeletonLoader.vue'
 import { useTheme } from '@/composables/useTheme.js'
+import { useI18n } from '@/composables/useI18n.js'
 
 const { isDark } = useTheme()
+const { t } = useI18n()
 
 // Brief skeleton loading state for welcome screen
 const welcomeLoading = ref(true)
@@ -324,10 +350,23 @@ const props = defineProps({
   soundEnabled: {
     type: Boolean,
     default: false
+  },
+  paMode: {
+    type: Boolean,
+    default: false
+  },
+  paCharacter: {
+    type: String,
+    default: 'dog' // 'dog' or 'cat'
   }
 })
 
-const emit = defineEmits(['followup-selected', 'replay-message'])
+const paAvatarName = computed(() => {
+  const names = { bunny: 'Dr. Hopps', cat: 'Dr. Whiskers', dog: 'Dr. Buddy', human: 'Dr. AI' }
+  return names[props.paCharacter] || 'Dr. Hopps'
+})
+
+const emit = defineEmits(['followup-selected', 'replay-message', 'toggle-avatar'])
 
 const chatContainer = ref(null)
 
@@ -408,11 +447,11 @@ const formatTimestamp = (timestamp) => {
   const diffHours = Math.floor(diffMs / 3600000)
   
   if (diffMins < 1) {
-    return 'Just now'
+    return t('chat.justNow')
   } else if (diffMins < 60) {
-    return `${diffMins}m ago`
+    return t('chat.minutesAgo').replace('{n}', diffMins)
   } else if (diffHours < 24) {
-    return `${diffHours}h ago`
+    return t('chat.hoursAgo').replace('{n}', diffHours)
   } else {
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }

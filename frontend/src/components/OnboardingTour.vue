@@ -55,7 +55,7 @@
                   :class="isDark ? 'bg-slate-800/60' : 'bg-slate-50'"
                 >
                   <span class="text-xl">{{ agent.icon }}</span>
-                  <span class="text-[10px] font-medium leading-tight text-center" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ agent.name }}</span>
+                  <span class="text-detail font-medium leading-tight text-center" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ agent.name }}</span>
                 </div>
               </div>
             </div>

@@ -1,53 +1,36 @@
 <template>
-  <div class="min-h-screen transition-colors duration-300" :class="isDark ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-gray-900 text-white' : 'bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900'">
+  <div class="min-h-screen transition-colors duration-300 surface-page">
     <!-- Header -->
-    <div class="backdrop-blur-xl border-b py-3 px-6 shadow-xl transition-colors" :class="isDark ? 'bg-slate-900/95 border-slate-700/50' : 'bg-white/95 border-slate-200'">
-      <div class="max-w-7xl mx-auto flex items-center justify-between">
+    <MPageHeader title="Consultation Report" subtitle="Comprehensive Analysis"
+      icon="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+      <template #meta v-if="session">
+        <MMetaPill>
+          <template #icon><svg class="w-3.5 h-3.5 text-[var(--text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></template>
+          <span v-if="session.age">Age: {{ session.age }}</span>
+          <span v-if="session.gender" class="ml-1 capitalize">{{ session.gender }}</span>
+        </MMetaPill>
+        <MMetaPill>
+          <template #icon><svg class="w-3.5 h-3.5 text-[var(--text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></template>
+          {{ formatDate(session.timestamp) }}
+        </MMetaPill>
+        <span v-if="topUrgency" class="badge text-caption font-bold uppercase tracking-wider" :class="urgencyClass">{{ topUrgency }}</span>
+      </template>
+      <template #actions>
+        <ThemeLangControls />
+        <router-link to="/reports" class="btn-secondary btn-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          Back to Reports
+        </router-link>
+      </template>
+      <template #mobile-meta v-if="session">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-            </svg>
-          </div>
-          <div>
-            <h1 class="text-lg font-bold leading-tight" :class="isDark ? 'text-white' : 'text-slate-900'">Consultation Report</h1>
-            <p class="text-[11px]" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Comprehensive Analysis</p>
-          </div>
+          <span v-if="session.age">Age: {{ session.age }}</span>
+          <span v-if="session.gender" class="capitalize">{{ session.gender }}</span>
+          <span>{{ formatDate(session.timestamp) }}</span>
         </div>
-
-        <!-- Patient Info Bar -->
-        <div class="hidden md:flex items-center gap-4 text-xs" :class="isDark ? 'text-slate-300' : 'text-slate-600'" v-if="session">
-          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-slate-100 border-slate-200'">
-            <svg class="w-3.5 h-3.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-            <span v-if="session.age">Age: {{ session.age }}</span>
-            <span v-if="session.gender" class="ml-1 capitalize">{{ session.gender }}</span>
-          </div>
-          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-slate-100 border-slate-200'">
-            <svg class="w-3.5 h-3.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            <span>{{ formatDate(session.timestamp) }}</span>
-          </div>
-          <span v-if="topUrgency" class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider" :class="urgencyClass">{{ topUrgency }}</span>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <ThemeLangControls />
-          <router-link to="/reports" class="flex items-center gap-2 px-4 py-2 text-xs rounded-lg border transition-colors" :class="isDark ? 'bg-slate-800 hover:bg-slate-700 border-slate-700/50 hover:border-slate-600 text-white' : 'bg-slate-100 hover:bg-slate-200 border-slate-200 hover:border-slate-300 text-slate-700'">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-            Back to Reports
-          </router-link>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mobile patient bar -->
-    <div v-if="session" class="md:hidden flex items-center justify-between gap-2 px-4 py-2 border-b text-xs" :class="isDark ? 'bg-slate-800/50 border-slate-700/30 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'">
-      <div class="flex items-center gap-3">
-        <span v-if="session.age">Age: {{ session.age }}</span>
-        <span v-if="session.gender" class="capitalize">{{ session.gender }}</span>
-        <span>{{ formatDate(session.timestamp) }}</span>
-      </div>
-      <span v-if="topUrgency" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase" :class="urgencyClass">{{ topUrgency }}</span>
-    </div>
+        <span v-if="topUrgency" class="badge badge-sm text-detail font-bold uppercase" :class="urgencyClass">{{ topUrgency }}</span>
+      </template>
+    </MPageHeader>
 
     <!-- Skeleton loading state -->
     <div v-if="loading" class="max-w-7xl mx-auto px-4 py-6 space-y-6">
@@ -55,16 +38,16 @@
       <SkeletonLoader type="report-header" />
 
       <!-- Chief complaint skeleton -->
-      <div class="rounded-xl border p-4" :class="isDark ? 'border-slate-700/40 bg-slate-800/40' : 'border-slate-200 bg-slate-50'">
+      <div class="card">
         <SkeletonLoader type="text-block" />
       </div>
 
       <!-- Row 1 skeleton: chart + agent panel -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 rounded-xl border p-5" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200'">
+        <div class="surface-card lg:col-span-2 rounded-xl border p-5">
           <SkeletonLoader type="list" />
         </div>
-        <div class="rounded-xl border p-4" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200'">
+        <div class="surface-card rounded-xl border p-4">
           <SkeletonLoader type="list" />
         </div>
       </div>
@@ -78,10 +61,10 @@
 
       <!-- Row 3 skeleton -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="rounded-xl border p-4" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200'">
+        <div class="surface-card rounded-xl border p-4">
           <SkeletonLoader type="list" />
         </div>
-        <div class="rounded-xl border p-4" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200'">
+        <div class="surface-card rounded-xl border p-4">
           <SkeletonLoader type="text-block" />
         </div>
       </div>
@@ -108,22 +91,22 @@
       <template v-else>
         <!-- Chief Complaint -->
         <div v-if="session.symptoms" class="p-4 rounded-xl border" :class="isDark ? 'bg-slate-800/40 border-slate-700/40' : 'bg-slate-50 border-slate-200'">
-          <div class="text-[10px] uppercase font-semibold mb-1" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Chief Complaint</div>
+          <div class="text-label mb-1" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Chief Complaint</div>
           <p class="text-sm leading-relaxed" :class="isDark ? 'text-slate-300' : 'text-slate-700'">{{ session.symptoms }}</p>
         </div>
 
         <!-- Row 1: Confidence Chart + Agent Performance -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Confidence Chart (2/3) -->
-          <div class="lg:col-span-2 rounded-xl overflow-hidden border transition-colors" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'">
-            <div class="px-5 py-3 border-b flex items-center gap-2" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
+          <div class="surface-card lg:col-span-2 rounded-xl overflow-hidden border transition-colors">
+            <div class="px-5 py-3 border-b divider flex items-center gap-2">
               <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-              <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Differential Diagnoses Confidence</h2>
+              <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Differential Diagnoses Confidence</h2>
             </div>
             <div class="p-5">
               <div v-if="causes.length > 0" class="space-y-3">
                 <div v-for="(cause, i) in causes" :key="'chart-'+i" class="flex items-center gap-3">
-                  <div class="w-6 text-right text-[10px] font-bold flex-shrink-0" :class="isDark ? 'text-slate-500' : 'text-slate-400'">#{{ i+1 }}</div>
+                  <div class="w-6 text-right text-detail font-bold flex-shrink-0" :class="isDark ? 'text-slate-500' : 'text-slate-400'">#{{ i+1 }}</div>
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between mb-1">
                       <span class="text-xs font-medium truncate pr-2" :class="isDark ? 'text-slate-300' : 'text-slate-700'">{{ cause.cause }}</span>
@@ -133,36 +116,46 @@
                       <div class="h-full rounded-full transition-all duration-1000 ease-out" :style="{ width: cause.value + '%' }" :class="cause.value >= 50 ? 'bg-emerald-500' : cause.value >= 20 ? 'bg-amber-500' : (isDark ? 'bg-slate-500' : 'bg-slate-300')"></div>
                     </div>
                   </div>
-                  <span class="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded flex-shrink-0" :class="cause.urgency === 'urgent' || cause.urgency === 'emergency' ? (isDark ? 'bg-red-500/20 text-red-400' : 'bg-red-50 text-red-600') : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500')">{{ cause.urgency }}</span>
+                  <span class="text-tiny font-semibold uppercase px-1.5 py-0.5 rounded flex-shrink-0" :class="cause.urgency === 'urgent' || cause.urgency === 'emergency' ? (isDark ? 'bg-red-500/20 text-red-400' : 'bg-red-50 text-red-600') : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500')">{{ cause.urgency }}</span>
                 </div>
               </div>
               <div v-else class="text-center py-10 text-slate-500 text-sm">No diagnosis data available</div>
             </div>
           </div>
 
-          <!-- Agent Performance Panel (1/3) -->
-          <div class="rounded-xl overflow-hidden border transition-colors" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'">
-            <div class="px-5 py-3 border-b flex items-center gap-2" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
-              <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-              <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Agent Performance</h2>
+          <!-- Agent Performance Panel — Neural Glow -->
+          <div class="rounded-2xl overflow-hidden relative" style="background: linear-gradient(145deg, #0a0f1c, #070b16, #05070d); border: 1px solid rgba(255,255,255,0.06)">
+            <!-- Ambient glow -->
+            <div class="absolute inset-0 pointer-events-none overflow-hidden">
+              <div class="absolute w-[150px] h-[150px] -top-[50px] -right-[40px] rounded-full blur-[80px] opacity-[0.05]"
+                style="background: radial-gradient(circle, #8b5cf6, transparent)"></div>
+              <div class="absolute w-[100px] h-[100px] -bottom-[30px] -left-[20px] rounded-full blur-[60px] opacity-[0.04]"
+                style="background: radial-gradient(circle, #06b6d4, transparent)"></div>
             </div>
-            <div class="p-4 space-y-2.5">
-              <div v-for="agent in agentList" :key="agent.name" class="flex items-center gap-3 text-xs">
-                <div class="w-2 h-2 rounded-full flex-shrink-0" :style="{ backgroundColor: agent.color }"></div>
-                <span class="flex-1 truncate" :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ agent.name }}</span>
-                <div class="w-20 rounded-full h-1.5" :class="isDark ? 'bg-slate-700/50' : 'bg-slate-200'">
-                  <div class="h-1.5 rounded-full transition-all" :style="{ width: agent.barWidth + '%', backgroundColor: agent.color }"></div>
-                </div>
-                <span class="text-slate-500 w-12 text-right tabular-nums">{{ agent.timeStr }}</span>
+
+            <div class="relative z-10 px-5 py-3.5 flex items-center gap-2.5" style="border-bottom: 1px solid rgba(255,255,255,0.05)">
+              <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500/50 to-cyan-500/30 flex items-center justify-center border border-white/10">
+                <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               </div>
-              <div class="border-t pt-2 mt-3 space-y-1.5" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
+              <h2 class="text-caption font-bold uppercase tracking-wider text-white/80">Agent Performance</h2>
+            </div>
+            <div class="relative z-10 p-4 space-y-2.5">
+              <div v-for="agent in agentList" :key="agent.name" class="flex items-center gap-3 text-xs group">
+                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ backgroundColor: agent.color, boxShadow: `0 0 5px ${agent.color}40` }"></div>
+                <span class="flex-1 truncate text-white/40 group-hover:text-white/60 transition-colors">{{ agent.name }}</span>
+                <div class="w-20 rounded-full h-1.5 overflow-hidden bg-white/[0.04]">
+                  <div class="h-1.5 rounded-full transition-all duration-500" :style="{ width: agent.barWidth + '%', background: `linear-gradient(90deg, ${agent.color}90, ${agent.color}50)`, boxShadow: `0 0 6px ${agent.color}25` }"></div>
+                </div>
+                <span class="w-12 text-right tabular-nums text-white/30">{{ agent.timeStr }}</span>
+              </div>
+              <div class="pt-2.5 mt-2 space-y-1.5" style="border-top: 1px solid rgba(255,255,255,0.05)">
                 <div class="flex items-center justify-between text-xs">
-                  <span class="font-semibold" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Total Pipeline</span>
-                  <span class="font-bold tabular-nums" :class="isDark ? 'text-white' : 'text-slate-900'">{{ formatTime(totalPipelineTime) }}</span>
+                  <span class="font-semibold text-white/40">Total Pipeline</span>
+                  <span class="font-bold tabular-nums text-white/80">{{ formatTime(totalPipelineTime) }}</span>
                 </div>
                 <div class="flex items-center justify-between text-xs">
-                  <span class="font-semibold" :class="isDark ? 'text-slate-400' : 'text-slate-500'">AI Cost</span>
-                  <span class="font-bold tabular-nums" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'">${{ estimatedCost }}</span>
+                  <span class="font-semibold text-white/40">AI Cost</span>
+                  <span class="font-bold tabular-nums" style="color: #22c55e">${{ estimatedCost }}</span>
                 </div>
               </div>
             </div>
@@ -173,7 +166,7 @@
         <div>
           <div class="flex items-center gap-2 mb-3">
             <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Detailed Diagnoses</h2>
+            <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Detailed Diagnoses</h2>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             <DiagnosisCard
@@ -189,10 +182,10 @@
         <!-- Row 3: Recommended Tests + Body Systems -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Recommended Tests -->
-          <div class="rounded-xl overflow-hidden border transition-colors" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'">
-            <div class="px-5 py-3 border-b flex items-center gap-2" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
+          <div class="surface-card rounded-xl overflow-hidden border transition-colors">
+            <div class="px-5 py-3 border-b divider flex items-center gap-2">
               <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
-              <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Recommended Tests</h2>
+              <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Recommended Tests</h2>
             </div>
             <div class="p-4">
               <div v-if="recommendedTests.length > 0" class="space-y-2">
@@ -206,35 +199,17 @@
             </div>
           </div>
 
-          <!-- Body System Indicators -->
-          <div class="rounded-xl overflow-hidden border transition-colors" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'">
-            <div class="px-5 py-3 border-b flex items-center gap-2" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
-              <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-              <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Body Systems</h2>
-            </div>
-            <div class="p-4">
-              <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                <div v-for="system in bodySystems" :key="system.name"
-                  :title="system.full || system.name"
-                  class="flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all cursor-default"
-                  :class="system.active
-                    ? (isDark ? 'bg-blue-500/10 border-blue-500/30 text-blue-300' : 'bg-blue-50 border-blue-300 text-blue-600')
-                    : (isDark ? 'bg-slate-800/30 border-slate-700/30 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-400')">
-                  <span class="text-2xl">{{ system.icon }}</span>
-                  <span class="text-[10px] font-medium text-center leading-tight">{{ system.name }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <!-- Body System Indicators — Neural Glow UI -->
+          <NeuralBodySystems :body-systems="bodySystems" />
         </div>
 
         <!-- Row 4: Action Items + Safety Review -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Action Items -->
-          <div class="rounded-xl overflow-hidden border transition-colors" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'">
-            <div class="px-5 py-3 border-b flex items-center gap-2" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
+          <div class="surface-card rounded-xl overflow-hidden border transition-colors">
+            <div class="px-5 py-3 border-b divider flex items-center gap-2">
               <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-              <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Action Items</h2>
+              <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Action Items</h2>
             </div>
             <div class="p-4">
               <div v-if="actionChecklist.length > 0" class="space-y-2">
@@ -249,10 +224,10 @@
           </div>
 
           <!-- Safety Review -->
-          <div class="rounded-xl overflow-hidden border transition-colors" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'">
-            <div class="px-5 py-3 border-b flex items-center gap-2" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
+          <div class="surface-card rounded-xl overflow-hidden border transition-colors">
+            <div class="px-5 py-3 border-b divider flex items-center gap-2">
               <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-              <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Safety Review</h2>
+              <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Safety Review</h2>
             </div>
             <div class="p-4">
               <div class="flex items-center gap-2 mb-4">
@@ -260,15 +235,16 @@
               </div>
               <div v-if="safetyWarnings.length > 0" class="space-y-2">
                 <div v-for="(warning, i) in safetyWarnings" :key="i"
-                  class="flex items-start gap-2.5 p-2.5 bg-red-500/5 border border-red-500/10 rounded-lg">
-                  <svg class="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                  <span class="text-xs leading-relaxed" :class="isDark ? 'text-red-300' : 'text-red-600'">{{ warning }}</span>
+                  class="flex items-start gap-2.5 p-2.5 rounded-lg border"
+                  :class="isDark ? 'bg-red-500/5 border-red-500/10' : 'bg-red-50 border-red-200'">
+                  <svg class="w-4 h-4 flex-shrink-0 mt-0.5" :class="isDark ? 'text-red-400' : 'text-red-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <span class="text-xs leading-relaxed" :class="isDark ? 'text-red-300' : 'text-red-800'">{{ typeof warning === 'object' ? (warning.title || warning.message || warning.issue || warning.description || JSON.stringify(warning)) : warning }}</span>
                 </div>
               </div>
               <div v-if="redFlags.length > 0" class="mt-3 space-y-2">
-                <div class="text-[10px] font-semibold text-red-400 uppercase mb-1">Red Flags</div>
-                <div v-for="(flag, i) in redFlags" :key="'rf-'+i" class="flex items-start gap-2 text-xs" :class="isDark ? 'text-red-300' : 'text-red-600'">
-                  <span class="text-red-500 mt-0.5 flex-shrink-0">!</span>
+                <div class="text-label mb-1" :class="isDark ? 'text-red-400' : 'text-red-700'">Red Flags</div>
+                <div v-for="(flag, i) in redFlags" :key="'rf-'+i" class="flex items-start gap-2 text-xs" :class="isDark ? 'text-red-300' : 'text-red-700'">
+                  <span class="mt-0.5 flex-shrink-0" :class="isDark ? 'text-red-500' : 'text-red-600'">!</span>
                   <span>{{ flag }}</span>
                 </div>
               </div>
@@ -282,22 +258,22 @@
         <!-- Row 5: Treatment & Dietary -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Treatment Plan -->
-          <div class="rounded-xl overflow-hidden border transition-colors" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'">
-            <div class="px-5 py-3 border-b flex items-center gap-2" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
+          <div class="surface-card rounded-xl overflow-hidden border transition-colors">
+            <div class="px-5 py-3 border-b divider flex items-center gap-2">
               <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
-              <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Treatment Recommendations</h2>
+              <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Treatment Recommendations</h2>
             </div>
             <div class="p-4">
               <div v-if="medications.length > 0" class="mb-4">
-                <div class="text-[10px] font-semibold uppercase mb-2" :class="isDark ? 'text-blue-400' : 'text-blue-600'">Medications</div>
+                <div class="text-label mb-2" :class="isDark ? 'text-blue-400' : 'text-blue-600'">Medications</div>
                 <div v-for="med in medications" :key="typeof med === 'string' ? med : med.name" class="text-xs mb-2 p-2.5 rounded-lg" :class="isDark ? 'bg-slate-700/30' : 'bg-slate-50'">
                   <div class="font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ typeof med === 'string' ? med : med.name }}</div>
-                  <div v-if="med.dose" class="text-[10px] mt-0.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ med.dose }} {{ med.frequency ? '— ' + med.frequency : '' }}</div>
-                  <div v-if="med.warnings" class="text-[10px] mt-0.5 text-amber-400">&#9888; {{ med.warnings }}</div>
+                  <div v-if="med.dose" class="text-detail mt-0.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ med.dose }} {{ med.frequency ? '— ' + med.frequency : '' }}</div>
+                  <div v-if="med.warnings" class="text-detail mt-0.5 text-amber-400">&#9888; {{ med.warnings }}</div>
                 </div>
               </div>
               <div v-if="lifestyleRecs.length > 0">
-                <div class="text-[10px] font-semibold uppercase mb-2" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'">Lifestyle & Healing</div>
+                <div class="text-label mb-2" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'">Lifestyle & Healing</div>
                 <ul class="space-y-1.5">
                   <li v-for="rec in lifestyleRecs" :key="rec" class="text-xs flex items-start gap-2" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
                     <span class="text-emerald-400 mt-0.5 flex-shrink-0">&#10003;</span>{{ rec }}
@@ -311,10 +287,10 @@
           </div>
 
           <!-- Dietary Recommendations -->
-          <div class="rounded-xl overflow-hidden border transition-colors" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'">
-            <div class="px-5 py-3 border-b flex items-center gap-2" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
+          <div class="surface-card rounded-xl overflow-hidden border transition-colors">
+            <div class="px-5 py-3 border-b divider flex items-center gap-2">
               <span class="text-base">&#127957;</span>
-              <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Dietary & Healing Guidance</h2>
+              <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Dietary & Healing Guidance</h2>
             </div>
             <div class="p-4">
               <div v-if="dietaryRecs.length > 0" class="space-y-1.5">
@@ -335,22 +311,21 @@
         </div>
 
         <!-- Row 6: Find Nearby Specialists -->
-        <div class="rounded-xl overflow-hidden border transition-colors" :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'">
-          <div class="px-5 py-3 border-b flex items-center gap-2" :class="isDark ? 'border-slate-700/30' : 'border-slate-200'">
+        <div class="surface-card rounded-xl overflow-hidden border transition-colors">
+          <div class="px-5 py-3 border-b divider flex items-center gap-2">
             <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Find Nearby Specialists</h2>
+            <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Find Nearby Specialists</h2>
           </div>
           <div class="p-4">
             <!-- Location input -->
             <div class="flex gap-2 mb-3">
               <input v-model="searchZip" @keyup.enter="updateMapSearch" placeholder="Enter zip code or city..."
                 aria-label="Search by zip code or city"
-                class="flex-1 rounded-lg px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-                :class="isDark ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'" />
+                class="input input-sm flex-1" />
               <select v-model="selectedSpecForMap" @change="updateMapSearch" class="rounded-lg px-3 py-2 text-xs border" :class="isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-700'">
                 <option v-for="spec in uniqueSpecialties" :key="spec" :value="spec">{{ spec }}</option>
               </select>
-              <button @click="updateMapSearch" class="px-4 py-2 rounded-lg text-xs font-medium bg-blue-600 text-white hover:bg-blue-500 transition-colors">Search</button>
+              <button @click="updateMapSearch" class="btn-blue btn-sm">Search</button>
             </div>
 
             <!-- Map embed -->
@@ -379,7 +354,7 @@
                     Providers Near You
                   </span>
                 </h3>
-                <span v-if="doctorResults.length > 0" class="text-[10px] tabular-nums" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ doctorResults.length }} found</span>
+                <span v-if="doctorResults.length > 0" class="text-detail tabular-nums" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ doctorResults.length }} found</span>
               </div>
               <div v-if="doctorsLoading" class="flex items-center justify-center py-8 gap-2">
                 <svg class="w-4 h-4 animate-spin text-blue-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
@@ -396,31 +371,31 @@
                     </div>
                     <div class="flex-1 min-w-0">
                       <div class="text-sm font-semibold truncate" :class="isDark ? 'text-white' : 'text-slate-900'">{{ doc.name }}</div>
-                      <div class="text-[11px] mt-0.5" :class="isDark ? 'text-blue-400' : 'text-blue-600'">{{ doc.specialty }}</div>
-                      <div class="text-[11px] mt-1 whitespace-pre-line leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ doc.address }}</div>
+                      <div class="text-caption mt-0.5" :class="isDark ? 'text-blue-400' : 'text-blue-600'">{{ doc.specialty }}</div>
+                      <div class="text-caption mt-1 whitespace-pre-line leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ doc.address }}</div>
                       <div v-if="doc.phone" class="flex items-center gap-1 mt-1.5">
                         <svg class="w-3 h-3" :class="isDark ? 'text-slate-500' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                        <a :href="'tel:' + doc.phone" class="text-[11px] hover:underline" :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ formatPhone(doc.phone) }}</a>
+                        <a :href="'tel:' + doc.phone" class="text-caption hover:underline" :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ formatPhone(doc.phone) }}</a>
                       </div>
                     </div>
                   </div>
                   <div class="flex items-center gap-2 mt-3 pt-2.5 border-t" :class="isDark ? 'border-slate-600/20' : 'border-slate-200'">
                     <a :href="'https://www.google.com/maps/search/' + encodeURIComponent(doc.name + ' ' + doc.address.replace(/\\n/g, ' '))"
                       target="_blank" rel="noopener"
-                      class="text-[10px] px-2 py-1 rounded-md transition-colors inline-flex items-center gap-1"
+                      class="text-detail px-2 py-1 rounded-md transition-colors inline-flex items-center gap-1"
                       :class="isDark ? 'bg-slate-600/30 text-slate-300 hover:bg-slate-600/50' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                       Map
                     </a>
                     <a v-if="doc.phone" :href="'tel:' + doc.phone"
-                      class="text-[10px] px-2 py-1 rounded-md transition-colors inline-flex items-center gap-1"
+                      class="text-detail px-2 py-1 rounded-md transition-colors inline-flex items-center gap-1"
                       :class="isDark ? 'bg-blue-500/15 text-blue-300 hover:bg-blue-500/25' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'">
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                       Call
                     </a>
                     <a :href="'https://npiregistry.cms.hhs.gov/provider-view/' + doc.npi"
                       target="_blank" rel="noopener"
-                      class="text-[10px] px-2 py-1 rounded-md transition-colors inline-flex items-center gap-1 ml-auto"
+                      class="text-detail px-2 py-1 rounded-md transition-colors inline-flex items-center gap-1 ml-auto"
                       :class="isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'">
                       NPI: {{ doc.npi }}
                       <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
@@ -436,7 +411,7 @@
               </div>
             </div>
 
-            <p class="text-[10px] mt-3" :class="isDark ? 'text-slate-600' : 'text-slate-400'">Provider data from the NPI National Registry (CMS.gov). Always verify credentials and check with your insurance provider.</p>
+            <p class="text-detail mt-3" :class="isDark ? 'text-slate-600' : 'text-slate-400'">Provider data from the NPI National Registry (CMS.gov). Always verify credentials and check with your insurance provider.</p>
           </div>
         </div>
 
@@ -444,7 +419,7 @@
         <div v-if="session.chatMessages && session.chatMessages.length">
           <div class="flex items-center gap-2 mb-3">
             <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-            <h2 class="text-sm font-bold uppercase tracking-wide" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Conversation Transcript</h2>
+            <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Conversation Transcript</h2>
           </div>
           <div class="space-y-2 max-h-[500px] overflow-y-auto pr-2">
             <div v-for="(msg, i) in session.chatMessages" :key="i"
@@ -452,7 +427,7 @@
               :class="msg.sender === 'user'
                 ? (isDark ? 'bg-blue-500/10 border border-blue-500/20 text-blue-200 ml-8' : 'bg-blue-50 border border-blue-200 text-blue-800 ml-8')
                 : (isDark ? 'bg-slate-800/60 border border-slate-700/40 text-slate-300 mr-8' : 'bg-slate-50 border border-slate-200 text-slate-600 mr-8')">
-              <div class="text-[10px] font-semibold uppercase mb-1" :class="msg.sender === 'user' ? 'text-blue-400' : (isDark ? 'text-slate-500' : 'text-slate-400')">
+              <div class="text-label mb-1" :class="msg.sender === 'user' ? 'text-blue-400' : (isDark ? 'text-slate-500' : 'text-slate-400')">
                 {{ msg.sender === 'user' ? 'You' : 'Dr. AI' }}
               </div>
               {{ msg.text }}
@@ -463,7 +438,7 @@
         <!-- Bottom Actions -->
         <div class="flex justify-center gap-4 flex-wrap py-4">
           <button @click="exportPdf" :disabled="isExporting"
-            class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-60 disabled:cursor-wait rounded-xl text-sm font-semibold text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all">
+            class="btn-blue btn-lg shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30">
             <svg v-if="isExporting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
@@ -472,8 +447,7 @@
             {{ isExporting ? 'Exporting...' : 'Download PDF' }}
           </button>
           <router-link to="/consult"
-            class="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold border transition-all"
-            :class="isDark ? 'bg-slate-800 hover:bg-slate-700 border-slate-700/50 hover:border-slate-600 text-white' : 'bg-white hover:bg-slate-50 border-slate-300 hover:border-slate-400 text-slate-700'">
+            class="btn-secondary btn-lg">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             New Assessment
           </router-link>
@@ -487,10 +461,13 @@
 import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { getSession } from '@/services/historyService.js'
+import { API_BASE_URL } from '@/services/api.js'
 import { getProfile } from '@/services/userService.js'
 import ThemeLangControls from '@/components/ThemeLangControls.vue'
 import DiagnosisCard from '@/components/DiagnosisCard.vue'
 import SkeletonLoader from '@/components/SkeletonLoader.vue'
+import NeuralBodySystems from '@/components/NeuralBodySystems.vue'
+import { MPageHeader, MMetaPill } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme.js'
 
 const { isDark } = useTheme()
@@ -519,16 +496,113 @@ onMounted(() => {
 })
 
 const diagnosisData = computed(() => session.value?.diagnosisResult || {})
-const causes = computed(() => diagnosisData.value?.causes || [])
-const redFlags = computed(() => diagnosisData.value?.red_flags || diagnosisData.value?.redFlags || [])
-const recommendedTests = computed(() => diagnosisData.value?.recommended_tests || diagnosisData.value?.recommendedTests || [])
+
+// Extract causes from answer text when structured causes array is empty
+function _extractCausesFromText(d) {
+  if (!d) return []
+  const text = d.answer || ''
+  if (!text) return []
+  const causes = []
+
+  // Look for "DIFFERENTIAL DIAGNOSIS:" section in the answer text
+  const diffMatch = text.match(/DIFFERENTIAL DIAGNOSIS[:\s]*\n([\s\S]*?)(?=\n(?:RESEARCH|TREATMENT|SPECIALIST|SUGGESTED|CLINICAL|$))/i)
+  if (diffMatch) {
+    const section = diffMatch[1]
+    const pattern = /(\d+)\.\s+(.+?)\s*—\s*Confidence:\s*(\d+)%\s*—\s*Urgency:\s*(\w+)/gi
+    let match
+    while ((match = pattern.exec(section)) !== null) {
+      const reasoningMatch = section.slice(match.index + match[0].length).match(/^\s*(?:—\s*Specialty:\s*([^\n]+))?\s*\n?\s*(?:Reasoning:\s*([^\n]+(?:\n(?!\s*\d+\.)[^\n]+)*))?/i)
+      causes.push({
+        cause: match[2].trim(),
+        value: parseInt(match[3]),
+        urgency: match[4].trim().toLowerCase(),
+        specialty: reasoningMatch?.[1]?.trim() || 'Primary Care',
+        explanation: reasoningMatch?.[2]?.trim() || ''
+      })
+    }
+  }
+
+  // Fallback: try extracting from agent_details.diagnosis
+  if (causes.length === 0 && d.agent_details?.diagnosis) {
+    const diag = d.agent_details.diagnosis
+    const differential = diag.differential_diagnosis || diag.diagnoses || diag.differential || diag.conditions || []
+    for (const item of differential.slice(0, 5)) {
+      if (typeof item === 'object' && item !== null) {
+        causes.push({
+          cause: item.condition || item.name || item.diagnosis || 'Unknown',
+          value: Math.min(100, Math.max(0, parseInt(item.confidence || item.confidence_pct || item.probability || 50))),
+          urgency: item.urgency || item.priority || 'routine',
+          specialty: item.specialty || item.recommended_specialty || 'Primary Care',
+          explanation: item.reasoning || item.clinical_reasoning || item.bayesian_reasoning || item.explanation || ''
+        })
+      }
+    }
+  }
+
+  return causes
+}
+
+const causes = computed(() => {
+  const d = diagnosisData.value
+  if (!d) return []
+  const direct = d.causes || []
+  if (direct.length > 0) return direct
+  // Fallback: extract from agent_details.diagnosis
+  const diag = d.agent_details?.diagnosis || {}
+  const diff = diag.differential_diagnosis || diag.diagnoses || diag.differential || []
+  if (Array.isArray(diff) && diff.length > 0) {
+    return diff.slice(0, 5).map(item => {
+      if (typeof item !== 'object') return null
+      const conf = item.confidence || item.confidence_pct || item.probability || 50
+      return {
+        cause: item.condition || item.name || item.diagnosis || 'Unknown',
+        value: Math.min(100, Math.max(0, parseInt(conf) || 50)),
+        explanation: item.reasoning || item.clinical_reasoning || item.explanation || '',
+        urgency: item.urgency || item.priority || 'routine',
+        specialty: item.specialty || 'Primary Care',
+      }
+    }).filter(Boolean)
+  }
+  return _extractCausesFromText(d)
+})
+const redFlags = computed(() => {
+  const d = diagnosisData.value
+  if (!d) return []
+  const direct = d.red_flags || d.redFlags || []
+  if (direct.length > 0) return direct
+  // Fallback: from triage agent
+  const triage = d.agent_details?.triage || {}
+  return triage.red_flags || triage.warning_signs || []
+})
+const recommendedTests = computed(() => {
+  const d = diagnosisData.value
+  if (!d) return []
+  // Collect from all sources
+  const sources = [
+    d.recommended_tests || d.recommendedTests || [],
+    d.agent_details?.specialist?.recommended_tests || d.agent_details?.specialist?.specialty_specific_tests || [],
+    d.agent_details?.specialist?.diagnostic_tests || [],
+    d.agent_details?.diagnosis?.recommended_tests || [],
+  ]
+  for (const src of sources) {
+    if (Array.isArray(src) && src.length > 0) {
+      // Flatten dicts to strings
+      return src.map(item => {
+        if (typeof item === 'string') return item
+        if (typeof item === 'object' && item) return item.test || item.name || item.description || JSON.stringify(item)
+        return String(item)
+      }).filter(Boolean)
+    }
+  }
+  return []
+})
 const safetyWarnings = computed(() => diagnosisData.value?.safety_warnings || diagnosisData.value?.safetyWarnings || [])
 
 const actionChecklist = computed(() => {
   const d = diagnosisData.value
   if (!d) return []
   const direct = d.action_checklist || d.actionChecklist || []
-  if (direct.length > 0) return direct
+  if (direct.length > 0) return direct.map(item => typeof item === 'object' ? (item.action || item.step || item.description || item.text || JSON.stringify(item)) : String(item))
   const empathy = d.agent_details?.empathy || {}
   const fromEmpathy = empathy.action_checklist || empathy.actions || empathy.next_steps || empathy.recommendations || []
   if (fromEmpathy.length > 0) return fromEmpathy
@@ -639,9 +713,9 @@ const safetyStatusLabel = computed(() => {
 })
 const safetyStatusClass = computed(() => {
   const label = safetyStatusLabel.value
-  if (label === 'FAIL') return 'bg-red-500/20 text-red-300'
-  if (label === 'CAUTION') return 'bg-amber-500/20 text-amber-300'
-  return 'bg-emerald-500/20 text-emerald-300'
+  if (label === 'FAIL') return isDark.value ? 'bg-red-500/20 text-red-300' : 'bg-red-100 text-red-700 border border-red-200'
+  if (label === 'CAUTION') return isDark.value ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-100 text-amber-800 border border-amber-200'
+  return isDark.value ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
 })
 
 // Agent performance
@@ -764,11 +838,11 @@ async function fetchDoctors() {
   doctorsSearched.value = true
   try {
     const params = new URLSearchParams({ specialty: spec, location: zip, limit: '12' })
-    const resp = await fetch('http://localhost:8000/api/find-doctors?' + params)
+    const resp = await fetch(`${API_BASE_URL}/api/find-doctors?` + params)
+    if (!resp.ok) throw new Error(`Doctor search returned ${resp.status}`)
     const data = await resp.json()
     doctorResults.value = data.results || []
-  } catch (e) {
-    console.error('Doctor search failed:', e)
+  } catch {
     doctorResults.value = []
   } finally {
     doctorsLoading.value = false

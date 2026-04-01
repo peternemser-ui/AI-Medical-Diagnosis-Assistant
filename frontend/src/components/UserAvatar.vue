@@ -58,7 +58,7 @@ const sizeClass = computed(() => {
 
 const textClass = computed(() => {
   const map = {
-    sm: 'text-[10px]',
+    sm: 'text-detail',
     md: 'text-xs',
     lg: 'text-sm',
   }

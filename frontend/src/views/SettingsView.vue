@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen transition-colors duration-300" :class="isDark ? 'bg-slate-950' : 'bg-white'">
+  <div class="min-h-screen transition-colors duration-300 surface-page">
     <!-- Ambient background -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
       <div class="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[120px]"
@@ -9,8 +9,8 @@
     </div>
 
     <!-- Nav bar -->
-    <nav class="relative z-20 flex items-center justify-between px-6 py-3 border-b"
-      :class="isDark ? 'border-slate-800 bg-slate-950/80 backdrop-blur-xl' : 'border-slate-200 bg-white/80 backdrop-blur-xl'">
+    <nav class="relative z-20 flex items-center justify-between px-6 py-3 border-b backdrop-blur-xl"
+      style="background: color-mix(in srgb, var(--clinical-surface) 85%, transparent); border-color: var(--clinical-border)">
       <div class="flex items-center gap-4">
         <button @click="goBack" class="p-1.5 rounded-lg transition-colors"
           :class="isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-900'">
@@ -222,8 +222,43 @@
                 </button>
               </div>
             </div>
-            <!-- API Key Input -->
-            <div>
+            <!-- Ollama status (no key needed) -->
+            <div v-if="apiProvider === 'ollama'" class="space-y-3">
+              <div v-if="ollamaChecking" class="flex items-center gap-2 py-3">
+                <svg class="w-4 h-4 animate-spin text-orange-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                <span class="text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Detecting Ollama...</span>
+              </div>
+              <div v-else-if="ollamaAvailable" class="space-y-3">
+                <div class="flex items-center gap-2 py-1">
+                  <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                  <span class="text-sm font-medium" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'">Ollama is running</span>
+                </div>
+                <div class="p-3 rounded-xl border" :class="isDark ? 'bg-slate-800/60 border-slate-700/30' : 'bg-slate-50 border-slate-200'">
+                  <div class="text-detail uppercase font-semibold mb-2" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Installed Models</div>
+                  <div v-for="model in ollamaModels" :key="model" class="flex items-center gap-2 py-1 text-xs" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                    <svg class="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    {{ model }}
+                  </div>
+                </div>
+                <div class="p-3 rounded-lg" :class="isDark ? 'bg-emerald-500/10 border border-emerald-500/15' : 'bg-emerald-50 border border-emerald-200'">
+                  <p class="text-xs" :class="isDark ? 'text-emerald-300/80' : 'text-emerald-700'">No API key needed. Runs 100% locally, free and unlimited.</p>
+                </div>
+                <button @click="activateOllama" class="px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-medium rounded-xl text-sm transition-all">
+                  Use Ollama
+                </button>
+              </div>
+              <div v-else class="space-y-3 py-2">
+                <div class="flex items-center gap-2">
+                  <div class="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+                  <span class="text-sm font-medium" :class="isDark ? 'text-red-400' : 'text-red-500'">Ollama not detected</span>
+                </div>
+                <p class="text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Install Ollama from ollama.com, run it, then pull a model with: <code class="px-1.5 py-0.5 rounded text-orange-400" :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">ollama pull llama3.1:8b</code></p>
+                <button @click="checkOllamaStatus" class="text-xs text-orange-400 hover:text-orange-300 underline underline-offset-2">Retry Detection</button>
+              </div>
+            </div>
+
+            <!-- API Key Input (non-Ollama providers) -->
+            <div v-else>
               <label class="text-xs font-medium mb-1.5 block" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
                 {{ currentProviderLabel }} API Key
               </label>
@@ -251,7 +286,7 @@
               </div>
             </div>
             <!-- Save Key -->
-            <div class="flex items-center gap-3">
+            <div v-if="apiProvider !== 'ollama'" class="flex items-center gap-3">
               <button @click="saveApiKeyFn"
                 :disabled="!apiKey.trim()"
                 class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-medium rounded-xl text-sm transition-all">
@@ -261,7 +296,7 @@
             </div>
 
             <!-- Validate All Keys -->
-            <div class="pt-3 border-t" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
+            <div v-if="apiProvider !== 'ollama'" class="pt-3 border-t" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
               <button @click="validateKeys" :disabled="isValidating"
                 class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors"
                 :class="isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
@@ -317,8 +352,8 @@
                 <input type="radio" :value="m.id" v-model="modelPreference" @change="saveModelPreference" class="mt-1 text-blue-600">
                 <div>
                   <div class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ m.name }}</div>
-                  <div class="text-[10px] mt-0.5" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ m.desc }}</div>
-                  <span v-if="m.badge" class="inline-block mt-1 text-[9px] px-1.5 py-0.5 rounded-full" :class="m.badgeClass">{{ m.badge }}</span>
+                  <div class="text-detail mt-0.5" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ m.desc }}</div>
+                  <span v-if="m.badge" class="inline-block mt-1 text-tiny px-1.5 py-0.5 rounded-full" :class="m.badgeClass">{{ m.badge }}</span>
                 </div>
               </label>
             </div>
@@ -416,7 +451,7 @@ import { useTheme } from '@/composables/useTheme.js'
 import { useI18n } from '@/composables/useI18n.js'
 import { getProfile, getPreferences, savePreference, exportAllData, clearUserData } from '@/services/userService.js'
 import { clearHistory as clearHistoryFn } from '@/services/historyService.js'
-import { validateApiKeys } from '@/services/api.js'
+import { validateApiKeys, API_BASE_URL } from '@/services/api.js'
 
 const router = useRouter()
 const { isDark, toggleTheme } = useTheme()
@@ -432,7 +467,41 @@ const providers = [
   { id: 'anthropic', name: 'Anthropic', keyPrefix: 'sk-ant-', storageKey: 'anthropic_api_key' },
   { id: 'openai', name: 'OpenAI', keyPrefix: 'sk-', storageKey: 'openai_api_key' },
   { id: 'google', name: 'Google', keyPrefix: 'AIza', storageKey: 'google_api_key' },
+  { id: 'ollama', name: 'Ollama (Free)', keyPrefix: '', storageKey: '' },
 ]
+
+// Ollama detection
+const ollamaChecking = ref(false)
+const ollamaAvailable = ref(false)
+const ollamaModels = ref([])
+
+async function checkOllamaStatus() {
+  ollamaChecking.value = true
+  try {
+    const resp = await fetch(`${API_BASE_URL}/health`)
+    if (!resp.ok) throw new Error(`Health check returned ${resp.status}`)
+    const data = await resp.json()
+    ollamaAvailable.value = data.ollama_available || false
+    ollamaModels.value = data.ollama_models || []
+  } catch {
+    ollamaAvailable.value = false
+    ollamaModels.value = []
+  } finally {
+    ollamaChecking.value = false
+  }
+}
+
+function activateOllama() {
+  localStorage.setItem('ai_provider', 'ollama')
+  localStorage.removeItem('anthropic_api_key')
+  localStorage.removeItem('openai_api_key')
+  localStorage.removeItem('google_api_key')
+  localStorage.setItem('api_key_configured', 'true')
+  localStorage.setItem('model_preference', 'llama3.1:8b')
+  modelPreference.value = 'llama3.1:8b'
+  apiKeySaved.value = true
+  setTimeout(() => { apiKeySaved.value = false }, 2000)
+}
 
 const currentProviderLabel = computed(() => {
   const p = providers.find(p => p.id === apiProvider.value)
@@ -445,6 +514,10 @@ function hasKey(providerId) {
 }
 
 function loadProviderKey() {
+  if (apiProvider.value === 'ollama') {
+    checkOllamaStatus()
+    return
+  }
   const p = providers.find(p => p.id === apiProvider.value)
   apiKey.value = p ? (localStorage.getItem(p.storageKey) || '') : ''
   apiKeySaved.value = false
@@ -466,6 +539,10 @@ const modelOptions = [
   // Google
   { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', desc: 'Google flagship. Strong medical knowledge. Requires Google API key.', badge: 'Google', badgeClass: 'bg-sky-500/20 text-sky-400' },
   { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Fast Google model. Good balance of speed and quality.', badge: 'Google', badgeClass: 'bg-sky-500/20 text-sky-400' },
+  // Ollama (local)
+  { id: 'llama3.1:8b', name: 'Llama 3.1 8B (Ollama)', desc: 'Runs locally on your machine. Free, no API key needed. Good for development.', badge: 'free', badgeClass: 'bg-orange-500/20 text-orange-400' },
+  { id: 'qwen2.5:7b', name: 'Qwen 2.5 7B (Ollama)', desc: 'Local model with strong multilingual support. Free, no API key.', badge: 'free', badgeClass: 'bg-orange-500/20 text-orange-400' },
+  { id: 'gemma2:2b', name: 'Gemma 2 2B (Ollama)', desc: 'Smallest and fastest local model. Good for quick tests.', badge: 'fast + free', badgeClass: 'bg-orange-500/20 text-orange-400' },
 ]
 
 function saveModelPreference() {
@@ -529,6 +606,12 @@ function saveSetting(key, value) {
 function saveApiKeyFn() {
   const key = apiKey.value.trim()
   if (!key) return
+
+  // Clear ALL vendor keys first, then set only the active one
+  localStorage.removeItem('anthropic_api_key')
+  localStorage.removeItem('openai_api_key')
+  localStorage.removeItem('google_api_key')
+
   const p = providers.find(p => p.id === apiProvider.value)
   if (p) {
     localStorage.setItem(p.storageKey, key)
@@ -563,6 +646,7 @@ function handleClearAll() {
     clearHistoryFn()
     localStorage.removeItem('anthropic_api_key')
     localStorage.removeItem('openai_api_key')
+    localStorage.removeItem('google_api_key')
     localStorage.removeItem('ai_provider')
     localStorage.removeItem('api_key_configured')
     profile.value = {}

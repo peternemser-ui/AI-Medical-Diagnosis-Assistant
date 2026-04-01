@@ -1,4 +1,30 @@
-const API_BASE_URL = 'http://localhost:8002'
+import { getAccessToken, refreshToken as doRefresh } from './authService'
+import { isUnlocked } from './cryptoService.js'
+import { getEncryptedApiKey } from './encryptedStorage.js'
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+
+// In-memory cache of decrypted API keys (cleared on logout with session key)
+let _keyCache = { anthropic: null, openai: null, google: null, _loaded: false }
+
+/**
+ * Pre-load decrypted API keys into memory cache.
+ * Called after login/key derivation so getAuthHeaders() can stay synchronous.
+ */
+export async function loadApiKeysToCache() {
+  if (!isUnlocked()) return
+  const [anthropic, openai, google] = await Promise.all([
+    getEncryptedApiKey('anthropic'),
+    getEncryptedApiKey('openai'),
+    getEncryptedApiKey('google'),
+  ])
+  _keyCache = { anthropic, openai, google, _loaded: true }
+}
+
+/** Clear the in-memory API key cache (called on logout). */
+export function clearApiKeyCache() {
+  _keyCache = { anthropic: null, openai: null, google: null, _loaded: false }
+}
 
 class ApiError extends Error {
   constructor(message, status, details) {
@@ -12,26 +38,36 @@ class ApiError extends Error {
 function getAuthHeaders() {
   const headers = { 'Content-Type': 'application/json' }
 
-  // Send ALL available vendor keys — the backend resolves which to use
-  const anthropicKey = localStorage.getItem('anthropic_api_key')
-  const openaiKey = localStorage.getItem('openai_api_key')
-  const googleKey = localStorage.getItem('google_api_key')
+  // JWT auth token
+  const accessToken = getAccessToken()
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`
+  }
 
-  if (anthropicKey) headers['X-Anthropic-API-Key'] = anthropicKey
-  if (openaiKey) headers['X-OpenAI-API-Key'] = openaiKey
-  if (googleKey) headers['X-Google-API-Key'] = googleKey
+  const activeProvider = localStorage.getItem('ai_provider') || 'anthropic'
 
-  // Primary key for backward compatibility
-  if (anthropicKey) {
+  // Read API keys from encrypted cache (preferred) or plaintext fallback (migration)
+  const anthropicKey = _keyCache.anthropic || localStorage.getItem('anthropic_api_key')
+  const openaiKey = _keyCache.openai || localStorage.getItem('openai_api_key')
+  const googleKey = _keyCache.google || localStorage.getItem('google_api_key')
+
+  if (activeProvider === 'anthropic' && anthropicKey) {
     headers['X-Anthropic-API-Key'] = anthropicKey
-  } else if (openaiKey) {
+  } else if (activeProvider === 'openai' && openaiKey) {
     headers['X-OpenAI-API-Key'] = openaiKey
+  } else if (activeProvider === 'google' && googleKey) {
+    headers['X-Google-API-Key'] = googleKey
+  } else {
+    // Fallback: send whichever key exists
+    if (anthropicKey) headers['X-Anthropic-API-Key'] = anthropicKey
+    else if (openaiKey) headers['X-OpenAI-API-Key'] = openaiKey
+    else if (googleKey) headers['X-Google-API-Key'] = googleKey
   }
 
   return headers
 }
 
-async function fetchWithErrorHandling(url, options = {}) {
+async function fetchWithErrorHandling(url, options = {}, _retried = false) {
   try {
     const response = await fetch(url, {
       headers: {
@@ -40,6 +76,16 @@ async function fetchWithErrorHandling(url, options = {}) {
       },
       ...options
     })
+
+    // Auto-refresh on 401 and retry once
+    if (response.status === 401 && !_retried) {
+      const newToken = await doRefresh()
+      if (newToken) {
+        const retryHeaders = { ...options.headers }
+        retryHeaders['Authorization'] = `Bearer ${newToken}`
+        return fetchWithErrorHandling(url, { ...options, headers: retryHeaders }, true)
+      }
+    }
 
     if (!response.ok) {
       let errorMessage = `Request failed with status ${response.status}`
@@ -79,25 +125,16 @@ export async function validateApiKeys() {
 }
 
 export async function diagnose(data) {
-  console.log('Sending multi-agent diagnosis request:', data)
-
   const result = await fetchWithErrorHandling(`${API_BASE_URL}/api/diagnose`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(data)
   })
 
-  console.log('Multi-agent diagnosis complete:', {
-    agents: result.agents_used,
-    time: result.total_time,
-    multiAgent: result.multi_agent
-  })
   return result
 }
 
 export async function diagnoseStream(data, onEvent) {
-  console.log('Starting SSE streaming diagnosis request:', data)
-
   const headers = getAuthHeaders()
 
   const response = await fetch(`${API_BASE_URL}/api/diagnose/stream`, {
@@ -162,13 +199,16 @@ export async function diagnoseStream(data, onEvent) {
     throw new ApiError('Stream ended without a complete event', 0)
   }
 
-  console.log('SSE streaming diagnosis complete:', {
-    agents: finalResult.agents_used,
-    time: finalResult.total_time,
-    multiAgent: finalResult.multi_agent
-  })
-
   return finalResult
+}
+
+export async function interview(data) {
+  const result = await fetchWithErrorHandling(`${API_BASE_URL}/api/interview`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data)
+  })
+  return result
 }
 
 export async function generateQuestion(data) {
@@ -199,10 +239,9 @@ export async function healthCheck() {
   try {
     await fetchWithErrorHandling(`${API_BASE_URL}/health`)
     return true
-  } catch (error) {
-    console.warn('Health check failed:', error.message)
+  } catch {
     return false
   }
 }
 
-export { ApiError }
+export { ApiError, API_BASE_URL }

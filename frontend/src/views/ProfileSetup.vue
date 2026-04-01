@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen transition-colors duration-300" :class="isDark ? 'bg-slate-950' : 'bg-white'">
+  <div class="min-h-screen transition-colors duration-300 surface-page">
     <!-- Ambient background -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
       <div class="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[120px]"
@@ -11,26 +11,13 @@
     <!-- Nav bar -->
     <nav class="relative z-20 flex items-center justify-between px-6 py-3 border-b"
       :class="isDark ? 'border-slate-800 bg-slate-950/80 backdrop-blur-xl' : 'border-slate-200 bg-white/80 backdrop-blur-xl'">
-      <router-link to="/" class="flex items-center gap-2">
-        <div class="w-9 h-9 rounded-full overflow-hidden border-2 flex-shrink-0 shadow-sm"
-          :class="isDark ? 'border-slate-600' : 'border-slate-300'"
-          :style="{ backgroundColor: navAvatar.bgColor }">
-          <svg viewBox="0 0 200 200" class="w-full h-full">
-            <circle cx="100" cy="85" r="45" :fill="navAvatar.skinTone" />
-            <ellipse cx="100" cy="58" rx="46" ry="28" :fill="navAvatar.hairColor" />
-            <circle cx="83" cy="82" r="4" fill="#2d2d2d" />
-            <circle cx="117" cy="82" r="4" fill="#2d2d2d" />
-            <circle cx="84" cy="81" r="1.5" fill="white" />
-            <circle cx="118" cy="81" r="1.5" fill="white" />
-            <circle v-if="navAvatar.glasses" cx="83" cy="82" r="12" fill="none" stroke="#555" stroke-width="2.5" />
-            <circle v-if="navAvatar.glasses" cx="117" cy="82" r="12" fill="none" stroke="#555" stroke-width="2.5" />
-            <line v-if="navAvatar.glasses" x1="95" y1="82" x2="105" y2="82" stroke="#555" stroke-width="2" />
-            <path d="M 90 98 Q 100 107 110 98" fill="none" :stroke="navAvatar.lipColor" stroke-width="2.5" stroke-linecap="round" />
-            <path d="M 55 155 Q 55 130 75 125 L 82 120 Q 100 135 118 120 L 125 125 Q 145 130 145 155 L 145 200 L 55 200 Z" :fill="navAvatar.coatColor" />
-            <circle cx="115" cy="155" r="6" fill="none" stroke="#888" stroke-width="2" />
+      <router-link to="/" class="flex items-center gap-2 group">
+        <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
         </div>
-        <span class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">Medical AI</span>
+        <span class="text-base font-semibold transition-colors" :class="isDark ? 'text-white group-hover:text-blue-300' : 'text-slate-900 group-hover:text-blue-600'">MedDiagnose AI</span>
       </router-link>
       <ThemeLangControls />
     </nav>
@@ -74,8 +61,8 @@
                 <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
               </div>
               <div>
-                <div class="text-xs font-semibold mb-0.5" :class="isDark ? 'text-white' : 'text-slate-900'">100% Private & Local</div>
-                <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Your profile and medical data are stored only on your device using browser localStorage. Nothing is sent to or stored on any server.</p>
+                <div class="text-xs font-semibold mb-0.5" :class="isDark ? 'text-white' : 'text-slate-900'">Encrypted & Private</div>
+                <p class="text-caption leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Your medical data is encrypted (AES-256) and stored only on your device. Your login works across browsers, but health data stays local.</p>
               </div>
             </div>
             <div class="flex items-start gap-3">
@@ -83,8 +70,8 @@
                 <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
               </div>
               <div>
-                <div class="text-xs font-semibold mb-0.5" :class="isDark ? 'text-white' : 'text-slate-900'">No Password Required</div>
-                <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Since all data stays on your device, there's no password. Your account is tied to this browser — just sign up with your name and email to get started.</p>
+                <div class="text-xs font-semibold mb-0.5" :class="isDark ? 'text-white' : 'text-slate-900'">HIPAA Compliant</div>
+                <p class="text-caption leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Your password derives the encryption key for local health data. Log in from any browser — your account syncs, your medical data is per-device.</p>
               </div>
             </div>
             <div class="flex items-start gap-3">
@@ -93,7 +80,7 @@
               </div>
               <div>
                 <div class="text-xs font-semibold mb-0.5" :class="isDark ? 'text-white' : 'text-slate-900'">You're in Control</div>
-                <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Export or delete your data anytime from Settings. Clearing your browser data removes everything permanently.</p>
+                <p class="text-caption leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Export or delete your data anytime from Settings. Clearing your browser data removes everything permanently.</p>
               </div>
             </div>
           </div>
@@ -126,7 +113,7 @@
               </div>
               <div class="flex items-center gap-3 my-4">
                 <div class="flex-1 h-px" :class="isDark ? 'bg-slate-700/50' : 'bg-slate-200'"></div>
-                <span class="text-[10px] uppercase tracking-wider" :class="isDark ? 'text-slate-600' : 'text-slate-400'">or enter email</span>
+                <span class="text-detail uppercase tracking-wider" :class="isDark ? 'text-slate-600' : 'text-slate-400'">or enter email</span>
                 <div class="flex-1 h-px" :class="isDark ? 'bg-slate-700/50' : 'bg-slate-200'"></div>
               </div>
             </div>
@@ -201,7 +188,7 @@
                       nameBlurred && !form.name.trim() ? 'border-red-500/50 ring-1 ring-red-500/20' : (isDark ? 'border-slate-700/50' : 'border-slate-200')
                     ]"
                   />
-                  <p v-if="nameBlurred && !form.name.trim()" class="text-[11px] text-red-400 mt-1">Name is required</p>
+                  <p v-if="nameBlurred && !form.name.trim()" class="text-caption text-red-400 mt-1">Name is required</p>
                 </div>
                 <!-- Email -->
                 <div>
@@ -219,7 +206,7 @@
                       emailBlurred && form.email && !isValidEmail(form.email) ? 'border-amber-500/50 ring-1 ring-amber-500/20' : (isDark ? 'border-slate-700/50' : 'border-slate-200')
                     ]"
                   />
-                  <p v-if="emailBlurred && form.email && !isValidEmail(form.email)" class="text-[11px] text-amber-400 mt-1">Please enter a valid email address</p>
+                  <p v-if="emailBlurred && form.email && !isValidEmail(form.email)" class="text-caption text-amber-400 mt-1">Please enter a valid email address</p>
                 </div>
                 <!-- Gender -->
                 <div>
@@ -253,7 +240,7 @@
                 <!-- Location -->
                 <div>
                   <label class="text-xs font-medium mb-1.5 block" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-                    Location <span class="text-[10px] font-normal" :class="isDark ? 'text-slate-600' : 'text-slate-400'">(helps find nearby specialists)</span>
+                    Location <span class="text-detail font-normal" :class="isDark ? 'text-slate-600' : 'text-slate-400'">(helps find nearby specialists)</span>
                   </label>
                   <div class="grid grid-cols-2 gap-3">
                     <input
@@ -293,7 +280,7 @@
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xs uppercase tracking-wider font-semibold"
                   :class="isDark ? 'text-slate-500' : 'text-slate-400'">Medical Information</h3>
-                <span class="text-[10px] px-2 py-0.5 rounded-full"
+                <span class="text-detail px-2 py-0.5 rounded-full"
                   :class="isDark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400'">Optional</span>
               </div>
               <div class="space-y-4">
@@ -321,7 +308,7 @@
                 <!-- Allergies -->
                 <div>
                   <label class="text-xs font-medium mb-1.5 block" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-                    Allergies <span class="text-[10px] font-normal" :class="isDark ? 'text-slate-600' : 'text-slate-400'">(comma-separated)</span>
+                    Allergies <span class="text-detail font-normal" :class="isDark ? 'text-slate-600' : 'text-slate-400'">(comma-separated)</span>
                   </label>
                   <input
                     v-model="allergiesText"
@@ -336,7 +323,7 @@
                 <!-- Current Medications -->
                 <div>
                   <label class="text-xs font-medium mb-1.5 block" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-                    Current Medications <span class="text-[10px] font-normal" :class="isDark ? 'text-slate-600' : 'text-slate-400'">(comma-separated)</span>
+                    Current Medications <span class="text-detail font-normal" :class="isDark ? 'text-slate-600' : 'text-slate-400'">(comma-separated)</span>
                   </label>
                   <input
                     v-model="medicationsText"
@@ -395,16 +382,19 @@
             <button
               @click="handleSave"
               :disabled="!form.name.trim() || !form.email.trim() || !isValidEmail(form.email)"
-              class="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-medium py-3 rounded-xl text-sm transition-all duration-200 flex items-center justify-center gap-2"
+              class="w-full btn-blue py-3 rounded-xl text-sm"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg v-if="!isEditing" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
               </svg>
-              Create Account
+              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              {{ isEditing ? 'Save Profile' : 'Create Account' }}
             </button>
 
-            <p class="text-center text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-              Already have an account? <button @click="mode = 'login'" class="text-blue-400 hover:text-blue-300 underline underline-offset-2">Log in</button>
+            <p v-if="!isEditing" class="text-center text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+              Already have an account? <button @click="handleLogin" class="text-blue-400 hover:text-blue-300 underline underline-offset-2">Log in</button>
             </p>
           </div>
         </div>
@@ -418,7 +408,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme.js'
 import { useUser } from '@/composables/useUser.js'
-import { getProfile, saveProfile, getSavedAccounts, loginWithEmail } from '@/services/userService.js'
+import { getProfile, saveProfile } from '@/services/userService.js'
 import ThemeLangControls from '@/components/ThemeLangControls.vue'
 
 export default {
@@ -447,7 +437,7 @@ export default {
     // Login state
     const loginEmail = ref('')
     const loginError = ref('')
-    const savedAccounts = ref([])
+    const savedAccounts = ref([]) // No longer populated — auth goes through backend
 
     function isValidEmail(email) {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -470,7 +460,6 @@ export default {
     const medicationsText = ref('')
 
     onMounted(() => {
-      savedAccounts.value = getSavedAccounts()
       const profile = getProfile()
       // If user already has a profile, they're editing — go straight to signup form
       if (profile.name && profile.name.trim()) {
@@ -478,7 +467,7 @@ export default {
         mode.value = 'signup'
       } else {
         // Default to login if there are saved accounts, otherwise signup
-        mode.value = savedAccounts.value.length > 0 ? 'login' : 'signup'
+        mode.value = 'signup'
       }
       form.value.name = profile.name || ''
       form.value.email = profile.email || ''
@@ -500,24 +489,16 @@ export default {
     }
 
     function handleLogin() {
-      loginError.value = ''
-      if (!loginEmail.value.trim()) return
-      const account = loginWithEmail(loginEmail.value.trim())
-      if (account) {
-        updateProfile(account)
-        router.push('/')
-      } else {
-        loginError.value = 'No account found with that email address.'
-      }
+      // Redirect to proper backend auth
+      router.push('/login')
     }
 
-    function loginWithAccount(account) {
-      loginWithEmail(account.email)
-      updateProfile(account)
-      router.push('/')
+    function loginWithAccount() {
+      // Redirect to proper backend auth
+      router.push('/login')
     }
 
-    function handleSave() {
+    async function handleSave() {
       error.value = ''
       if (!form.value.name.trim()) {
         error.value = 'Name is required.'
@@ -537,7 +518,7 @@ export default {
           : '',
       }
 
-      saveProfile(data)
+      await saveProfile(data)
       updateProfile(data)
       router.push(isEditing.value ? '/consult' : '/')
     }

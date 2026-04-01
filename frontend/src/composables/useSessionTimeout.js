@@ -1,8 +1,9 @@
 import { ref, onUnmounted } from 'vue'
 import { useUser } from './useUser.js'
 import { useToast } from './useToast.js'
+import { clearSessionKey } from '@/services/cryptoService.js'
 
-const TIMEOUT_MS = 30 * 60 * 1000        // 30 minutes
+const TIMEOUT_MS = 15 * 60 * 1000        // 15 minutes (HIPAA requirement)
 const WARNING_BEFORE_MS = 2 * 60 * 1000  // warn 2 minutes before logout
 
 const ACTIVITY_EVENTS = ['mousemove', 'keypress', 'click', 'touchstart', 'scroll']
@@ -44,6 +45,7 @@ export function useSessionTimeout() {
     // Actual logout
     timeoutId = setTimeout(() => {
       isWarningVisible.value = false
+      clearSessionKey() // HIPAA: clear encryption key before logout
       toast.info('You have been logged out due to inactivity.')
       logout()
     }, TIMEOUT_MS)

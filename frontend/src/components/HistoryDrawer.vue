@@ -81,7 +81,7 @@
               <span class="text-xs text-slate-400 truncate">{{ session.topDiagnosis }}</span>
               <span
                 v-if="session.confidence"
-                class="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
+                class="text-detail font-bold px-2 py-0.5 rounded-full flex-shrink-0"
                 :class="confidenceBadgeClass(session.confidence)"
               >
                 {{ session.confidence }}%
@@ -89,7 +89,7 @@
             </div>
 
             <!-- Patient info -->
-            <div v-if="session.age || session.gender" class="flex items-center gap-2 mt-2 text-[10px] text-slate-500">
+            <div v-if="session.age || session.gender" class="flex items-center gap-2 mt-2 text-detail text-slate-500">
               <span v-if="session.age">Age: {{ session.age }}</span>
               <span v-if="session.age && session.gender" class="text-slate-700">|</span>
               <span v-if="session.gender">{{ session.gender }}</span>
@@ -99,14 +99,14 @@
             <div class="flex gap-2 mt-2.5">
               <button
                 @click.stop="viewDashboard(session.id)"
-                class="flex-1 flex items-center justify-center gap-1.5 text-[10px] font-medium py-1.5 rounded-lg bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 border border-blue-500/20 transition-colors"
+                class="flex-1 flex items-center justify-center gap-1.5 text-detail font-medium py-1.5 rounded-lg bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 border border-blue-500/20 transition-colors"
               >
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 Dashboard
               </button>
               <button
                 @click.stop="viewReport(session.id)"
-                class="flex-1 flex items-center justify-center gap-1.5 text-[10px] font-medium py-1.5 rounded-lg bg-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-600/30 transition-colors"
+                class="flex-1 flex items-center justify-center gap-1.5 text-detail font-medium py-1.5 rounded-lg bg-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-600/30 transition-colors"
               >
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 Details

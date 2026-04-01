@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen transition-colors duration-300" :class="isDark ? 'bg-slate-950' : 'bg-white'">
+  <div class="min-h-screen transition-colors duration-300 surface-page">
     <!-- Ambient background -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
       <div class="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[120px]"
@@ -13,10 +13,9 @@
       :class="isDark ? 'border-slate-800 bg-slate-950/80 backdrop-blur-xl' : 'border-slate-200 bg-white/80 backdrop-blur-xl'">
       <div class="flex items-center gap-3">
         <router-link to="/" class="flex items-center gap-2.5 group">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" />
             </svg>
           </div>
           <span class="text-sm font-semibold hidden sm:inline" :class="isDark ? 'text-white' : 'text-slate-900'">Medical AI</span>
@@ -91,7 +90,7 @@
             class="rounded-2xl border p-4"
             :class="isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white/80 border-slate-200 shadow-sm'">
             <div class="flex items-center gap-2 mb-2">
-              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+              <span class="text-detail font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
                 :class="idx === 0
                   ? (isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600')
                   : (isDark ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-600')">
@@ -117,14 +116,14 @@
           <h3 class="text-sm font-bold mb-3" :class="isDark ? 'text-white' : 'text-slate-900'">Severity Comparison</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div v-for="(data, idx) in [causesA, causesB]" :key="idx">
-              <div class="text-[10px] font-bold uppercase tracking-wider mb-2"
+              <div class="text-detail font-bold uppercase tracking-wider mb-2"
                 :class="idx === 0
                   ? (isDark ? 'text-blue-400' : 'text-blue-600')
                   : (isDark ? 'text-purple-400' : 'text-purple-600')">
                 Session {{ idx === 0 ? 'A' : 'B' }}
               </div>
               <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
+                <span class="px-2 py-0.5 rounded-full text-detail font-bold uppercase tracking-wide"
                   :class="urgencyClass(getTopUrgency(data))">
                   {{ getTopUrgency(data) }}
                 </span>
@@ -167,7 +166,7 @@
               <div class="text-xs font-medium flex items-center gap-2"
                 :class="isDark ? 'text-slate-300' : 'text-slate-700'">
                 <span>{{ condition }}</span>
-                <span v-if="isSharedCondition(condition)" class="text-[9px] px-1.5 py-0.5 rounded-full"
+                <span v-if="isSharedCondition(condition)" class="text-tiny px-1.5 py-0.5 rounded-full"
                   :class="isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-100 text-amber-600'">
                   both
                 </span>
@@ -175,25 +174,25 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <!-- Session A bar -->
                 <div class="flex items-center gap-2">
-                  <span class="text-[10px] w-5 font-bold" :class="isDark ? 'text-blue-400' : 'text-blue-600'">A</span>
+                  <span class="text-detail w-5 font-bold" :class="isDark ? 'text-blue-400' : 'text-blue-600'">A</span>
                   <div class="flex-1 h-3 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'">
                     <div class="h-full rounded-full transition-all duration-700"
                       :class="isDark ? 'bg-blue-500' : 'bg-blue-500'"
                       :style="{ width: getConditionConfidence(causesA, condition) + '%' }"></div>
                   </div>
-                  <span class="text-[10px] w-8 text-right font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+                  <span class="text-detail w-8 text-right font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
                     {{ getConditionConfidence(causesA, condition) }}%
                   </span>
                 </div>
                 <!-- Session B bar -->
                 <div class="flex items-center gap-2">
-                  <span class="text-[10px] w-5 font-bold" :class="isDark ? 'text-purple-400' : 'text-purple-600'">B</span>
+                  <span class="text-detail w-5 font-bold" :class="isDark ? 'text-purple-400' : 'text-purple-600'">B</span>
                   <div class="flex-1 h-3 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'">
                     <div class="h-full rounded-full transition-all duration-700"
                       :class="isDark ? 'bg-purple-500' : 'bg-purple-500'"
                       :style="{ width: getConditionConfidence(causesB, condition) + '%' }"></div>
                   </div>
-                  <span class="text-[10px] w-8 text-right font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+                  <span class="text-detail w-8 text-right font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
                     {{ getConditionConfidence(causesB, condition) }}%
                   </span>
                 </div>
@@ -212,7 +211,7 @@
           <h3 class="text-sm font-bold mb-3" :class="isDark ? 'text-white' : 'text-slate-900'">Recommended Tests</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div v-for="(tests, idx) in [testsA, testsB]" :key="idx">
-              <div class="text-[10px] font-bold uppercase tracking-wider mb-2"
+              <div class="text-detail font-bold uppercase tracking-wider mb-2"
                 :class="idx === 0
                   ? (isDark ? 'text-blue-400' : 'text-blue-600')
                   : (isDark ? 'text-purple-400' : 'text-purple-600')">
@@ -243,7 +242,7 @@
 
           <!-- New Conditions (in B but not A) -->
           <div class="mb-4" v-if="newConditions.length > 0">
-            <h4 class="text-[10px] font-bold uppercase tracking-wider mb-2"
+            <h4 class="text-detail font-bold uppercase tracking-wider mb-2"
               :class="isDark ? 'text-red-400' : 'text-red-500'">
               New Conditions (in B, not in A)
             </h4>
@@ -258,7 +257,7 @@
 
           <!-- Resolved Conditions (in A but not B) -->
           <div class="mb-4" v-if="resolvedConditions.length > 0">
-            <h4 class="text-[10px] font-bold uppercase tracking-wider mb-2"
+            <h4 class="text-detail font-bold uppercase tracking-wider mb-2"
               :class="isDark ? 'text-emerald-400' : 'text-emerald-500'">
               Resolved Conditions (in A, not in B)
             </h4>
@@ -273,7 +272,7 @@
 
           <!-- Changed Confidence -->
           <div class="mb-2" v-if="changedConfidence.length > 0">
-            <h4 class="text-[10px] font-bold uppercase tracking-wider mb-2"
+            <h4 class="text-detail font-bold uppercase tracking-wider mb-2"
               :class="isDark ? 'text-amber-400' : 'text-amber-500'">
               Changed Confidence
             </h4>

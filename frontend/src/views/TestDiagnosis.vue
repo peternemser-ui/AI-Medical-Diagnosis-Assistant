@@ -12,6 +12,5 @@
 </template>
 
 <script setup>
-console.log('✅ TEST COMPONENT LOADED - Vue is working!')
-console.log('🌍 Current location:', window.location.href)
+// Test component — no-op in production
 </script>

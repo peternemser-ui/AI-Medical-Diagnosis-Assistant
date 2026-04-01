@@ -420,7 +420,7 @@
     <!-- Name plate -->
     <div v-if="showName" class="mt-2 text-center">
       <div class="text-sm font-semibold text-white">{{ avatar.name }}</div>
-      <div class="text-[10px] text-slate-400">{{ avatar.specialty }}</div>
+      <div class="text-detail text-slate-400">{{ avatar.specialty }}</div>
     </div>
   </div>
 </template>
