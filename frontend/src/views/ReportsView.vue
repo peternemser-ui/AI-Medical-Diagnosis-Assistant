@@ -9,8 +9,8 @@
     </div>
 
     <!-- Nav bar -->
-    <nav class="relative z-20 flex items-center justify-between px-6 py-3 border-b"
-      :class="isDark ? 'border-slate-800 bg-slate-950/80 backdrop-blur-xl' : 'border-slate-200 bg-white/80 backdrop-blur-xl'">
+    <nav class="relative z-20 flex items-center justify-between px-6 py-3 border-b backdrop-blur-xl"
+      style="background: color-mix(in srgb, var(--clinical-surface) 85%, transparent); border-color: var(--clinical-border)">
       <div class="flex items-center gap-3">
         <router-link to="/" class="flex items-center gap-2.5 group">
           <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
@@ -18,10 +18,10 @@
               <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" />
             </svg>
           </div>
-          <span class="text-sm font-semibold hidden sm:inline" :class="isDark ? 'text-white' : 'text-slate-900'">Medical AI</span>
+          <span class="text-sm font-semibold hidden sm:inline text-[var(--text-primary)]">Medical AI</span>
         </router-link>
-        <div class="w-px h-5 hidden sm:block" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
-        <span class="text-sm font-medium hidden sm:inline" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Reports</span>
+        <div class="w-px h-5 hidden sm:block bg-[var(--clinical-border)]"></div>
+        <span class="text-sm font-medium hidden sm:inline text-[var(--text-secondary)]">Reports</span>
       </div>
       <div class="flex items-center gap-2">
         <ThemeLangControls />
@@ -39,12 +39,12 @@
       <!-- Header with stats -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Consultation Reports</h1>
+          <h1 class="text-2xl font-bold text-[var(--text-primary)]">Consultation Reports</h1>
           <div class="flex items-center gap-4 mt-1">
-            <span class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+            <span class="text-xs text-[var(--text-secondary)]">
               {{ allSessions.length }} total consultation{{ allSessions.length !== 1 ? 's' : '' }}
             </span>
-            <span v-if="allSessions.length > 0" class="text-xs" :class="isDark ? 'text-slate-600' : 'text-slate-400'">
+            <span v-if="allSessions.length > 0" class="text-xs text-[var(--text-secondary)]">
               Latest: {{ formatDate(allSessions[0]?.timestamp) }}
             </span>
           </div>
@@ -95,10 +95,10 @@
         <svg class="w-16 h-16 mb-4" :class="isDark ? 'text-slate-700' : 'text-slate-300'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
         </svg>
-        <h2 class="text-lg font-semibold mb-2" :class="isDark ? 'text-white' : 'text-slate-900'">
+        <h2 class="text-lg font-semibold mb-2 text-[var(--text-primary)]">
           {{ allSessions.length === 0 ? 'No consultations yet' : 'No matching results' }}
         </h2>
-        <p class="text-sm mb-6" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+        <p class="text-sm mb-6 text-[var(--text-secondary)]">
           {{ allSessions.length === 0 ? 'Start your first consultation to see reports here.' : 'Try adjusting your search term.' }}
         </p>
         <router-link v-if="allSessions.length === 0" to="/consult"
@@ -115,17 +115,14 @@
         <div
           v-for="session in filteredSessions"
           :key="session.id"
-          class="group backdrop-blur-xl rounded-2xl border p-4 transition-all duration-200 cursor-pointer"
-          :class="isDark
-            ? 'bg-slate-900/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900/80'
-            : 'bg-white/80 border-slate-200 hover:border-slate-300 shadow-sm hover:shadow'"
+          class="group surface-card backdrop-blur-xl rounded-2xl p-4 transition-all duration-200 cursor-pointer hover:shadow"
           @click="$router.push(`/reports/${session.id}`)"
         >
           <div class="flex items-start justify-between gap-3">
             <div class="flex-1 min-w-0">
               <!-- Date + Urgency badge + Message count -->
               <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                <span class="text-xs font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+                <span class="text-xs font-medium text-[var(--text-secondary)]">
                   {{ formatDate(session.timestamp) }}
                 </span>
                 <span class="px-2 py-0.5 rounded-full text-detail font-bold uppercase tracking-wide"
@@ -139,12 +136,12 @@
               </div>
 
               <!-- Summary (first user message truncated to ~80 chars) -->
-              <p class="text-sm font-medium mb-1 leading-snug" :class="isDark ? 'text-white' : 'text-slate-900'">
+              <p class="text-sm font-medium mb-1 leading-snug text-[var(--text-primary)]">
                 {{ getSessionSummary(session.id) }}
               </p>
 
               <!-- Top diagnosis -->
-              <div class="flex items-center gap-3 text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+              <div class="flex items-center gap-3 text-xs text-[var(--text-secondary)]">
                 <span>{{ session.topDiagnosis }}</span>
                 <span v-if="session.confidence" class="font-medium"
                   :class="session.confidence >= 70 ? 'text-emerald-400' : session.confidence >= 40 ? 'text-amber-400' : (isDark ? 'text-slate-500' : 'text-slate-400')">
@@ -191,9 +188,8 @@
       leave-to-class="opacity-0"
     >
       <div v-if="confirmDialog.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-        <div class="rounded-2xl border shadow-2xl max-w-sm w-full p-6"
-          :class="isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'">
-          <p class="text-sm mb-5" :class="isDark ? 'text-white' : 'text-slate-900'">{{ confirmDialog.message }}</p>
+        <div class="surface-card rounded-2xl shadow-2xl max-w-sm w-full p-6">
+          <p class="text-sm mb-5 text-[var(--text-primary)]">{{ confirmDialog.message }}</p>
           <div class="flex gap-3 justify-end">
             <button @click="confirmDialog.show = false"
               class="px-4 py-2 text-xs rounded-lg transition-colors"
