@@ -87,43 +87,48 @@
     </nav>
 
     <!-- ═══════ HERO — Two Column Layout ═══════ -->
-    <div class="relative px-6 sm:px-10 pt-10 sm:pt-16 lg:pt-20 pb-12" style="z-index:20">
-      <div class="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+    <div class="relative px-6 sm:px-10 pt-12 sm:pt-20 lg:pt-24 pb-16 lg:pb-20" style="z-index:20">
+      <div class="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
 
         <!-- Left column: text + CTA -->
-        <div class="lg:w-1/2 text-center lg:text-left">
+        <div class="lg:w-[55%] text-center lg:text-left">
           <!-- Eyebrow badge -->
-          <div class="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-6 border backdrop-blur-md"
-            :class="isDark ? 'bg-blue-500/10 border-blue-500/20' : 'bg-white/60 border-blue-200'">
-            <div class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
-            <span class="text-xs font-medium" :class="isDark ? 'text-blue-300' : 'text-blue-600'">{{ t('hero.badge') }}</span>
+          <div class="inline-flex items-center gap-2.5 rounded-full px-4 py-2 mb-8 border backdrop-blur-md"
+            :class="isDark ? 'bg-blue-500/8 border-blue-500/15' : 'bg-white/60 border-blue-200'">
+            <div class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
+            <span class="text-xs font-semibold tracking-wide" :class="isDark ? 'text-blue-300' : 'text-blue-600'">{{ t('hero.badge') }}</span>
+            <span class="w-px h-3 mx-0.5" :class="isDark ? 'bg-slate-700' : 'bg-slate-300'"></span>
+            <span class="text-xs font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">HIPAA Compliant</span>
           </div>
 
           <!-- Headline -->
-          <h1 class="font-headline text-3xl sm:text-4xl lg:text-5xl font-bold mb-4" style="letter-spacing:0.05em; line-height:1.1">
-            <span :class="isDark ? 'bg-gradient-to-r from-white via-white to-slate-400 bg-clip-text text-transparent' : 'text-slate-900'">{{ t('hero.title1') }}</span>
+          <h1 class="font-headline text-3xl sm:text-4xl lg:text-[3.25rem] xl:text-[3.5rem] font-bold mb-5" style="line-height:1.08">
+            <span :class="isDark ? 'bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent' : 'text-slate-900'">{{ t('hero.title1') }}</span>
             <br />
-            <span class="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent font-medium">{{ t('hero.title2') }}</span>
+            <span class="bg-gradient-to-r from-blue-400 via-blue-500 to-violet-500 bg-clip-text text-transparent">{{ t('hero.title2') }}</span>
           </h1>
 
           <!-- Subtitle -->
-          <p class="text-sm sm:text-base max-w-lg leading-relaxed mb-3" :class="isDark ? 'text-slate-400' : 'text-slate-600'">
+          <p class="text-body-lg sm:text-base max-w-xl leading-relaxed mb-5" :class="isDark ? 'text-slate-400' : 'text-slate-600'">
             {{ t('hero.subtitle') }}
           </p>
 
-          <!-- Trust microcopy -->
-          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mb-6 text-xs justify-center lg:justify-start" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-            <span class="flex items-center gap-1">
-              <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              {{ t('hero.takes2min') }}
+          <!-- Trust microcopy pills -->
+          <div class="flex flex-wrap items-center gap-2.5 mb-8 justify-center lg:justify-start">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border"
+              :class="isDark ? 'bg-emerald-500/8 border-emerald-500/15 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-600'">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              ~5 min assessment
             </span>
-            <span class="flex items-center gap-1">
-              <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-              {{ t('hero.noAccount') }}
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border"
+              :class="isDark ? 'bg-blue-500/8 border-blue-500/15 text-blue-300' : 'bg-blue-50 border-blue-200 text-blue-600'">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              7 AI specialists
             </span>
-            <span class="flex items-center gap-1">
-              <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-              {{ t('hero.sevenAgents') }}
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border"
+              :class="isDark ? 'bg-purple-500/8 border-purple-500/15 text-purple-300' : 'bg-purple-50 border-purple-200 text-purple-600'">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              AES-256 encrypted
             </span>
           </div>
 
@@ -169,14 +174,20 @@
           </div>
         </div>
 
-        <!-- Right column: Dr. Hopps avatar -->
-        <div class="lg:w-1/2 flex justify-center">
+        <!-- Right column: Dr. Hopps avatar with diagnostic chamber -->
+        <div class="lg:w-[45%] flex justify-center">
           <div class="relative">
-            <!-- Avatar glow -->
+            <!-- Diagnostic scan ring -->
+            <div class="scan-ring pointer-events-none" aria-hidden="true"></div>
+            <!-- Outer halo -->
+            <div class="avatar-halo pointer-events-none" aria-hidden="true"></div>
+            <!-- Inner rotating halo -->
+            <div class="avatar-halo-inner pointer-events-none" aria-hidden="true"></div>
+            <!-- Avatar ambient glow -->
             <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div class="w-64 h-64 sm:w-80 sm:h-80 rounded-full blur-[80px] transition-colors duration-1000"
-                :class="isDark ? 'opacity-25' : 'opacity-15'"
-                style="background-color: #4a90d9"></div>
+                :class="isDark ? 'opacity-20' : 'opacity-12'"
+                style="background: radial-gradient(circle, #3b82f6, #8b5cf6)"></div>
             </div>
             <div class="relative hero-avatar-float flex justify-center" ref="dogAvatarContainer">
               <!-- Medical equipment background -->
@@ -530,8 +541,11 @@
       </div>
     </div>
 
+    <!-- Section divider -->
+    <div class="section-divider"></div>
+
     <!-- ═══════ TRUST BAND ═══════ -->
-    <section class="relative z-10 border-y py-6" :class="isDark ? 'border-slate-800/50 bg-slate-900/30' : 'border-slate-200 bg-white/30'">
+    <section class="relative z-10 py-8" :class="isDark ? 'bg-slate-900/20' : 'bg-white/20'">
       <div class="max-w-6xl mx-auto px-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 text-xs font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
         <span class="flex items-center gap-2">
           <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -556,11 +570,17 @@
       </div>
     </section>
 
+    <div class="section-divider"></div>
+
     <!-- ═══════ AGENT PIPELINE — How It Works ═══════ -->
-    <div class="relative max-w-6xl mx-auto px-6 py-16" style="z-index:10">
-      <div class="text-center mb-10">
-        <h2 class="text-display font-bold text-[var(--text-primary)]">{{ t('hero.howItWorks') }}</h2>
-        <p class="text-sm mt-2 max-w-lg mx-auto" :class="isDark ? 'text-slate-400' : 'text-slate-500'">7 specialized AI agents collaborate on every diagnosis</p>
+    <div class="relative max-w-6xl mx-auto px-6 py-20" style="z-index:10">
+      <div class="text-center mb-12">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-detail font-semibold mb-4"
+          :class="isDark ? 'bg-blue-500/8 text-blue-300 border border-blue-500/15' : 'bg-blue-50 text-blue-600 border border-blue-200'">
+          Multi-Agent Intelligence
+        </div>
+        <h2 class="font-headline text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">{{ t('hero.howItWorks') }}</h2>
+        <p class="text-body mt-3 max-w-xl mx-auto" :class="isDark ? 'text-slate-400' : 'text-slate-500'">7 specialized AI agents collaborate on every diagnosis — from triage to treatment, each bringing clinical expertise to your case.</p>
       </div>
 
       <!-- Desktop: horizontal pipeline with connectors -->
@@ -609,11 +629,17 @@
       </div>
     </div>
 
+    <div class="section-divider"></div>
+
     <!-- ═══════ SPECIALIST TEAM PREVIEW ═══════ -->
-    <section class="relative z-10 py-12 px-6">
-      <div class="max-w-4xl mx-auto text-center">
-        <h2 class="text-display font-bold text-[var(--text-primary)] mb-2">Meet Your Specialist Team</h2>
-        <p class="text-sm mb-8" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Your PA routes you to the right specialist based on your symptoms</p>
+    <section class="relative z-10 py-16 px-6">
+      <div class="max-w-5xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-detail font-semibold mb-4"
+          :class="isDark ? 'bg-purple-500/8 text-purple-300 border border-purple-500/15' : 'bg-purple-50 text-purple-600 border border-purple-200'">
+          Specialist Network
+        </div>
+        <h2 class="font-headline text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-3">Meet Your Specialist Team</h2>
+        <p class="text-body max-w-lg mx-auto mb-10" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Your PA intelligently routes you to the right specialist based on your symptoms</p>
         <div class="flex flex-wrap justify-center gap-4">
           <div v-for="doc in specialistPreview" :key="doc.key"
             class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border transition-all duration-200 hover:-translate-y-0.5"
@@ -629,12 +655,18 @@
       </div>
     </section>
 
+    <div class="section-divider"></div>
+
     <!-- ═══════ SAMPLE DIAGNOSTIC OUTPUT ═══════ -->
-    <section class="relative z-10 py-16 px-6">
+    <section class="relative z-10 py-20 px-6">
       <div class="max-w-6xl mx-auto">
-        <div class="text-center mb-10">
-          <h2 class="text-display font-bold text-[var(--text-primary)]">{{ t('sample.heading') }}</h2>
-          <p class="text-sm mt-2" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ t('sample.subheading') }}</p>
+        <div class="text-center mb-12">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-detail font-semibold mb-4"
+            :class="isDark ? 'bg-emerald-500/8 text-emerald-300 border border-emerald-500/15' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'">
+            Clinical Output Preview
+          </div>
+          <h2 class="font-headline text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">{{ t('sample.heading') }}</h2>
+          <p class="text-body mt-3 max-w-lg mx-auto" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ t('sample.subheading') }}</p>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
           <!-- Card 1: Differential Diagnosis -->
@@ -688,11 +720,17 @@
       </div>
     </section>
 
+    <div class="section-divider"></div>
+
     <!-- ═══════ FEATURE CARDS — Built for Medical Intelligence ═══════ -->
-    <div class="relative max-w-5xl mx-auto px-6 py-16" style="z-index:10">
-      <div class="text-center mb-10">
-        <h2 class="text-display font-bold text-[var(--text-primary)]">{{ t('features.heading') }}</h2>
-        <p class="text-sm mt-2" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ t('features.subheading') }}</p>
+    <div class="relative max-w-5xl mx-auto px-6 py-20" style="z-index:10">
+      <div class="text-center mb-12">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-detail font-semibold mb-4"
+          :class="isDark ? 'bg-cyan-500/8 text-cyan-300 border border-cyan-500/15' : 'bg-cyan-50 text-cyan-600 border border-cyan-200'">
+          Platform Capabilities
+        </div>
+        <h2 class="font-headline text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">{{ t('features.heading') }}</h2>
+        <p class="text-body mt-3" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ t('features.subheading') }}</p>
       </div>
       <div class="grid sm:grid-cols-3 gap-5">
         <div v-for="feat in features" :key="feat.titleKey"
@@ -712,8 +750,10 @@
       </div>
     </div>
 
+    <div class="section-divider"></div>
+
     <!-- ═══════ PRIVACY & SECURITY — Your Data Stays Private ═══════ -->
-    <div class="relative max-w-4xl mx-auto px-6 py-16" style="z-index:10">
+    <div class="relative max-w-4xl mx-auto px-6 py-20" style="z-index:10">
       <div class="rounded-2xl p-6 sm:p-8 backdrop-blur-lg border"
         :class="isDark
           ? 'bg-slate-900/40 border-slate-700/30'
@@ -1421,14 +1461,113 @@ function viewSampleReport() {
 </script>
 
 <style scoped>
+/* ── Premium Landing Page Styles ────────────────────────── */
+
 .font-headline {
-  font-family: 'Silkscreen', 'Jost', 'Century Gothic', cursive;
+  font-family: 'Inter', 'SF Pro Display', system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
+
 .hero-avatar-float {
   animation: float 6s ease-in-out infinite;
 }
+
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-12px); }
+}
+
+/* Hero diagnostic halo around avatar */
+.avatar-halo {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  border: 1px solid rgba(59, 130, 246, 0.12);
+  animation: halo-pulse 4s ease-in-out infinite;
+}
+.avatar-halo-inner {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1px dashed rgba(139, 92, 246, 0.15);
+  animation: halo-rotate 20s linear infinite;
+}
+
+@keyframes halo-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.03); }
+}
+@keyframes halo-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Section reveal animation */
+.section-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.section-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Premium section divider */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.15), transparent);
+  margin: 0 auto;
+  max-width: 60%;
+}
+
+/* Agent pipeline connector */
+.pipeline-connector {
+  position: relative;
+}
+.pipeline-connector::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    rgba(59, 130, 246, 0.3),
+    rgba(139, 92, 246, 0.3),
+    rgba(236, 72, 153, 0.2)
+  );
+  z-index: 0;
+}
+
+/* Diagnostic scan ring on avatar */
+.scan-ring {
+  position: absolute;
+  inset: -30px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  border-top-color: rgba(6, 182, 212, 0.3);
+  border-right-color: rgba(6, 182, 212, 0.15);
+  animation: scan-rotate 8s linear infinite;
+}
+
+@keyframes scan-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero-avatar-float,
+  .avatar-halo,
+  .avatar-halo-inner,
+  .scan-ring {
+    animation: none;
+  }
+  .section-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 </style>
