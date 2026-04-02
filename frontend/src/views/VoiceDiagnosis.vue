@@ -1995,8 +1995,8 @@ async function skipToDiagnosis() {
   const responses = questionnaire.value.userResponses
   const symptoms = (responses.symptoms || '') .toLowerCase()
   // Detect specialty from symptoms
-  const cats = { skin: ['lip','skin','rash','sore','crack','mole','wound'], cardiac: ['chest','heart','palpitat'], mental: ['anxiety','depress','stress','mood','sleep'], digestive: ['stomach','nausea','bowel','bloat'], neuro: ['headache','dizzy','numb','seizure'] }
-  const specMap = { skin: 'dermatology', cardiac: 'cardiology', mental: 'psychiatry', digestive: 'gastroenterology', neuro: 'neurology' }
+  const cats = { skin: ['lip','skin','rash','sore','crack','mole','wound'], cardiac: ['chest','heart','palpitat'], mental: ['anxiety','depress','stress','mood','sleep'], digestive: ['stomach','nausea','bowel','bloat'], neuro: ['headache','dizzy','numb','seizure'], nutrition: ['diet','weight','nutrition','food','eating','appetite','obesity','malnutrition','vitamin','deficiency'] }
+  const specMap = { skin: 'dermatology', cardiac: 'cardiology', mental: 'psychiatry', digestive: 'gastroenterology', neuro: 'neurology', nutrition: 'nutrition' }
   let spec = 'general_medicine'
   for (const [cat, kws] of Object.entries(cats)) {
     if (kws.some(kw => symptoms.includes(kw))) { spec = specMap[cat]; break }

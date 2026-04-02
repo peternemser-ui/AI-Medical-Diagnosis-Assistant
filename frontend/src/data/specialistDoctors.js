@@ -135,6 +135,22 @@ export const SPECIALIST_DOCTORS = {
     farewell: "Thank you. I have a clear picture of the musculoskeletal presentation. Let me get the diagnostic team on this.",
   },
 
+  nutrition: {
+    name: 'Dr. Hannah Reeves',
+    title: 'Board-Certified Clinical Nutritionist',
+    credentials: 'MD, CNS, CLT',
+    emoji: '🥗',
+    accentColor: 'lime',
+    accentHex: '#84cc16',
+    bgClass: 'from-lime-500 to-green-600',
+    greeting: "Hi, I'm Dr. Hannah Reeves, a clinical nutritionist. {paName} flagged some concerns where diet and nutrition may play a key role. What you eat directly impacts how you feel — let me ask a few targeted questions.",
+    questions: [
+      "Can you walk me through a typical day of eating — meals, snacks, and drinks? Any foods you avoid or crave?",
+      "Have you noticed any connection between what you eat and your symptoms — like bloating after dairy, energy crashes, or reactions to specific foods?",
+    ],
+    farewell: "Thank you. Nutritional patterns often reveal a lot. Let me coordinate with the diagnostic team to factor this into your assessment.",
+  },
+
   general_medicine: {
     name: 'Dr. Emily Wright',
     title: 'Board-Certified Internist',
