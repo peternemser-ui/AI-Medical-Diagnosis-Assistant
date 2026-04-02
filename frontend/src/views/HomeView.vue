@@ -1326,6 +1326,10 @@ const features = [
 ]
 
 function startConsultation() {
+  if (!isLoggedIn.value) {
+    router.push('/login')
+    return
+  }
   const hasKey = localStorage.getItem('api_key_configured')
   router.push(hasKey ? '/consult' : '/setup')
 }
