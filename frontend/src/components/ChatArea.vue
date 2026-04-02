@@ -38,7 +38,7 @@
           </div>
 
           <!-- Example prompt cards -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-2xl">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-2xl mb-8">
             <button
               v-for="prompt in examplePrompts"
               :key="prompt"
@@ -47,6 +47,51 @@
             >
               <span class="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">{{ prompt }}</span>
             </button>
+          </div>
+
+          <!-- Specialist Team Map -->
+          <div class="w-full max-w-2xl">
+            <div class="text-center mb-4">
+              <h3 class="text-body-sm font-semibold text-[var(--text-primary)]">Our Specialist Team</h3>
+              <p class="text-detail text-[var(--text-tertiary)] mt-0.5">Your PA will refer you to the right specialist based on your symptoms</p>
+            </div>
+
+            <!-- PA Hub in center -->
+            <div class="relative">
+              <!-- PA at top -->
+              <div class="flex justify-center mb-3">
+                <div class="flex flex-col items-center">
+                  <div class="w-12 h-12 rounded-full flex items-center justify-center text-xl shadow-md border-2"
+                    :class="isDark ? 'bg-slate-700 border-emerald-500/40' : 'bg-emerald-50 border-emerald-300'">
+                    🐰
+                  </div>
+                  <span class="text-caption font-semibold mt-1" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'">Your PA</span>
+                  <span class="text-micro text-[var(--text-tertiary)]">Initial Assessment</span>
+                </div>
+              </div>
+
+              <!-- Connector lines -->
+              <div class="flex justify-center mb-2">
+                <div class="w-0.5 h-4" :class="isDark ? 'bg-slate-700' : 'bg-slate-200'"></div>
+              </div>
+              <div class="flex justify-center mb-3">
+                <div class="w-3/4 h-0.5 rounded-full" :class="isDark ? 'bg-slate-700' : 'bg-slate-200'"></div>
+              </div>
+
+              <!-- Specialist grid -->
+              <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                <div v-for="spec in specialistTeam" :key="spec.key"
+                  class="flex flex-col items-center p-2 rounded-xl transition-all duration-200 cursor-default group"
+                  :class="isDark ? 'hover:bg-slate-800/60' : 'hover:bg-slate-50'">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg border transition-all duration-200 group-hover:scale-110 group-hover:shadow-md"
+                    :style="{ borderColor: spec.accentHex + '40', background: spec.accentHex + '08' }">
+                    {{ spec.emoji }}
+                  </div>
+                  <span class="text-micro font-medium mt-1.5 text-center leading-tight text-[var(--text-secondary)]">{{ spec.shortName }}</span>
+                  <span class="text-micro text-center leading-tight" :style="{ color: spec.accentHex + 'cc' }">{{ spec.label }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </template>
       </div>
@@ -335,9 +380,19 @@ import DiagnosisReport from '@/components/DiagnosisReport.vue'
 import SkeletonLoader from '@/components/SkeletonLoader.vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { useI18n } from '@/composables/useI18n.js'
+import { SPECIALIST_DOCTORS } from '@/data/specialistDoctors.js'
 
 const { isDark } = useTheme()
 const { t } = useI18n()
+
+// Specialist team for the welcome screen map
+const specialistTeam = Object.entries(SPECIALIST_DOCTORS).map(([key, doc]) => ({
+  key,
+  emoji: doc.emoji,
+  shortName: doc.name.split(' ').slice(0, 2).join(' '),
+  label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+  accentHex: doc.accentHex,
+}))
 
 // Brief skeleton loading state for welcome screen
 const welcomeLoading = ref(true)
