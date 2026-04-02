@@ -204,13 +204,21 @@
             @change="handleImageSelected"
           />
 
-          <!-- Text input -->
+          <!-- Text input with autocomplete -->
           <div class="flex-1 relative">
+            <SymptomAutocomplete
+              ref="autocompleteRef"
+              :query="currentMessage"
+              :visible="showAutocomplete"
+              @select="handleAutocompleteSelect"
+            />
             <textarea
               ref="textareaRef"
               v-model="currentMessage"
               @keydown="handleKeydown"
               @input="adjustTextareaHeight"
+              @focus="showAutocomplete = true"
+              @blur="showAutocomplete = false"
               :disabled="disabled"
               :placeholder="placeholderText"
               aria-label="Type your message"
@@ -245,6 +253,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import SymptomAutocomplete from '@/components/SymptomAutocomplete.vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { useI18n } from '@/composables/useI18n.js'
 
@@ -270,6 +279,14 @@ const emit = defineEmits([
 // ── Standard input state ──
 const currentMessage = ref('')
 const textareaRef = ref(null)
+const autocompleteRef = ref(null)
+const showAutocomplete = ref(false)
+
+function handleAutocompleteSelect(term) {
+  currentMessage.value = term
+  showAutocomplete.value = false
+  nextTick(() => textareaRef.value?.focus())
+}
 const fileInputRef = ref(null)
 const textareaHeight = ref(48)
 const MIN_HEIGHT = 48

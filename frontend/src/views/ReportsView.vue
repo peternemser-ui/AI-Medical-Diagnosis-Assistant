@@ -37,6 +37,26 @@
     <!-- Main content -->
     <div class="relative z-10 max-w-5xl mx-auto px-4 py-6">
       <!-- Header with stats -->
+      <!-- Health Score Summary -->
+      <div v-if="allSessions.length > 0" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div class="rounded-card p-3 text-center surface-card">
+          <div class="text-heading font-bold text-[var(--text-primary)]">{{ allSessions.length }}</div>
+          <div class="text-detail text-[var(--text-secondary)]">Consultations</div>
+        </div>
+        <div class="rounded-card p-3 text-center surface-card">
+          <div class="text-heading font-bold" :class="avgConfidence >= 70 ? 'text-emerald-500' : avgConfidence >= 40 ? 'text-amber-500' : 'text-slate-400'">{{ avgConfidence }}%</div>
+          <div class="text-detail text-[var(--text-secondary)]">Avg Confidence</div>
+        </div>
+        <div class="rounded-card p-3 text-center surface-card">
+          <div class="text-heading font-bold" :class="routineCount === allSessions.length ? 'text-emerald-500' : 'text-amber-500'">{{ routineCount }}/{{ allSessions.length }}</div>
+          <div class="text-detail text-[var(--text-secondary)]">Routine</div>
+        </div>
+        <div class="rounded-card p-3 text-center surface-card">
+          <div class="text-heading font-bold text-blue-500">{{ healthScore }}</div>
+          <div class="text-detail text-[var(--text-secondary)]">Health Score</div>
+        </div>
+      </div>
+
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 class="text-2xl font-bold text-[var(--text-primary)]">Consultation Reports</h1>
@@ -277,6 +297,32 @@ const { isDark } = useTheme()
 const searchQuery = ref('')
 const viewMode = ref('list') // 'list' or 'timeline'
 const allSessions = ref(getSessions())
+
+// Health score metrics
+const avgConfidence = computed(() => {
+  const sessions = allSessions.value.filter(s => s.confidence > 0)
+  if (!sessions.length) return 0
+  return Math.round(sessions.reduce((sum, s) => sum + s.confidence, 0) / sessions.length)
+})
+
+const routineCount = computed(() =>
+  allSessions.value.filter(s => !s.urgency || s.urgency === 'routine').length
+)
+
+const healthScore = computed(() => {
+  if (!allSessions.value.length) return 'N/A'
+  // Simple health score: weighted average of confidence + urgency factor
+  const urgencyWeights = { routine: 100, soon: 70, urgent: 40, emergency: 10 }
+  const scores = allSessions.value.map(s => {
+    const conf = s.confidence || 50
+    const urgW = urgencyWeights[s.urgency] || 80
+    return Math.round((conf * 0.4 + urgW * 0.6))
+  })
+  const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+  if (avg >= 80) return `${avg} Good`
+  if (avg >= 60) return `${avg} Fair`
+  return `${avg} Watch`
+})
 
 // Group sessions by month for timeline view
 const groupedByMonth = computed(() => {

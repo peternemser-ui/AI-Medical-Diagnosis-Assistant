@@ -609,6 +609,26 @@
       </div>
     </div>
 
+    <!-- ═══════ SPECIALIST TEAM PREVIEW ═══════ -->
+    <section class="relative z-10 py-12 px-6">
+      <div class="max-w-4xl mx-auto text-center">
+        <h2 class="text-display font-bold text-[var(--text-primary)] mb-2">Meet Your Specialist Team</h2>
+        <p class="text-sm mb-8" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Your PA routes you to the right specialist based on your symptoms</p>
+        <div class="flex flex-wrap justify-center gap-4">
+          <div v-for="doc in specialistPreview" :key="doc.key"
+            class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border transition-all duration-200 hover:-translate-y-0.5"
+            :class="isDark ? 'bg-slate-800/40 border-slate-700/30 hover:border-slate-600' : 'bg-white/70 border-slate-200 hover:shadow-md'"
+            :style="{ borderLeftWidth: '3px', borderLeftColor: doc.accentHex }">
+            <span class="text-xl">{{ doc.emoji }}</span>
+            <div class="text-left">
+              <div class="text-detail font-semibold text-[var(--text-primary)]">{{ doc.name }}</div>
+              <div class="text-micro" :style="{ color: doc.accentHex }">{{ doc.label }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ═══════ SAMPLE DIAGNOSTIC OUTPUT ═══════ -->
     <section class="relative z-10 py-16 px-6">
       <div class="max-w-6xl mx-auto">
@@ -752,6 +772,7 @@ import { useRouter } from 'vue-router'
 import DoctorAvatar from '@/components/DoctorAvatar.vue'
 import ThemeLangControls from '@/components/ThemeLangControls.vue'
 import { useTheme } from '@/composables/useTheme.js'
+import { SPECIALIST_DOCTORS } from '@/data/specialistDoctors.js'
 import { useI18n } from '@/composables/useI18n.js'
 import { useUser } from '@/composables/useUser.js'
 
@@ -759,6 +780,15 @@ const router = useRouter()
 const { isDark } = useTheme()
 const { t } = useI18n()
 const { profile, isLoggedIn, logout: doLogout } = useUser()
+
+// Specialist team preview for landing page
+const specialistPreview = Object.entries(SPECIALIST_DOCTORS).map(([key, doc]) => ({
+  key,
+  emoji: doc.emoji,
+  name: doc.name.split(',')[0],
+  label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+  accentHex: doc.accentHex,
+}))
 
 // User menu
 const showUserMenu = ref(false)
