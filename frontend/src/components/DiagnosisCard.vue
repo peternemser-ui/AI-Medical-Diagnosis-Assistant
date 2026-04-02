@@ -19,10 +19,10 @@
           </div>
         </div>
       </div>
-      <!-- Confidence -->
-      <div class="flex-shrink-0 text-center ml-0 sm:ml-3">
-        <div class="text-2xl sm:text-3xl font-black tabular-nums" :class="confidenceColor">{{ cause.value }}%</div>
-        <div class="text-tiny uppercase tracking-widest font-semibold" :class="confidenceLabelColor">{{ confidenceLabel }}</div>
+      <!-- Confidence Ring -->
+      <div class="flex-shrink-0 flex flex-col items-center ml-0 sm:ml-3">
+        <ConfidenceRing :value="cause.value" :size="56" :stroke-width="4" />
+        <div class="text-tiny uppercase tracking-widest font-semibold mt-1" :class="confidenceLabelColor">{{ confidenceLabel }}</div>
       </div>
     </div>
 
@@ -132,6 +132,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import ConfidenceRing from '@/components/ConfidenceRing.vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { useI18n } from '@/composables/useI18n.js'
 

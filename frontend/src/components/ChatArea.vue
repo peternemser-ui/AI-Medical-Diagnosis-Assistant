@@ -30,11 +30,23 @@
           <h2 class="text-display font-bold mb-2 text-[var(--text-primary)]">{{ t('chat.welcomeTitle') }}</h2>
           <p class="text-body mb-3 text-[var(--text-secondary)]">{{ t('chat.welcomeSubtitle') }}</p>
 
-          <!-- Clinical intelligence note -->
-          <div class="flex items-center gap-2 mb-8 px-3 py-2 rounded-pill text-detail"
-            :class="isDark ? 'bg-purple-500/10 text-purple-300 border border-purple-500/15' : 'bg-purple-50 text-purple-600 border border-purple-200'">
-            <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
-            {{ t('hero.sevenAgents') }} — {{ t('hero.subtitle') }}
+          <!-- Trust badges -->
+          <div class="flex flex-wrap items-center justify-center gap-3 mb-8">
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-detail"
+              :class="isDark ? 'bg-purple-500/10 text-purple-300 border border-purple-500/15' : 'bg-purple-50 text-purple-600 border border-purple-200'">
+              <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+              7 AI specialists
+            </div>
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-detail"
+              :class="isDark ? 'bg-blue-500/10 text-blue-300 border border-blue-500/15' : 'bg-blue-50 text-blue-600 border border-blue-200'">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              ~5 min assessment
+            </div>
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-detail"
+              :class="isDark ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/15' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              HIPAA encrypted
+            </div>
           </div>
 
           <!-- Example prompt cards -->
@@ -47,6 +59,11 @@
             >
               <span class="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">{{ prompt }}</span>
             </button>
+          </div>
+
+          <!-- Interactive Body Diagram -->
+          <div class="w-full max-w-2xl mb-8 py-6 border-t border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
+            <BodyDiagramInput @select="$emit('followup-selected', $event)" />
           </div>
 
           <!-- Specialist Team Map -->
@@ -378,6 +395,7 @@ import DOMPurify from 'dompurify'
 import DiagnosisCard from '@/components/DiagnosisCard.vue'
 import DiagnosisReport from '@/components/DiagnosisReport.vue'
 import SkeletonLoader from '@/components/SkeletonLoader.vue'
+import BodyDiagramInput from '@/components/BodyDiagramInput.vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { useI18n } from '@/composables/useI18n.js'
 import { SPECIALIST_DOCTORS } from '@/data/specialistDoctors.js'

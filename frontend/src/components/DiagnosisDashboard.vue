@@ -167,6 +167,16 @@
           @email="shareViaEmail"
         />
 
+        <!-- What To Do Next — priority action cards -->
+        <NextStepsCards
+          v-if="causes.length > 0"
+          :urgency="overallUrgency"
+          :red-flags="redFlags"
+          :recommended-tests="recommendedTests"
+          :specialties="causes[0]?.specialty ? [causes[0].specialty] : []"
+          :action-count="actionChecklist.length"
+        />
+
         <!-- Probability Distribution Chart -->
         <section v-if="causes.length > 1" class="rounded-xl overflow-hidden transition-colors surface-card">
           <div class="px-5 py-4">
@@ -1022,6 +1032,7 @@ import BodyDiagram from './BodyDiagram.vue'
 import NeuralBodySystems from './NeuralBodySystems.vue'
 import NaturalHealingSection from './NaturalHealingSection.vue'
 import DiagnosisSummaryHeader from './DiagnosisSummaryHeader.vue'
+import NextStepsCards from './NextStepsCards.vue'
 import ThemeLangControls from './ThemeLangControls.vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { getProfile } from '@/services/userService.js'

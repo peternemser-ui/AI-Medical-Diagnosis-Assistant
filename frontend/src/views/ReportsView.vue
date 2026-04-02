@@ -73,9 +73,28 @@
         </div>
       </div>
 
-      <!-- Search bar -->
-      <div class="mb-5">
-        <div class="relative">
+      <!-- View toggle + Search -->
+      <div class="flex items-center gap-3 mb-5">
+        <div class="flex rounded-lg border overflow-hidden flex-shrink-0"
+          :class="isDark ? 'border-slate-700' : 'border-slate-200'">
+          <button @click="viewMode = 'list'"
+            class="px-3 py-2 text-detail font-medium transition-colors flex items-center gap-1.5"
+            :class="viewMode === 'list'
+              ? (isDark ? 'bg-blue-500/15 text-blue-300' : 'bg-blue-50 text-blue-600')
+              : (isDark ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-50')">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            List
+          </button>
+          <button @click="viewMode = 'timeline'"
+            class="px-3 py-2 text-detail font-medium transition-colors flex items-center gap-1.5"
+            :class="viewMode === 'timeline'
+              ? (isDark ? 'bg-blue-500/15 text-blue-300' : 'bg-blue-50 text-blue-600')
+              : (isDark ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-50')">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Timeline
+          </button>
+        </div>
+        <div class="relative flex-1">
           <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2" :class="isDark ? 'text-slate-600' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
@@ -110,8 +129,49 @@
         </router-link>
       </div>
 
-      <!-- Session cards -->
-      <div v-else class="space-y-3">
+      <!-- Timeline view -->
+      <div v-else-if="viewMode === 'timeline' && filteredSessions.length > 0" class="relative">
+        <div v-for="(group, monthKey) in groupedByMonth" :key="monthKey" class="mb-8">
+          <!-- Month header -->
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-3 h-3 rounded-full flex-shrink-0" :class="isDark ? 'bg-blue-400' : 'bg-blue-500'"></div>
+            <h3 class="text-body-sm font-bold text-[var(--text-primary)]">{{ monthKey }}</h3>
+            <div class="flex-1 h-px" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
+            <span class="text-detail text-[var(--text-secondary)]">{{ group.length }} consultation{{ group.length > 1 ? 's' : '' }}</span>
+          </div>
+          <!-- Timeline cards -->
+          <div class="ml-1.5 border-l-2 pl-6 space-y-4" :class="isDark ? 'border-slate-700' : 'border-slate-200'">
+            <div v-for="session in group" :key="session.id"
+              class="relative surface-card rounded-xl p-4 cursor-pointer transition-all hover:shadow-elevated"
+              @click="$router.push(`/reports/${session.id}`)">
+              <!-- Timeline dot -->
+              <div class="absolute -left-[1.85rem] top-5 w-2.5 h-2.5 rounded-full border-2"
+                :class="isDark ? 'bg-slate-900 border-slate-600' : 'bg-white border-slate-300'"></div>
+              <!-- Content -->
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-1 flex-wrap">
+                    <span class="text-detail font-medium text-[var(--text-secondary)]">{{ formatDate(session.timestamp) }}</span>
+                    <span class="px-2 py-0.5 rounded-full text-detail font-bold uppercase tracking-wide" :class="urgencyClass(session.urgency)">{{ session.urgency }}</span>
+                  </div>
+                  <p class="text-sm font-medium text-[var(--text-primary)] mb-1">{{ getSessionSummary(session.id) }}</p>
+                  <div class="flex items-center gap-2 text-detail text-[var(--text-secondary)]">
+                    <span>{{ session.topDiagnosis }}</span>
+                    <span v-if="session.confidence" class="font-semibold"
+                      :class="session.confidence >= 70 ? 'text-emerald-400' : session.confidence >= 40 ? 'text-amber-400' : 'text-slate-400'">
+                      {{ session.confidence }}%
+                    </span>
+                  </div>
+                </div>
+                <svg class="w-4 h-4 flex-shrink-0 mt-1" :class="isDark ? 'text-slate-600' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session cards (list view) -->
+      <div v-else-if="filteredSessions.length > 0" class="space-y-3">
         <div
           v-for="session in filteredSessions"
           :key="session.id"
@@ -215,7 +275,20 @@ import { getSessions, getSession, deleteSession } from '@/services/historyServic
 
 const { isDark } = useTheme()
 const searchQuery = ref('')
+const viewMode = ref('list') // 'list' or 'timeline'
 const allSessions = ref(getSessions())
+
+// Group sessions by month for timeline view
+const groupedByMonth = computed(() => {
+  const groups = {}
+  for (const session of filteredSessions.value) {
+    const date = new Date(session.timestamp)
+    const key = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+    if (!groups[key]) groups[key] = []
+    groups[key].push(session)
+  }
+  return groups
+})
 
 // Cache for full session data (message counts, summaries)
 const sessionCache = {}
