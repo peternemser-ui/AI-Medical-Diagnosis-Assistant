@@ -72,11 +72,19 @@
             :class="[
               message.causes && message.causes.length ? 'border-l-blue-500' : 'border-l-[var(--clinical-border)]'
             ]"
+            :style="specialistMode && message.specialistMessage && activeSpecialist ? { borderLeftColor: activeSpecialist.accentHex } : {}"
           >
             <!-- Message header -->
             <div class="flex items-center mb-3 gap-2">
+              <!-- Specialist Avatar (during handoff) -->
+              <div v-if="specialistMode && message.specialistMessage && activeSpecialist"
+                class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-lg shadow-md border-2 ring-1 ring-offset-1 transition-all"
+                :style="{ borderColor: activeSpecialist.accentHex, background: activeSpecialist.accentHex + '10', '--tw-ring-color': activeSpecialist.accentHex + '25' }"
+                :class="isDark ? 'ring-offset-slate-800' : 'ring-offset-white'">
+                {{ activeSpecialist.emoji }}
+              </div>
               <!-- PA Character Avatar -->
-              <div v-if="paMode && !message.causes" class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-lg shadow-sm border"
+              <div v-else-if="paMode && !message.causes" class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-lg shadow-sm border"
                 :class="isDark ? 'bg-slate-700 border-slate-600' : 'bg-amber-50 border-amber-200'">
                 {{ paCharacter === 'cat' ? '🐱' : paCharacter === 'dog' ? '🐶' : paCharacter === 'human' ? '👨‍⚕️' : '🐰' }}
               </div>
@@ -86,8 +94,12 @@
                   <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" />
                 </svg>
               </div>
-              <span class="text-xs font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-                {{ paMode && !message.causes ? paAvatarName + ', PA' : t('chat.medicalAI') }}
+              <span class="text-xs font-medium" :style="specialistMode && message.specialistMessage && activeSpecialist ? { color: activeSpecialist.accentHex } : {}" :class="!(specialistMode && message.specialistMessage) ? (isDark ? 'text-slate-400' : 'text-slate-500') : ''">
+                {{ specialistMode && message.specialistMessage && activeSpecialist
+                  ? activeSpecialist.name + ', ' + activeSpecialist.credentials
+                  : paMode && !message.causes
+                    ? paAvatarName + ', PA'
+                    : t('chat.medicalAI') }}
               </span>
               <span v-if="message.multiAgent" class="text-tiny font-semibold tracking-wide px-2 py-0.5 rounded-full inline-flex items-center gap-1" style="background: rgba(139,92,246,0.1); color: #a78bfa; border: 1px solid rgba(139,92,246,0.15)">
                 <span class="w-1 h-1 rounded-full bg-violet-400 animate-pulse" style="box-shadow: 0 0 4px rgba(139,92,246,0.5)"></span>
@@ -358,7 +370,15 @@ const props = defineProps({
   },
   paCharacter: {
     type: String,
-    default: 'dog' // 'dog' or 'cat'
+    default: 'dog'
+  },
+  specialistMode: {
+    type: Boolean,
+    default: false
+  },
+  activeSpecialist: {
+    type: Object,
+    default: null
   }
 })
 

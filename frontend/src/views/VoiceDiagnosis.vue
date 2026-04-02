@@ -540,9 +540,21 @@
               :sound-enabled="soundEnabled"
               :pa-mode="conversationState === 'gathering' || conversationState === 'pa_interview'"
               :pa-character="doctorAvatar.characterType || 'bunny'"
+              :specialist-mode="conversationState === 'specialist_handoff'"
+              :active-specialist="activeSpecialist"
               @followup-selected="handleQuickQuestion"
               @replay-message="speakMessage"
               @toggle-avatar="avatarMode = true; localStorage.setItem('avatar_mode', 'true')"
+            />
+            <!-- Specialist Handoff Transition Card -->
+            <HandoffTransitionCard
+              v-if="showHandoffTransition && activeSpecialist"
+              :pa-name="paAvatarName"
+              :pa-character="doctorAvatar.characterType || 'bunny'"
+              :specialist="activeSpecialist"
+              :specialty="paRouting?.specialties?.[0] || 'general_medicine'"
+              :reason="paRouting?.patient_summary || 'Based on clinical assessment'"
+              :visible="showHandoffTransition"
             />
             <!-- Live Diagnosis View — shows during agent analysis -->
             <LiveDiagnosisView
@@ -720,6 +732,8 @@ import ThemeLangControls from '@/components/ThemeLangControls.vue'
 import OnboardingTour from '@/components/OnboardingTour.vue'
 import ImageDescriptionModal from '@/components/ImageDescriptionModal.vue'
 import CameraCapture from '@/components/CameraCapture.vue'
+import HandoffTransitionCard from '@/components/HandoffTransitionCard.vue'
+import { getSpecialist } from '@/data/specialistDoctors.js'
 import { saveSession } from '@/services/historyService.js'
 import { useTheme } from '@/composables/useTheme.js'
 import { useI18n } from '@/composables/useI18n.js'
@@ -1092,6 +1106,17 @@ const paRouting = ref(null)     // { specialties: [...], urgency: "...", patient
 const paExchangeCount = ref(0)
 const paCharacter = ref(localStorage.getItem('pa_character') || 'dog') // 'dog' or 'cat'
 
+const paAvatarName = computed(() => {
+  const names = { bunny: 'Dr. Hopps', cat: 'Dr. Whiskers', dog: 'Dr. Buddy', human: 'Dr. AI' }
+  return names[doctorAvatar.value?.characterType || paCharacter.value] || 'Dr. Hopps'
+})
+
+// Specialist Handoff state
+const activeSpecialist = ref(null)           // Current specialist doctor object from registry
+const specialistConversation = ref([])       // Specialist's Q&A exchanges
+const specialistExchangeCount = ref(0)       // How many specialist questions answered (0-2)
+const showHandoffTransition = ref(false)     // Controls the handoff card visibility
+
 // Doctor avatar state
 const avatarMode = ref(localStorage.getItem('avatar_mode') === 'true')
 const showAvatarCustomizer = ref(false)
@@ -1143,10 +1168,13 @@ const isSpeakingAnimating = computed(() => {
   return isTTSSpeaking.value || avatarTalking.value || showTyping.value
 })
 const showStepSidebar = computed(() => {
-  return conversationState.value === 'gathering' || conversationState.value === 'pa_interview' || conversationState.value === 'followup' || conversationState.value === 'awaiting-confirmation'
+  return conversationState.value === 'gathering' || conversationState.value === 'pa_interview' || conversationState.value === 'specialist_handoff' || conversationState.value === 'followup' || conversationState.value === 'awaiting-confirmation'
 })
 
 const progressSteps = computed(() => {
+  if (conversationState.value === 'specialist_handoff') {
+    return ['Demographics', 'Symptoms', 'PA Interview', 'Specialist Review', 'Diagnosis']
+  }
   if (conversationState.value === 'pa_interview') {
     return ['Demographics', 'Symptoms', 'PA Interview', 'Details', 'History', 'Review']
   }
@@ -1757,6 +1785,9 @@ async function handleSendMessage(message, imageBase64Param = null) {
     } else if (conversationState.value === 'pa_interview') {
       // PA Interview mode — send to PA agent
       await handlePaInterview(message)
+    } else if (conversationState.value === 'specialist_handoff') {
+      // Specialist follow-up questions
+      await handleSpecialistQuestion(message)
     } else if (conversationState.value === 'followup') {
       // Store AI follow-up response and ask next follow-up or proceed
       aiFollowupResponses.value.push(message)
@@ -2138,14 +2169,6 @@ async function handlePaInterview(userMessage) {
 
       const specialties = result.routing?.specialties || ['general_medicine']
       const summary = result.routing?.patient_summary || ''
-      const urgency = result.routing?.urgency || 'routine'
-
-      // Show routing message
-      const specialtyNames = specialties.map(s => s.replace(/_/g, ' ')).map(s => s.charAt(0).toUpperCase() + s.slice(1))
-      addMessage('assistant',
-        `Thank you for sharing all of that information. Based on our conversation, I'm going to refer you to our **${specialtyNames.join(' and ')}** specialist${specialties.length > 1 ? 's' : ''} for a detailed analysis.\n\nOur team of 7 AI agents will now collaborate to analyze your case. This includes a specialist consultation, safety review, and personalized treatment recommendations.`
-      )
-      await waitForSpeech()
 
       // Build comprehensive symptoms from PA conversation
       const fullSymptoms = paConversation.value
@@ -2153,14 +2176,13 @@ async function handlePaInterview(userMessage) {
         .map(m => m.content)
         .join('\n')
 
-      // Store the full interview in questionnaire responses for diagnosis
+      // Store the full interview in questionnaire responses
       questionnaire.value.userResponses.symptoms = fullSymptoms
       questionnaire.value.userResponses.pa_summary = summary
       questionnaire.value.userResponses.specialist_routing = specialties
 
-      // Proceed to diagnosis with specialist routing
-      currentStep.value = totalSteps.value
-      await handleProceedToDiagnosis()
+      // ── Specialist Handoff ──────────────────────────────
+      await handleSpecialistHandoff(specialties, summary)
     } else {
       // PA wants to ask another question — typewriter effect
       const question = result.question || 'Could you tell me more about your symptoms?'
@@ -2329,6 +2351,74 @@ function stopAgentSimulation(realTimings) {
   completedAgents.value = ['triage', 'diagnostician', 'research', 'specialist', 'treatment', 'safety', 'empathy']
   activeAgent.value = null
 }
+
+// ── Specialist Handoff ────────────────────────────────────────────
+
+async function handleSpecialistHandoff(specialties, summary) {
+  const specialty = specialties[0] || 'general_medicine'
+  const doctor = getSpecialist(specialty)
+  activeSpecialist.value = doctor
+  specialistConversation.value = []
+  specialistExchangeCount.value = 0
+
+  // PA farewell — announces the referral
+  const specialtyName = specialty.replace(/_/g, ' ')
+  addMessage('assistant',
+    `Based on our conversation, I'd like to bring in our ${specialtyName} specialist, **${doctor.name}**, ${doctor.credentials}. I'm sharing your case notes with them now.`
+  )
+  await waitForSpeech()
+
+  // Show the animated handoff card
+  conversationState.value = 'specialist_handoff'
+  showHandoffTransition.value = true
+
+  // Let the card animate in
+  await new Promise(r => setTimeout(r, 2500))
+  showHandoffTransition.value = false
+
+  // Specialist introduces themselves
+  const paName = paAvatarName.value || 'Dr. Hopps'
+  const greeting = doctor.greeting.replace('{paName}', paName)
+  addMessage('assistant', greeting, { specialistMessage: true })
+  await waitForSpeech()
+
+  // Ask first specialist question
+  await new Promise(r => setTimeout(r, 600))
+  addMessage('assistant', doctor.questions[0], { specialistMessage: true })
+}
+
+async function handleSpecialistQuestion(userMessage) {
+  specialistConversation.value.push({ role: 'user', content: userMessage })
+  specialistExchangeCount.value++
+
+  if (specialistExchangeCount.value < activeSpecialist.value.questions.length) {
+    // Ask the next specialist question
+    showTyping.value = true
+    await new Promise(r => setTimeout(r, 800))
+    showTyping.value = false
+    addMessage('assistant', activeSpecialist.value.questions[specialistExchangeCount.value], { specialistMessage: true })
+  } else {
+    // All specialist questions answered — proceed to diagnosis
+    showTyping.value = true
+    await new Promise(r => setTimeout(r, 600))
+    showTyping.value = false
+
+    const farewell = activeSpecialist.value.farewell || "Thank you. Let me coordinate with our diagnostic team for a thorough analysis."
+    addMessage('assistant', farewell, { specialistMessage: true })
+    await waitForSpeech()
+
+    // Merge specialist answers into questionnaire for the diagnosis pipeline
+    questionnaire.value.userResponses.specialist_followup = specialistConversation.value
+      .filter(m => m.role === 'user')
+      .map(m => m.content)
+      .join('\n')
+
+    currentStep.value = totalSteps.value
+    await handleProceedToDiagnosis()
+  }
+}
+
+// ── Diagnosis Pipeline ───────────────────────────────────────────
 
 async function handleProceedToDiagnosis() {
   isLoading.value = true
@@ -3734,7 +3824,13 @@ function handleStartOver() {
   error.value = null
   currentStep.value = 0
   showTyping.value = false
-  
+
+  // Reset specialist handoff state
+  activeSpecialist.value = null
+  specialistConversation.value = []
+  specialistExchangeCount.value = 0
+  showHandoffTransition.value = false
+
   // Stop any ongoing voice recording
   if (voiceRecording.value.isRecording) {
     stopVoiceRecording()
