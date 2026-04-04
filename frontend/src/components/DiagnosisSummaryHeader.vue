@@ -77,59 +77,56 @@
             </div>
           </div>
 
-          <!-- Right: Body Icon + Confidence + Stats -->
+          <!-- Right: Confidence + Illustration + Stats -->
           <div class="flex flex-row lg:flex-col items-start lg:items-center gap-5 flex-shrink-0">
-            <!-- Body area icon (large) with label -->
-            <div v-if="topCause.cause" class="hidden lg:flex flex-col items-center gap-2">
-              <div class="w-36 h-36 rounded-3xl flex items-center justify-center border"
-                :class="isDark
-                  ? 'bg-slate-700/30 border-slate-600/20'
-                  : 'bg-slate-50 border-slate-200'">
-                <BodyAreaIcon
-                  :area="bodyAreaKey"
-                  :size="120"
-                  :color="isDark ? '#94a3b8' : '#64748b'"
+
+            <!-- Confidence ring + Illustration side by side -->
+            <div class="flex flex-row items-start gap-5">
+              <!-- Confidence ring + differential bars -->
+              <div v-if="topCause.value" class="relative flex flex-col items-center">
+                <div class="w-28 h-28 rounded-full flex items-center justify-center relative"
+                  :style="confidenceRingStyle">
+                  <div class="text-center">
+                    <div class="text-3xl font-black tabular-nums" :style="{ color: confidenceColor }">
+                      {{ topCause.value }}%
+                    </div>
+                    <div class="text-tiny font-bold uppercase tracking-widest mt-0.5"
+                      :class="isDark ? 'text-slate-400' : 'text-slate-600'">confidence</div>
+                  </div>
+                </div>
+                <!-- Primary diagnosis name + confidence label -->
+                <div class="mt-3 text-center">
+                  <div class="text-xs font-bold truncate max-w-[180px]" :class="isDark ? 'text-white' : 'text-slate-900'">{{ topCause.cause || 'Awaiting Analysis' }}</div>
+                  <span class="text-caption font-semibold"
+                    :style="{ color: confidenceColor }">{{ confidenceLabel }}</span>
+                </div>
+
+                <!-- Separator -->
+                <div class="w-full my-4 border-t" :class="isDark ? 'border-slate-700/60' : 'border-slate-200'"></div>
+
+                <!-- Mini differential chart -->
+                <div v-if="otherCauses.length > 0" class="w-full space-y-1.5">
+                  <div v-for="c in otherCauses" :key="c.cause" class="flex items-center gap-2">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center justify-between mb-0.5">
+                        <span class="text-tiny font-medium truncate" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ c.cause.length > 22 ? c.cause.slice(0, 22) + '...' : c.cause }}</span>
+                        <span class="text-tiny font-bold tabular-nums ml-1" :style="{ color: miniBarColor(c.value) }">{{ c.value }}%</span>
+                      </div>
+                      <div class="h-1.5 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-700/60' : 'bg-slate-200'">
+                        <div class="h-full rounded-full transition-all duration-700" :style="{ width: c.value + '%', background: miniBarColor(c.value) }"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Medical Illustration -->
+              <div v-if="topCause.cause" class="hidden lg:block">
+                <MedicalIllustration
+                  :condition="topCause.cause || ''"
+                  :specialty="topCause.specialty || ''"
+                  :size="180"
                 />
-              </div>
-              <span class="text-detail font-bold uppercase tracking-[0.08em] text-center break-words max-w-[220px] leading-tight"
-                :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ (topCause.specialty || 'General Medicine').toUpperCase() }}</span>
-            </div>
-
-            <!-- Confidence ring -->
-            <div v-if="topCause.value" class="relative flex flex-col items-center">
-              <div class="w-28 h-28 rounded-full flex items-center justify-center relative"
-                :style="confidenceRingStyle">
-                <div class="text-center">
-                  <div class="text-3xl font-black tabular-nums" :style="{ color: confidenceColor }">
-                    {{ topCause.value }}%
-                  </div>
-                  <div class="text-tiny font-bold uppercase tracking-widest mt-0.5"
-                    :class="isDark ? 'text-slate-400' : 'text-slate-600'">confidence</div>
-                </div>
-              </div>
-              <!-- Primary diagnosis name + confidence label -->
-              <div class="mt-3 text-center">
-                <div class="text-xs font-bold truncate max-w-[180px]" :class="isDark ? 'text-white' : 'text-slate-900'">{{ topCause.cause || 'Awaiting Analysis' }}</div>
-                <span class="text-caption font-semibold"
-                  :style="{ color: confidenceColor }">{{ confidenceLabel }}</span>
-              </div>
-
-              <!-- Separator -->
-              <div class="w-full my-4 border-t" :class="isDark ? 'border-slate-700/60' : 'border-slate-200'"></div>
-
-              <!-- Mini differential chart -->
-              <div v-if="otherCauses.length > 0" class="w-full space-y-1.5">
-                <div v-for="c in otherCauses" :key="c.cause" class="flex items-center gap-2">
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between mb-0.5">
-                      <span class="text-tiny font-medium truncate" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ c.cause.length > 22 ? c.cause.slice(0, 22) + '...' : c.cause }}</span>
-                      <span class="text-tiny font-bold tabular-nums ml-1" :style="{ color: miniBarColor(c.value) }">{{ c.value }}%</span>
-                    </div>
-                    <div class="h-1.5 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-700/60' : 'bg-slate-200'">
-                      <div class="h-full rounded-full transition-all duration-700" :style="{ width: c.value + '%', background: miniBarColor(c.value) }"></div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -229,7 +226,16 @@
             class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-colors"
             :class="isDark ? 'bg-slate-700/40 hover:bg-slate-700 border-slate-600/40 text-slate-200' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            Email Report
+            Send to Doctor
+          </button>
+          <button @click="$emit('copy-summary')"
+            class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-colors"
+            :class="copiedSummary
+              ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+              : (isDark ? 'bg-slate-700/40 hover:bg-slate-700 border-slate-600/40 text-slate-200' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700')">
+            <svg v-if="copiedSummary" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+            {{ copiedSummary ? 'Copied!' : 'Copy Summary' }}
           </button>
           <router-link to="/consult"
             class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-colors"
@@ -237,6 +243,12 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             New Assessment
           </router-link>
+          <button @click="$emit('find-specialists')"
+            class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-colors"
+            :class="isDark ? 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Find Specialists
+          </button>
         </div>
 
         <!-- Disclaimer -->
@@ -255,6 +267,7 @@
 import { computed } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import BodyAreaIcon from './BodyAreaIcon.vue'
+import MedicalIllustration from './MedicalIllustration.vue'
 
 const { isDark } = useTheme()
 
@@ -268,9 +281,10 @@ const props = defineProps({
   testsCount: { type: Number, default: 0 },
   flagsCount: { type: Number, default: 0 },
   exporting: { type: Boolean, default: false },
+  copiedSummary: { type: Boolean, default: false },
 })
 
-defineEmits(['download-pdf', 'email'])
+defineEmits(['download-pdf', 'email', 'copy-summary', 'find-specialists'])
 
 const topCause = computed(() => props.causes[0] || {})
 const otherCauses = computed(() => props.causes.slice(1, 5))

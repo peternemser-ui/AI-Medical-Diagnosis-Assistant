@@ -163,8 +163,18 @@
           :tests-count="recommendedTests.length"
           :flags-count="redFlags.length"
           :exporting="isExporting"
+          :copied-summary="copiedDoctorSummary"
           @download-pdf="downloadReport"
           @email="shareViaEmail"
+          @copy-summary="copyDoctorSummaryToClipboard"
+          @find-specialists="showBooking = true"
+        />
+
+        <!-- Appointment Booking Modal -->
+        <AppointmentBooking
+          :visible="showBooking"
+          :specialty="causes[0]?.specialty || ''"
+          @close="showBooking = false"
         />
 
         <!-- What To Do Next — priority action cards -->
@@ -1032,6 +1042,7 @@ import BodyDiagram from './BodyDiagram.vue'
 import NeuralBodySystems from './NeuralBodySystems.vue'
 import NaturalHealingSection from './NaturalHealingSection.vue'
 import DiagnosisSummaryHeader from './DiagnosisSummaryHeader.vue'
+import AppointmentBooking from './AppointmentBooking.vue'
 import NextStepsCards from './NextStepsCards.vue'
 import ThemeLangControls from './ThemeLangControls.vue'
 import { useTheme } from '@/composables/useTheme.js'
@@ -1052,6 +1063,8 @@ const viewMode = ref('advanced')
 const selectedCause = ref(null)
 const selectedCauseRank = ref(0)
 const selectedCauseTests = ref([])
+
+const showBooking = ref(false)
 
 const expandedSections = ref({
   whyDiagnosis: true,
@@ -2162,6 +2175,7 @@ const bodySystems = computed(() => {
 const showShareMenu = ref(false)
 const shareDropdownRef = ref(null)
 const copySuccess = ref(false)
+const copiedDoctorSummary = ref(false)
 const isSharePdf = ref(false)
 const canNativeShare = computed(() => !!navigator.share)
 
@@ -2261,10 +2275,43 @@ async function copyReportLink() {
 }
 
 function shareViaEmail() {
-  const subject = encodeURIComponent(`Medical Consultation Report — ${formattedDate.value}`)
-  const body = encodeURIComponent(buildReportText())
-  window.open(`mailto:?subject=${subject}&body=${body}`, '_self')
+  import('@/services/emailExport.js').then(({ openDoctorEmail }) => {
+    openDoctorEmail({
+      causes: causes.value,
+      redFlags: redFlags.value,
+      recommendedTests: recommendedTests.value,
+      medications: medications.value,
+      patientAge: patientAge.value,
+      patientGender: patientGender.value,
+      chiefComplaint: chiefComplaint.value,
+      formattedDate: formattedDate.value,
+      overallUrgency: overallUrgency.value,
+      safetyWarnings: safetyWarnings.value,
+      actionChecklist: actionChecklist.value,
+    })
+  })
   showShareMenu.value = false
+}
+
+async function copyDoctorSummaryToClipboard() {
+  const { copyDoctorSummary } = await import('@/services/emailExport.js')
+  const ok = await copyDoctorSummary({
+    causes: causes.value,
+    redFlags: redFlags.value,
+    recommendedTests: recommendedTests.value,
+    medications: medications.value,
+    patientAge: patientAge.value,
+    patientGender: patientGender.value,
+    chiefComplaint: chiefComplaint.value,
+    formattedDate: formattedDate.value,
+    overallUrgency: overallUrgency.value,
+    safetyWarnings: safetyWarnings.value,
+    actionChecklist: actionChecklist.value,
+  })
+  if (ok) {
+    copiedDoctorSummary.value = true
+    setTimeout(() => { copiedDoctorSummary.value = false }, 2500)
+  }
 }
 
 function printReport() {

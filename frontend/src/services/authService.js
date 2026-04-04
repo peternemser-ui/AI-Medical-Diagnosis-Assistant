@@ -68,7 +68,11 @@ export async function signup(name, email, password) {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
-    throw new Error(err.detail || `Signup failed (${res.status})`)
+    const detail = err.detail
+    const msg = typeof detail === 'string' ? detail
+      : Array.isArray(detail) ? detail.map(d => d.msg || d.message || JSON.stringify(d)).join('; ')
+      : `Signup failed (${res.status})`
+    throw new Error(msg)
   }
 
   const data = await res.json()

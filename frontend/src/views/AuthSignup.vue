@@ -288,7 +288,7 @@ async function handleSignup() {
     const data = await authSignup(name.value.trim(), email.value.trim(), password.value)
     // Reset user_profile for the new account (clear old profile data)
     localStorage.removeItem('user_profile')
-    saveProfile({
+    await saveProfile({
       name: name.value.trim(),
       email: email.value.trim(),
       ...(data.user?.profile_data || {}),

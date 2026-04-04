@@ -450,10 +450,23 @@ export function buildPrintReport({
       <div style="font-size:7px;color:#cbd5e1;margin-top:6px;">MedDiagnose AI | Clinical Report | ${date}</div>
     </div>`
 
+  // -- DISCLAIMER BANNER ---------------------------------------------------
+  const disclaimerBanner = `
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-left:4px solid #f59e0b;border-radius:6px;padding:10px 14px;margin-bottom:16px;${avoid}">
+      <table style="width:100%;border-collapse:collapse;"><tr style="vertical-align:top;">
+        <td style="width:20px;padding-right:8px;"><div style="font-size:14px;line-height:1;">&#9888;</div></td>
+        <td>
+          <div style="font-size:9px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Important Medical Disclaimer</div>
+          <div style="font-size:9px;color:#78350f;line-height:1.5;">This AI-generated clinical report is for <strong>informational purposes only</strong> and does not constitute medical advice, diagnosis, or treatment. The analysis was produced by artificial intelligence and has not been reviewed by a licensed physician. Always seek the guidance of a qualified healthcare professional for any medical condition. If you are experiencing a medical emergency, call 911 or your local emergency services immediately.</div>
+        </td>
+      </tr></table>
+    </div>`
+
   // -- ASSEMBLE ------------------------------------------------------------
   return `<div style="font-family:${font};max-width:700px;margin:0 auto;padding:20px 24px;color:#1e293b;background:#ffffff;line-height:1.6;font-size:11px;">
     ${footerCss}
     ${headerHtml}
+    ${disclaimerBanner}
     ${summaryHtml}
     ${(redFlags.length > 0 || urgency === 'urgent' || urgency === 'emergency') ? heading('⚡ Recommended Next Steps', '#ef4444') + card(`
       <table style="width:100%;border-collapse:collapse;">

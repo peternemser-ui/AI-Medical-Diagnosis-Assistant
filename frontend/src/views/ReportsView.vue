@@ -70,16 +70,16 @@
           </div>
         </div>
         <div class="flex items-center gap-2 self-start">
-          <router-link v-if="allSessions.length >= 2" to="/compare"
+          <button v-if="allSessions.length >= 2" @click="toggleCompareMode"
             class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium border transition-colors"
-            :class="isDark
-              ? 'border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800'
-              : 'border-slate-300 text-slate-500 hover:text-slate-900 hover:bg-slate-100'">
+            :class="compareMode
+              ? (isDark ? 'border-blue-500 text-blue-300 bg-blue-500/15' : 'border-blue-400 text-blue-600 bg-blue-50')
+              : (isDark ? 'border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800' : 'border-slate-300 text-slate-500 hover:text-slate-900 hover:bg-slate-100')">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
             </svg>
-            Compare
-          </router-link>
+            {{ compareMode ? 'Cancel Compare' : 'Compare Diagnoses' }}
+          </button>
           <button v-if="allSessions.length > 0" @click="exportAllJson"
             class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium border transition-colors"
             :class="isDark
@@ -129,6 +129,159 @@
         </div>
       </div>
 
+      <!-- Compare mode action bar -->
+      <div v-if="compareMode" class="mb-5 p-3 rounded-xl border flex items-center justify-between"
+        :class="isDark ? 'bg-blue-500/5 border-blue-500/20' : 'bg-blue-50 border-blue-200'">
+        <span class="text-sm" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+          <span v-if="selectedForCompare.length === 0">Select 2 consultations to compare</span>
+          <span v-else-if="selectedForCompare.length === 1">Select 1 more consultation</span>
+          <span v-else class="font-medium" :class="isDark ? 'text-blue-300' : 'text-blue-600'">2 selected — ready to compare</span>
+        </span>
+        <button
+          :disabled="selectedForCompare.length !== 2"
+          @click="showComparisonPanel = true"
+          class="px-4 py-2 rounded-xl text-xs font-semibold transition-colors"
+          :class="selectedForCompare.length === 2
+            ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-500/25'
+            : (isDark ? 'bg-slate-800 text-slate-600 cursor-not-allowed' : 'bg-slate-200 text-slate-400 cursor-not-allowed')">
+          Compare Selected
+        </button>
+      </div>
+
+      <!-- Comparison Panel Modal -->
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div v-if="showComparisonPanel" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click.self="showComparisonPanel = false">
+          <div class="surface-card rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] overflow-y-auto">
+            <!-- Header -->
+            <div class="sticky top-0 z-10 flex items-center justify-between p-5 border-b backdrop-blur-xl"
+              :class="isDark ? 'bg-slate-900/95 border-slate-800' : 'bg-white/95 border-slate-200'">
+              <div>
+                <h3 class="text-lg font-bold text-[var(--text-primary)]">Diagnosis Comparison</h3>
+                <p class="text-xs mt-0.5 text-[var(--text-secondary)]">Side-by-side analysis of two consultations</p>
+              </div>
+              <button @click="showComparisonPanel = false"
+                class="p-2 rounded-lg transition-colors"
+                :class="isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-500'">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Side by side content -->
+            <div class="p-5" v-if="comparisonData">
+              <div class="grid grid-cols-2 gap-4 mb-6">
+                <!-- Left session -->
+                <div class="rounded-xl p-4 border" :class="isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'">
+                  <div class="text-xs font-bold uppercase tracking-wide mb-2" :class="isDark ? 'text-blue-400' : 'text-blue-600'">Session A</div>
+                  <div class="text-xs mb-1 text-[var(--text-secondary)]">{{ comparisonData.left.date }}</div>
+                  <div class="text-sm font-semibold text-[var(--text-primary)] mb-2">{{ comparisonData.left.summary }}</div>
+                  <div class="space-y-2">
+                    <div>
+                      <span class="text-detail text-[var(--text-secondary)]">Top Diagnosis</span>
+                      <p class="text-sm font-medium text-[var(--text-primary)]">{{ comparisonData.left.topDiagnosis }}</p>
+                    </div>
+                    <div class="flex gap-4">
+                      <div>
+                        <span class="text-detail text-[var(--text-secondary)]">Confidence</span>
+                        <p class="text-sm font-bold" :class="confidenceColor(comparisonData.left.confidence)">{{ comparisonData.left.confidence }}%</p>
+                      </div>
+                      <div>
+                        <span class="text-detail text-[var(--text-secondary)]">Urgency</span>
+                        <p class="text-sm font-bold">
+                          <span class="px-2 py-0.5 rounded-full text-detail uppercase" :class="urgencyClass(comparisonData.left.urgency)">{{ comparisonData.left.urgency }}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div v-if="comparisonData.left.symptoms">
+                      <span class="text-detail text-[var(--text-secondary)]">Symptoms</span>
+                      <p class="text-xs text-[var(--text-primary)] mt-0.5">{{ comparisonData.left.symptoms }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right session -->
+                <div class="rounded-xl p-4 border" :class="isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'">
+                  <div class="text-xs font-bold uppercase tracking-wide mb-2" :class="isDark ? 'text-purple-400' : 'text-purple-600'">Session B</div>
+                  <div class="text-xs mb-1 text-[var(--text-secondary)]">{{ comparisonData.right.date }}</div>
+                  <div class="text-sm font-semibold text-[var(--text-primary)] mb-2">{{ comparisonData.right.summary }}</div>
+                  <div class="space-y-2">
+                    <div>
+                      <span class="text-detail text-[var(--text-secondary)]">Top Diagnosis</span>
+                      <p class="text-sm font-medium text-[var(--text-primary)]">{{ comparisonData.right.topDiagnosis }}</p>
+                    </div>
+                    <div class="flex gap-4">
+                      <div>
+                        <span class="text-detail text-[var(--text-secondary)]">Confidence</span>
+                        <p class="text-sm font-bold" :class="confidenceColor(comparisonData.right.confidence)">{{ comparisonData.right.confidence }}%</p>
+                      </div>
+                      <div>
+                        <span class="text-detail text-[var(--text-secondary)]">Urgency</span>
+                        <p class="text-sm font-bold">
+                          <span class="px-2 py-0.5 rounded-full text-detail uppercase" :class="urgencyClass(comparisonData.right.urgency)">{{ comparisonData.right.urgency }}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div v-if="comparisonData.right.symptoms">
+                      <span class="text-detail text-[var(--text-secondary)]">Symptoms</span>
+                      <p class="text-xs text-[var(--text-primary)] mt-0.5">{{ comparisonData.right.symptoms }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Diff analysis -->
+              <div class="space-y-4">
+                <!-- Common findings -->
+                <div v-if="comparisonData.common.length > 0" class="rounded-xl p-4 border"
+                  :class="isDark ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-emerald-50 border-emerald-200'">
+                  <h4 class="text-sm font-bold mb-2 flex items-center gap-2" :class="isDark ? 'text-emerald-400' : 'text-emerald-700'">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                    Common Findings
+                  </h4>
+                  <ul class="space-y-1">
+                    <li v-for="(item, i) in comparisonData.common" :key="i" class="text-xs" :class="isDark ? 'text-emerald-300' : 'text-emerald-700'">
+                      {{ item }}
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Differences -->
+                <div v-if="comparisonData.differences.length > 0" class="rounded-xl p-4 border"
+                  :class="isDark ? 'bg-amber-500/5 border-amber-500/20' : 'bg-amber-50 border-amber-200'">
+                  <h4 class="text-sm font-bold mb-2 flex items-center gap-2" :class="isDark ? 'text-amber-400' : 'text-amber-700'">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                    Key Differences
+                  </h4>
+                  <ul class="space-y-1">
+                    <li v-for="(item, i) in comparisonData.differences" :key="i" class="text-xs" :class="isDark ? 'text-amber-300' : 'text-amber-700'">
+                      {{ item }}
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Changes summary -->
+                <div class="rounded-xl p-4 border"
+                  :class="isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'">
+                  <h4 class="text-sm font-bold mb-2 text-[var(--text-primary)] flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+                    Changes Since Last Visit
+                  </h4>
+                  <p class="text-xs leading-relaxed text-[var(--text-secondary)]">{{ comparisonData.changesSummary }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
       <!-- Empty state -->
       <div v-if="filteredSessions.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
         <svg class="w-16 h-16 mb-4" :class="isDark ? 'text-slate-700' : 'text-slate-300'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -163,12 +316,24 @@
           <div class="ml-1.5 border-l-2 pl-6 space-y-4" :class="isDark ? 'border-slate-700' : 'border-slate-200'">
             <div v-for="session in group" :key="session.id"
               class="relative surface-card rounded-xl p-4 cursor-pointer transition-all hover:shadow-elevated"
-              @click="$router.push(`/reports/${session.id}`)">
+              :class="compareMode && isSelectedForCompare(session.id) ? (isDark ? 'ring-2 ring-blue-500/50' : 'ring-2 ring-blue-400/50') : ''"
+              @click="compareMode ? toggleCompareSelection(session.id) : $router.push(`/reports/${session.id}`)">
               <!-- Timeline dot -->
               <div class="absolute -left-[1.85rem] top-5 w-2.5 h-2.5 rounded-full border-2"
                 :class="isDark ? 'bg-slate-900 border-slate-600' : 'bg-white border-slate-300'"></div>
               <!-- Content -->
               <div class="flex items-start justify-between gap-3">
+                <!-- Compare checkbox -->
+                <div v-if="compareMode" class="flex-shrink-0 pt-1" @click.stop="toggleCompareSelection(session.id)">
+                  <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors"
+                    :class="isSelectedForCompare(session.id)
+                      ? 'bg-blue-600 border-blue-600'
+                      : (isDark ? 'border-slate-600 hover:border-slate-400' : 'border-slate-300 hover:border-slate-500')">
+                    <svg v-if="isSelectedForCompare(session.id)" class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                    </svg>
+                  </div>
+                </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 mb-1 flex-wrap">
                     <span class="text-detail font-medium text-[var(--text-secondary)]">{{ formatDate(session.timestamp) }}</span>
@@ -196,9 +361,21 @@
           v-for="session in filteredSessions"
           :key="session.id"
           class="group surface-card backdrop-blur-xl rounded-2xl p-4 transition-all duration-200 cursor-pointer hover:shadow"
-          @click="$router.push(`/reports/${session.id}`)"
+          :class="compareMode && isSelectedForCompare(session.id) ? (isDark ? 'ring-2 ring-blue-500/50' : 'ring-2 ring-blue-400/50') : ''"
+          @click="compareMode ? toggleCompareSelection(session.id) : $router.push(`/reports/${session.id}`)"
         >
           <div class="flex items-start justify-between gap-3">
+            <!-- Compare checkbox -->
+            <div v-if="compareMode" class="flex-shrink-0 pt-1" @click.stop="toggleCompareSelection(session.id)">
+              <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors"
+                :class="isSelectedForCompare(session.id)
+                  ? 'bg-blue-600 border-blue-600'
+                  : (isDark ? 'border-slate-600 hover:border-slate-400' : 'border-slate-300 hover:border-slate-500')">
+                <svg v-if="isSelectedForCompare(session.id)" class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                </svg>
+              </div>
+            </div>
             <div class="flex-1 min-w-0">
               <!-- Date + Urgency badge + Message count -->
               <div class="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -297,6 +474,128 @@ const { isDark } = useTheme()
 const searchQuery = ref('')
 const viewMode = ref('list') // 'list' or 'timeline'
 const allSessions = ref(getSessions())
+
+// Compare mode state
+const compareMode = ref(false)
+const selectedForCompare = ref([])
+const showComparisonPanel = ref(false)
+
+function toggleCompareMode() {
+  compareMode.value = !compareMode.value
+  if (!compareMode.value) {
+    selectedForCompare.value = []
+    showComparisonPanel.value = false
+  }
+}
+
+function isSelectedForCompare(id) {
+  return selectedForCompare.value.includes(id)
+}
+
+function toggleCompareSelection(id) {
+  const idx = selectedForCompare.value.indexOf(id)
+  if (idx >= 0) {
+    selectedForCompare.value.splice(idx, 1)
+  } else if (selectedForCompare.value.length < 2) {
+    selectedForCompare.value.push(id)
+  } else {
+    // Replace the first selection
+    selectedForCompare.value.shift()
+    selectedForCompare.value.push(id)
+  }
+}
+
+function confidenceColor(val) {
+  if (val >= 70) return 'text-emerald-500'
+  if (val >= 40) return 'text-amber-500'
+  return isDark.value ? 'text-slate-400' : 'text-slate-500'
+}
+
+const comparisonData = computed(() => {
+  if (selectedForCompare.value.length !== 2) return null
+
+  const [idA, idB] = selectedForCompare.value
+  const sessionA = allSessions.value.find(s => s.id === idA)
+  const sessionB = allSessions.value.find(s => s.id === idB)
+  if (!sessionA || !sessionB) return null
+
+  const fullA = loadFullSession(idA)
+  const fullB = loadFullSession(idB)
+
+  const left = {
+    date: formatDate(sessionA.timestamp),
+    summary: getSessionSummary(idA),
+    topDiagnosis: sessionA.topDiagnosis || 'N/A',
+    confidence: sessionA.confidence || 0,
+    urgency: sessionA.urgency || 'routine',
+    symptoms: fullA?.symptoms || sessionA.symptomsSummary || '',
+  }
+
+  const right = {
+    date: formatDate(sessionB.timestamp),
+    summary: getSessionSummary(idB),
+    topDiagnosis: sessionB.topDiagnosis || 'N/A',
+    confidence: sessionB.confidence || 0,
+    urgency: sessionB.urgency || 'routine',
+    symptoms: fullB?.symptoms || sessionB.symptomsSummary || '',
+  }
+
+  // Find common and different aspects
+  const common = []
+  const differences = []
+
+  if (left.topDiagnosis === right.topDiagnosis) {
+    common.push(`Same primary diagnosis: ${left.topDiagnosis}`)
+  } else {
+    differences.push(`Diagnosis changed from "${left.topDiagnosis}" to "${right.topDiagnosis}"`)
+  }
+
+  if (left.urgency === right.urgency) {
+    common.push(`Same urgency level: ${left.urgency}`)
+  } else {
+    differences.push(`Urgency changed from "${left.urgency}" to "${right.urgency}"`)
+  }
+
+  const confDiff = right.confidence - left.confidence
+  if (Math.abs(confDiff) <= 5) {
+    common.push(`Similar confidence levels (${left.confidence}% vs ${right.confidence}%)`)
+  } else if (confDiff > 0) {
+    differences.push(`Confidence increased by ${confDiff} percentage points (${left.confidence}% to ${right.confidence}%)`)
+  } else {
+    differences.push(`Confidence decreased by ${Math.abs(confDiff)} percentage points (${left.confidence}% to ${right.confidence}%)`)
+  }
+
+  // Symptom overlap analysis
+  const sympA = (left.symptoms || '').toLowerCase().split(/[\s,;.]+/).filter(w => w.length > 3)
+  const sympB = (right.symptoms || '').toLowerCase().split(/[\s,;.]+/).filter(w => w.length > 3)
+  const commonSymptoms = sympA.filter(w => sympB.includes(w))
+  if (commonSymptoms.length > 0) {
+    common.push(`Shared symptom keywords: ${[...new Set(commonSymptoms)].slice(0, 5).join(', ')}`)
+  }
+
+  // Generate changes summary
+  const dateA = new Date(sessionA.timestamp)
+  const dateB = new Date(sessionB.timestamp)
+  const daysDiff = Math.round(Math.abs(dateB - dateA) / (1000 * 60 * 60 * 24))
+  let changesSummary = `These consultations are ${daysDiff} day${daysDiff !== 1 ? 's' : ''} apart. `
+
+  if (differences.length === 0) {
+    changesSummary += 'The assessments are largely consistent, suggesting a stable condition.'
+  } else {
+    if (confDiff > 10) {
+      changesSummary += 'Confidence has improved, indicating clearer symptom presentation. '
+    } else if (confDiff < -10) {
+      changesSummary += 'Confidence has decreased, which may indicate evolving or ambiguous symptoms. '
+    }
+    if (left.topDiagnosis !== right.topDiagnosis) {
+      changesSummary += 'The primary diagnosis has changed between visits — consider discussing this with your healthcare provider.'
+    } else if (left.urgency !== right.urgency) {
+      changesSummary += 'The urgency level has shifted — monitor symptoms closely.'
+    }
+  }
+
+  return { left, right, common, differences, changesSummary }
+})
 
 // Health score metrics
 const avgConfidence = computed(() => {

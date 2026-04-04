@@ -185,10 +185,9 @@ async function handleLogin() {
 
   try {
     const data = await authLogin(email.value, password.value)
-    // Reset and sync user_profile with the authenticated user
-    localStorage.removeItem('user_profile')
+    // Merge auth user data into existing profile (preserve gender, DOB, etc.)
     if (data.user) {
-      saveProfile({
+      await saveProfile({
         email: data.user.email,
         name: data.user.name || data.user.email.split('@')[0],
         ...(data.user.profile_data || {}),
