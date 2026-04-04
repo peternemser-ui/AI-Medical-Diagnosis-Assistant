@@ -111,28 +111,28 @@ export function getProfile() {
 export async function saveProfile(data) {
   const defaultP = defaultProfile()
 
-  if (isUnlocked()) {
-    // HIPAA path: save full profile encrypted
-    const current = await getEncryptedProfile()
-    const merged = { ...current, ...data }
-    await saveEncryptedProfile(merged)
-    return merged
-  }
-
-  // Fallback: save to plaintext localStorage (will be migrated on next login)
+  // Always save to plaintext localStorage so sync getProfile() works
+  let merged
   try {
     const raw = localStorage.getItem('user_profile')
     const current = raw ? { ...defaultP, ...JSON.parse(raw) } : defaultP
-    const merged = { ...current, ...data }
+    merged = { ...current, ...data }
     localStorage.setItem('user_profile', JSON.stringify(merged))
-
-    // Also update auth_user cache with non-PHI fields
     _updateAuthUserCache(merged)
-
-    return merged
   } catch {
-    return null
+    merged = { ...defaultP, ...data }
   }
+
+  // Also save encrypted copy if session is unlocked
+  if (isUnlocked()) {
+    try {
+      const encCurrent = await getEncryptedProfile()
+      const encMerged = { ...encCurrent, ...data }
+      await saveEncryptedProfile(encMerged)
+    } catch { /* encrypted save failed — plaintext fallback is still available */ }
+  }
+
+  return merged
 }
 
 function _updateAuthUserCache(profile) {

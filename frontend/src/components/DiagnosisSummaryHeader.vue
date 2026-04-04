@@ -77,59 +77,56 @@
             </div>
           </div>
 
-          <!-- Right: Body Icon + Confidence + Stats -->
+          <!-- Right: Confidence + Illustration + Stats -->
           <div class="flex flex-row lg:flex-col items-start lg:items-center gap-5 flex-shrink-0">
-            <!-- Body area icon (large) with label -->
-            <div v-if="topCause.cause" class="hidden lg:flex flex-col items-center gap-2">
-              <div class="w-36 h-36 rounded-3xl flex items-center justify-center border"
-                :class="isDark
-                  ? 'bg-slate-700/30 border-slate-600/20'
-                  : 'bg-slate-50 border-slate-200'">
-                <BodyAreaIcon
-                  :area="bodyAreaKey"
-                  :size="120"
-                  :color="isDark ? '#94a3b8' : '#64748b'"
+
+            <!-- Confidence ring + Illustration side by side -->
+            <div class="flex flex-row items-start gap-5">
+              <!-- Confidence ring + differential bars -->
+              <div v-if="topCause.value" class="relative flex flex-col items-center">
+                <div class="w-28 h-28 rounded-full flex items-center justify-center relative"
+                  :style="confidenceRingStyle">
+                  <div class="text-center">
+                    <div class="text-3xl font-black tabular-nums" :style="{ color: confidenceColor }">
+                      {{ topCause.value }}%
+                    </div>
+                    <div class="text-tiny font-bold uppercase tracking-widest mt-0.5"
+                      :class="isDark ? 'text-slate-400' : 'text-slate-600'">confidence</div>
+                  </div>
+                </div>
+                <!-- Primary diagnosis name + confidence label -->
+                <div class="mt-3 text-center">
+                  <div class="text-xs font-bold truncate max-w-[180px]" :class="isDark ? 'text-white' : 'text-slate-900'">{{ topCause.cause || 'Awaiting Analysis' }}</div>
+                  <span class="text-caption font-semibold"
+                    :style="{ color: confidenceColor }">{{ confidenceLabel }}</span>
+                </div>
+
+                <!-- Separator -->
+                <div class="w-full my-4 border-t" :class="isDark ? 'border-slate-700/60' : 'border-slate-200'"></div>
+
+                <!-- Mini differential chart -->
+                <div v-if="otherCauses.length > 0" class="w-full space-y-1.5">
+                  <div v-for="c in otherCauses" :key="c.cause" class="flex items-center gap-2">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center justify-between mb-0.5">
+                        <span class="text-tiny font-medium truncate" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ c.cause.length > 22 ? c.cause.slice(0, 22) + '...' : c.cause }}</span>
+                        <span class="text-tiny font-bold tabular-nums ml-1" :style="{ color: miniBarColor(c.value) }">{{ c.value }}%</span>
+                      </div>
+                      <div class="h-1.5 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-700/60' : 'bg-slate-200'">
+                        <div class="h-full rounded-full transition-all duration-700" :style="{ width: c.value + '%', background: miniBarColor(c.value) }"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Medical Illustration -->
+              <div v-if="topCause.cause" class="hidden lg:block">
+                <MedicalIllustration
+                  :condition="topCause.cause || ''"
+                  :specialty="topCause.specialty || ''"
+                  :size="180"
                 />
-              </div>
-              <span class="text-detail font-bold uppercase tracking-[0.08em] text-center break-words max-w-[220px] leading-tight"
-                :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ (topCause.specialty || 'General Medicine').toUpperCase() }}</span>
-            </div>
-
-            <!-- Confidence ring -->
-            <div v-if="topCause.value" class="relative flex flex-col items-center">
-              <div class="w-28 h-28 rounded-full flex items-center justify-center relative"
-                :style="confidenceRingStyle">
-                <div class="text-center">
-                  <div class="text-3xl font-black tabular-nums" :style="{ color: confidenceColor }">
-                    {{ topCause.value }}%
-                  </div>
-                  <div class="text-tiny font-bold uppercase tracking-widest mt-0.5"
-                    :class="isDark ? 'text-slate-400' : 'text-slate-600'">confidence</div>
-                </div>
-              </div>
-              <!-- Primary diagnosis name + confidence label -->
-              <div class="mt-3 text-center">
-                <div class="text-xs font-bold truncate max-w-[180px]" :class="isDark ? 'text-white' : 'text-slate-900'">{{ topCause.cause || 'Awaiting Analysis' }}</div>
-                <span class="text-caption font-semibold"
-                  :style="{ color: confidenceColor }">{{ confidenceLabel }}</span>
-              </div>
-
-              <!-- Separator -->
-              <div class="w-full my-4 border-t" :class="isDark ? 'border-slate-700/60' : 'border-slate-200'"></div>
-
-              <!-- Mini differential chart -->
-              <div v-if="otherCauses.length > 0" class="w-full space-y-1.5">
-                <div v-for="c in otherCauses" :key="c.cause" class="flex items-center gap-2">
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between mb-0.5">
-                      <span class="text-tiny font-medium truncate" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ c.cause.length > 22 ? c.cause.slice(0, 22) + '...' : c.cause }}</span>
-                      <span class="text-tiny font-bold tabular-nums ml-1" :style="{ color: miniBarColor(c.value) }">{{ c.value }}%</span>
-                    </div>
-                    <div class="h-1.5 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-700/60' : 'bg-slate-200'">
-                      <div class="h-full rounded-full transition-all duration-700" :style="{ width: c.value + '%', background: miniBarColor(c.value) }"></div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -255,6 +252,7 @@
 import { computed } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import BodyAreaIcon from './BodyAreaIcon.vue'
+import MedicalIllustration from './MedicalIllustration.vue'
 
 const { isDark } = useTheme()
 

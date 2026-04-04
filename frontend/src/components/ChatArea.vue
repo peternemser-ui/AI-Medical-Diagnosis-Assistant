@@ -173,6 +173,28 @@
             <div class="message-content">
               <!-- Structured diagnosis cards (when multi-agent data present) -->
               <div v-if="message.causes && message.causes.length > 0" class="space-y-3">
+                <!-- Urgency Alert Banner -->
+                <div v-if="message.urgency && isUrgentLevel(message.urgency)"
+                  class="flex items-center gap-3 p-4 rounded-xl mb-3 border-l-4"
+                  :class="getUrgencyBannerClass(message.urgency)">
+                  <div class="flex-shrink-0">
+                    <svg v-if="isEmergency(message.urgency)" class="w-6 h-6 text-red-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <svg v-else class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="font-bold text-sm" :class="isEmergency(message.urgency) ? 'text-red-400' : 'text-amber-400'">
+                      {{ getUrgencyLabel(message.urgency) }}
+                    </div>
+                    <div class="text-xs mt-0.5 opacity-80" :class="isEmergency(message.urgency) ? 'text-red-300' : 'text-amber-300'">
+                      {{ getUrgencyAdvice(message.urgency) }}
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Agent summary banner -->
                 <div v-if="message.totalTime" class="flex items-center gap-2.5 text-detail sm:text-caption rounded-xl px-3 py-2 mb-3 border" style="background: linear-gradient(135deg, rgba(139,92,246,0.06), rgba(6,182,212,0.04)); border-color: rgba(139,92,246,0.1)">
                   <div class="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style="background: rgba(139,92,246,0.15)">
@@ -297,7 +319,7 @@
 
               <!-- Plain text content (non-diagnosis messages) -->
               <div v-else>
-                <div v-if="message.text" class="whitespace-pre-wrap text-base leading-relaxed" v-html="formatMessageText(message.text)"></div>
+                <div v-if="message.text" class="prose prose-sm max-w-none leading-relaxed dark:prose-invert" v-html="formatMessageText(message.text)"></div>
               </div>
 
               <!-- Audio playback -->
@@ -392,6 +414,7 @@
 <script setup>
 import { ref, computed, nextTick, watch, createApp, h, onMounted } from 'vue'
 import DOMPurify from 'dompurify'
+import { marked } from 'marked'
 import DiagnosisCard from '@/components/DiagnosisCard.vue'
 import DiagnosisReport from '@/components/DiagnosisReport.vue'
 import SkeletonLoader from '@/components/SkeletonLoader.vue'
@@ -513,23 +536,60 @@ const getUrgencyClass = (urgency) => {
   }
 }
 
+const isUrgentLevel = (urgency) => {
+  if (!urgency) return false
+  const u = urgency.toLowerCase()
+  return u.includes('urgent') || u.includes('emergent') || u.includes('emergency') || u.includes('immediate') || u.includes('soon')
+}
+
+const isEmergency = (urgency) => {
+  if (!urgency) return false
+  const u = urgency.toLowerCase()
+  return u.includes('emergent') || u.includes('emergency') || u.includes('immediate')
+}
+
+const getUrgencyBannerClass = (urgency) => {
+  if (isEmergency(urgency)) return 'bg-red-500/10 border-red-500'
+  return 'bg-amber-500/10 border-amber-500'
+}
+
+const getUrgencyLabel = (urgency) => {
+  if (!urgency) return ''
+  const u = urgency.toLowerCase()
+  if (u.includes('emergent') || u.includes('emergency') || u.includes('immediate')) return 'EMERGENCY \u2014 Seek Immediate Medical Care'
+  if (u.includes('urgent')) return 'URGENT \u2014 See a Doctor Today'
+  if (u.includes('soon')) return 'Schedule an Appointment Soon'
+  return urgency
+}
+
+const getUrgencyAdvice = (urgency) => {
+  if (!urgency) return ''
+  const u = urgency.toLowerCase()
+  if (u.includes('emergent') || u.includes('emergency') || u.includes('immediate')) return 'Call 911 or go to the nearest emergency department immediately.'
+  if (u.includes('urgent')) return 'Contact your healthcare provider today or visit urgent care.'
+  if (u.includes('soon')) return 'Schedule an appointment with your doctor within the next few days.'
+  return ''
+}
+
 const formatMessageText = (text) => {
-  // Convert URLs to clickable links
-  const urlPattern = /(https?:\/\/[^\s]+)/g
-  text = text.replace(urlPattern, '<a href="$1" target="_blank" class="text-blue-400 hover:text-blue-300 underline">$1</a>')
+  // Configure marked for medical chat
+  marked.setOptions({
+    breaks: true,
+    gfm: true,
+  })
 
-  // Convert **bold** to bold
-  text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-
-  // Convert *italic* to italic
-  text = text.replace(/\*(.*?)\*/g, '<em>$1</em>')
-
-  // Collapse excessive blank lines
+  // Collapse excessive blank lines before parsing
   text = text.replace(/(\n\s*){3,}/g, '\n\n')
 
-  // Sanitize to prevent XSS — only allow safe formatting tags
-  return DOMPurify.sanitize(text, {
-    ALLOWED_TAGS: ['a', 'strong', 'em', 'br', 'p', 'ul', 'ol', 'li'],
+  // Parse markdown to HTML
+  let html = marked.parse(text)
+
+  // Add target blank to links
+  html = html.replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ')
+
+  // Sanitize with DOMPurify
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['a', 'strong', 'em', 'br', 'p', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'hr', 'span', 'del', 'sup', 'sub'],
     ALLOWED_ATTR: ['href', 'target', 'class', 'rel'],
   })
 }
@@ -702,5 +762,65 @@ defineExpose({
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: rgba(75, 85, 99, 0.8);
+}
+
+/* Markdown message styling */
+.message-content :deep(.prose) {
+  color: inherit;
+}
+.message-content :deep(.prose p) {
+  margin-bottom: 0.5em;
+}
+.message-content :deep(.prose p:last-child) {
+  margin-bottom: 0;
+}
+.message-content :deep(.prose ul),
+.message-content :deep(.prose ol) {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+.message-content :deep(.prose li) {
+  margin: 0.25em 0;
+}
+.message-content :deep(.prose strong) {
+  font-weight: 700;
+}
+.message-content :deep(.prose code) {
+  font-size: 0.875em;
+  padding: 0.15em 0.4em;
+  border-radius: 0.25rem;
+  background: rgba(0,0,0,0.1);
+}
+.message-content :deep(.prose blockquote) {
+  border-left: 3px solid rgba(100,116,139,0.3);
+  padding-left: 1em;
+  margin: 0.5em 0;
+  opacity: 0.85;
+}
+.message-content :deep(.prose h1),
+.message-content :deep(.prose h2),
+.message-content :deep(.prose h3) {
+  font-weight: 700;
+  margin: 0.75em 0 0.25em;
+}
+.message-content :deep(.prose hr) {
+  border-color: rgba(100,116,139,0.2);
+  margin: 0.75em 0;
+}
+.message-content :deep(.prose table) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875em;
+  margin: 0.5em 0;
+}
+.message-content :deep(.prose th),
+.message-content :deep(.prose td) {
+  border: 1px solid rgba(100,116,139,0.2);
+  padding: 0.35em 0.6em;
+  text-align: left;
+}
+.message-content :deep(.prose th) {
+  font-weight: 600;
+  background: rgba(100,116,139,0.08);
 }
 </style>

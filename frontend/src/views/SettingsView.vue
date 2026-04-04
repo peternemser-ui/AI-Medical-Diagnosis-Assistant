@@ -493,9 +493,7 @@ async function checkOllamaStatus() {
 
 function activateOllama() {
   localStorage.setItem('ai_provider', 'ollama')
-  localStorage.removeItem('anthropic_api_key')
-  localStorage.removeItem('openai_api_key')
-  localStorage.removeItem('google_api_key')
+  // Keep API keys in storage as fallback — don't delete them
   localStorage.setItem('api_key_configured', 'true')
   localStorage.setItem('model_preference', 'llama3.1:8b')
   modelPreference.value = 'llama3.1:8b'
@@ -607,11 +605,7 @@ function saveApiKeyFn() {
   const key = apiKey.value.trim()
   if (!key) return
 
-  // Clear ALL vendor keys first, then set only the active one
-  localStorage.removeItem('anthropic_api_key')
-  localStorage.removeItem('openai_api_key')
-  localStorage.removeItem('google_api_key')
-
+  // Save key for the active provider (keep other providers' keys intact for fallback)
   const p = providers.find(p => p.id === apiProvider.value)
   if (p) {
     localStorage.setItem(p.storageKey, key)

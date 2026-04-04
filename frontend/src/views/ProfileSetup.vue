@@ -401,16 +401,17 @@
             <!-- Save Button -->
             <button
               @click="handleSave"
-              :disabled="!form.name.trim() || !form.email.trim() || !isValidEmail(form.email)"
+              :disabled="saving || !form.name.trim() || !form.email.trim() || !isValidEmail(form.email)"
               class="w-full btn-blue py-3 rounded-xl text-sm"
             >
-              <svg v-if="!isEditing" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg v-if="saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              <svg v-else-if="!isEditing" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
               </svg>
               <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
-              {{ isEditing ? 'Save Profile' : 'Create Account' }}
+              {{ saving ? 'Saving...' : (isEditing ? 'Save Profile' : 'Create Account') }}
             </button>
 
             <p v-if="!isEditing" class="text-center text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
@@ -440,6 +441,7 @@ export default {
     const { isDark } = useTheme()
     const { profile: userProfile, updateProfile } = useUser()
     const error = ref('')
+    const saving = ref(false)
     const nameBlurred = ref(false)
     const emailBlurred = ref(false)
 
@@ -529,6 +531,7 @@ export default {
         return
       }
 
+      saving.value = true
       const data = {
         ...form.value,
         allergies: parseCommaSeparated(allergiesText.value),
@@ -538,9 +541,21 @@ export default {
           : '',
       }
 
-      await saveProfile(data)
-      updateProfile(data)
-      router.push(isEditing.value ? '/consult' : '/')
+      try {
+        await saveProfile(data)
+        updateProfile(data)
+        // Verify save worked
+        const verify = localStorage.getItem('user_profile')
+        if (!verify) {
+          // Direct write as last resort
+          localStorage.setItem('user_profile', JSON.stringify(data))
+        }
+        router.push(isEditing.value ? '/consult' : '/')
+      } catch (e) {
+        error.value = e.message || 'Failed to save profile. Please try again.'
+      } finally {
+        saving.value = false
+      }
     }
 
     return {
@@ -551,6 +566,7 @@ export default {
       allergiesText,
       medicationsText,
       error,
+      saving,
       nameBlurred,
       emailBlurred,
       isValidEmail,

@@ -44,24 +44,19 @@ function getAuthHeaders() {
     headers['Authorization'] = `Bearer ${accessToken}`
   }
 
-  const activeProvider = localStorage.getItem('ai_provider') || 'anthropic'
+  // Always send ALL available API keys so the backend can pick the right one
+  // Try encrypted cache first, then plaintext localStorage fallback
+  const anthropicKey = _keyCache.anthropic || localStorage.getItem('anthropic_api_key') || ''
+  const openaiKey = _keyCache.openai || localStorage.getItem('openai_api_key') || ''
+  const googleKey = _keyCache.google || localStorage.getItem('google_api_key') || ''
 
-  // Read API keys from encrypted cache (preferred) or plaintext fallback (migration)
-  const anthropicKey = _keyCache.anthropic || localStorage.getItem('anthropic_api_key')
-  const openaiKey = _keyCache.openai || localStorage.getItem('openai_api_key')
-  const googleKey = _keyCache.google || localStorage.getItem('google_api_key')
+  if (anthropicKey) headers['X-Anthropic-API-Key'] = anthropicKey
+  if (openaiKey) headers['X-OpenAI-API-Key'] = openaiKey
+  if (googleKey) headers['X-Google-API-Key'] = googleKey
 
-  if (activeProvider === 'anthropic' && anthropicKey) {
-    headers['X-Anthropic-API-Key'] = anthropicKey
-  } else if (activeProvider === 'openai' && openaiKey) {
-    headers['X-OpenAI-API-Key'] = openaiKey
-  } else if (activeProvider === 'google' && googleKey) {
-    headers['X-Google-API-Key'] = googleKey
-  } else {
-    // Fallback: send whichever key exists
-    if (anthropicKey) headers['X-Anthropic-API-Key'] = anthropicKey
-    else if (openaiKey) headers['X-OpenAI-API-Key'] = openaiKey
-    else if (googleKey) headers['X-Google-API-Key'] = googleKey
+  // Debug: log when no keys are being sent (helps diagnose routing issues)
+  if (!anthropicKey && !openaiKey && !googleKey) {
+    console.warn('[API] No API keys available in headers — backend will fall back to Ollama or return error')
   }
 
   return headers
@@ -182,8 +177,11 @@ export async function diagnoseStream(data, onEvent) {
 
           if (parsed.event === 'complete') {
             finalResult = parsed.result
+          } else if (parsed.event === 'error') {
+            throw new ApiError(parsed.message || 'Diagnosis pipeline error', 0)
           }
         } catch (e) {
+          if (e instanceof ApiError) throw e
           // Incomplete JSON - put it back into buffer
           buffer = lines.slice(i).join('\n')
           break

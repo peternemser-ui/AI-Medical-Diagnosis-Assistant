@@ -263,211 +263,293 @@
     />
 
     <!-- ══════ AVATAR MODE ══════ -->
-    <div v-if="avatarMode" id="main-content" role="main" class="flex-1 flex flex-col min-h-0 pb-20 relative overflow-hidden">
-      <!-- Avatar area — centered, large -->
-      <div class="flex-[1] flex flex-col items-center justify-center relative z-10">
-        <div class="relative cursor-pointer" @click="showAvatarCustomizer = true" title="Click to customize">
+    <div v-if="avatarMode" id="main-content" role="main" class="flex-1 flex flex-col min-h-0 pb-24 relative overflow-hidden">
 
-          <!-- Cat Doctor Avatar -->
-          <div v-if="(doctorAvatar.characterType || 'bunny') === 'cat'" class="w-48 h-52 sm:w-72 sm:h-80">
-            <svg viewBox="0 0 300 320" class="w-full h-full" style="filter: drop-shadow(0 8px 20px rgba(0,0,0,0.15))">
-              <!-- Pointed ears -->
-              <polygon points="90,130 70,30 130,100" fill="#f5a623" stroke="#e8941e" stroke-width="2"/>
-              <polygon points="210,130 230,30 170,100" fill="#f5a623" stroke="#e8941e" stroke-width="2"/>
-              <polygon points="95,120 80,50 125,105" fill="#fce4b8"/>
-              <polygon points="205,120 220,50 175,105" fill="#fce4b8"/>
-              <!-- Head -->
-              <ellipse cx="150" cy="155" rx="75" ry="70" fill="#f5a623"/>
-              <ellipse cx="150" cy="160" rx="68" ry="60" fill="#f9bc4e" opacity="0.6"/>
-              <!-- Eyes -->
-              <ellipse cx="120" cy="145" rx="12" ry="14" fill="white"/>
-              <ellipse cx="180" cy="145" rx="12" ry="14" fill="white"/>
-              <circle cx="122" cy="145" r="8" fill="#4a4a4a"/>
-              <circle cx="182" cy="145" r="8" fill="#4a4a4a"/>
-              <circle cx="124" cy="143" r="3" fill="white" opacity="0.9"/>
-              <circle cx="184" cy="143" r="3" fill="white" opacity="0.9"/>
-              <!-- Nose -->
-              <ellipse cx="150" cy="168" rx="6" ry="4.5" fill="#e87da0"/>
-              <!-- Whiskers -->
-              <line x1="75" y1="160" x2="120" y2="165" stroke="#d49a3e" stroke-width="1.5"/>
-              <line x1="75" y1="172" x2="120" y2="172" stroke="#d49a3e" stroke-width="1.5"/>
-              <line x1="75" y1="184" x2="120" y2="179" stroke="#d49a3e" stroke-width="1.5"/>
-              <line x1="180" y1="165" x2="225" y2="160" stroke="#d49a3e" stroke-width="1.5"/>
-              <line x1="180" y1="172" x2="225" y2="172" stroke="#d49a3e" stroke-width="1.5"/>
-              <line x1="180" y1="179" x2="225" y2="184" stroke="#d49a3e" stroke-width="1.5"/>
-              <!-- Mouth (animated) -->
-              <g :class="isSpeakingAnimating ? 'cat-mouth-talking' : ''">
-                <path v-if="!isSpeakingAnimating" d="M140 178 Q150 186 160 178" fill="none" stroke="#c0783a" stroke-width="2" stroke-linecap="round"/>
-                <g v-if="isSpeakingAnimating">
-                  <ellipse cx="150" cy="182" rx="10" ry="8" fill="#c0484a" class="cat-jaw"/>
-                  <path d="M140 178 Q150 175 160 178" fill="none" stroke="#c0783a" stroke-width="2" stroke-linecap="round"/>
-                  <ellipse cx="150" cy="188" rx="5" ry="4" fill="#e87d7d"/>
-                </g>
-              </g>
-              <!-- Body / scrubs -->
-              <path d="M95 220 Q95 205 115 198 L130 210 Q150 218 170 210 L185 198 Q205 205 205 220 L210 300 L90 300 Z" :fill="doctorAvatar.bunnyColor || '#4fc3f7'" stroke="#333" stroke-width="2.5"/>
-              <path d="M125 210 L150 222 L175 210" fill="white" stroke="#333" stroke-width="1.5"/>
-              <!-- Stethoscope -->
-              <path d="M140 215 Q135 235 142 248" fill="none" stroke="#4a90d9" stroke-width="2" stroke-linecap="round"/>
-              <circle cx="142" cy="250" r="4.5" fill="none" stroke="#4a90d9" stroke-width="1.8"/>
-              <!-- Paws -->
-              <circle cx="88" cy="245" r="10" fill="#f5a623" stroke="#333" stroke-width="2"/>
-              <circle cx="212" cy="245" r="10" fill="#f5a623" stroke="#333" stroke-width="2"/>
-              <!-- Feet -->
-              <ellipse cx="125" cy="305" rx="16" ry="10" fill="#f5a623" stroke="#333" stroke-width="2"/>
-              <ellipse cx="175" cy="305" rx="16" ry="10" fill="#f5a623" stroke="#333" stroke-width="2"/>
-              <!-- Name tag -->
-              <rect x="128" y="260" width="44" height="14" rx="3" fill="white" stroke="#b8d8e8" stroke-width="1"/>
-              <text x="150" y="271" text-anchor="middle" fill="#4a7fa5" font-size="7" font-weight="bold" font-family="system-ui">DR. WHISKERS</text>
-            </svg>
-          </div>
-          <!-- Dog Doctor Avatar -->
-          <div v-else-if="(doctorAvatar.characterType || 'bunny') === 'dog'" class="w-48 h-52 sm:w-72 sm:h-80">
-            <svg viewBox="0 0 300 320" class="w-full h-full" style="filter: drop-shadow(0 8px 20px rgba(0,0,0,0.15))">
-              <!-- Floppy ears -->
-              <ellipse cx="80" cy="130" rx="22" ry="40" fill="#8B5E3C" transform="rotate(-15 80 130)"/>
-              <ellipse cx="220" cy="130" rx="22" ry="40" fill="#8B5E3C" transform="rotate(15 220 130)"/>
-              <ellipse cx="82" cy="132" rx="14" ry="28" fill="#c49a6c" transform="rotate(-15 82 132)"/>
-              <ellipse cx="218" cy="132" rx="14" ry="28" fill="#c49a6c" transform="rotate(15 218 132)"/>
-              <!-- Head -->
-              <ellipse cx="150" cy="150" rx="72" ry="68" fill="#c49a6c"/>
-              <ellipse cx="150" cy="155" rx="65" ry="55" fill="#d4aa7c" opacity="0.5"/>
-              <!-- Muzzle -->
-              <ellipse cx="150" cy="175" rx="35" ry="25" fill="#e8c8a0"/>
-              <!-- Eyes -->
-              <ellipse cx="120" cy="140" rx="11" ry="12" fill="white" stroke="#b08860" stroke-width="0.5"/>
-              <ellipse cx="180" cy="140" rx="11" ry="12" fill="white" stroke="#b08860" stroke-width="0.5"/>
-              <circle cx="122" cy="140" r="7" fill="#3d2b1f"/>
-              <circle cx="182" cy="140" r="7" fill="#3d2b1f"/>
-              <circle cx="124" cy="138" r="2.5" fill="white" opacity="0.9"/>
-              <circle cx="184" cy="138" r="2.5" fill="white" opacity="0.9"/>
-              <!-- Eyebrows -->
-              <path d="M110 130 Q120 125 130 131" fill="none" stroke="#7a5a3a" stroke-width="2.5" stroke-linecap="round"/>
-              <path d="M170 131 Q180 125 190 130" fill="none" stroke="#7a5a3a" stroke-width="2.5" stroke-linecap="round"/>
-              <!-- Nose -->
-              <ellipse cx="150" cy="165" rx="10" ry="8" fill="#3d2b1f"/>
-              <!-- Mouth (animated) -->
-              <g :class="isSpeakingAnimating ? 'dog-mouth-talking' : ''">
-                <path v-if="!isSpeakingAnimating" d="M138 178 Q150 188 162 178" fill="none" stroke="#7a5a3a" stroke-width="2" stroke-linecap="round"/>
-                <path v-if="!isSpeakingAnimating" d="M146 182 Q150 194 154 182" fill="#e87d7d" stroke="#d06060" stroke-width="0.5"/>
-                <g v-if="isSpeakingAnimating">
-                  <ellipse cx="150" cy="184" rx="14" ry="10" fill="#5a3020" class="dog-jaw"/>
-                  <ellipse cx="150" cy="180" rx="11" ry="5" fill="#c0584a"/>
-                  <path d="M146 186 Q150 196 154 186" fill="#e87d7d"/>
-                  <path d="M138 178 Q150 174 162 178" fill="none" stroke="#7a5a3a" stroke-width="2" stroke-linecap="round"/>
-                </g>
-              </g>
-              <!-- Body / scrubs -->
-              <path d="M95 220 Q95 205 115 198 L130 210 Q150 218 170 210 L185 198 Q205 205 205 220 L210 300 L90 300 Z" :fill="doctorAvatar.bunnyColor || '#81c784'" stroke="#333" stroke-width="2.5"/>
-              <path d="M125 210 L150 222 L175 210" fill="white" stroke="#333" stroke-width="1.5"/>
-              <!-- Stethoscope -->
-              <path d="M140 215 Q135 235 142 248" fill="none" stroke="#4a90d9" stroke-width="2" stroke-linecap="round"/>
-              <circle cx="142" cy="250" r="4.5" fill="none" stroke="#4a90d9" stroke-width="1.8"/>
-              <!-- Paws -->
-              <circle cx="88" cy="245" r="10" fill="#c49a6c" stroke="#333" stroke-width="2"/>
-              <circle cx="212" cy="245" r="10" fill="#c49a6c" stroke="#333" stroke-width="2"/>
-              <!-- Feet -->
-              <ellipse cx="125" cy="305" rx="16" ry="10" fill="#c49a6c" stroke="#333" stroke-width="2"/>
-              <ellipse cx="175" cy="305" rx="16" ry="10" fill="#c49a6c" stroke="#333" stroke-width="2"/>
-              <!-- Name tag -->
-              <rect x="128" y="260" width="44" height="14" rx="3" fill="white" stroke="#b8d8e8" stroke-width="1"/>
-              <text x="150" y="271" text-anchor="middle" fill="#4a7fa5" font-size="7.5" font-weight="bold" font-family="system-ui">DR. BUDDY</text>
-            </svg>
-          </div>
-          <div v-else-if="(doctorAvatar.characterType || 'bunny') === 'human'" class="w-72 h-80 flex items-center justify-center">
-            <DoctorAvatar :avatar="doctorAvatar" :speaking="isSpeakingAnimating" :size="avatarSize" :show-name="false" />
-          </div>
-
-          <!-- Bunny Doctor Avatar (robotic style matching homepage) -->
-          <div v-else class="w-52 h-64 sm:w-[18rem] sm:h-[23rem] lg:w-[20rem] lg:h-[26rem]">
-            <svg viewBox="-10 -30 260 380" class="w-full h-full" style="filter: drop-shadow(0 12px 32px rgba(0,0,0,0.15))">
-              <defs>
-                <linearGradient id="cEarGlow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.3"/><stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/></linearGradient>
-                <linearGradient id="cBodyGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient>
-                <filter id="cGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-              </defs>
-              <!-- Left ear -->
-              <g><ellipse cx="120" cy="55" rx="19" ry="65" fill="white" stroke="#64748b" stroke-width="2.5" transform="rotate(-8 120 110)"/>
-              <ellipse cx="120" cy="50" rx="10" ry="46" fill="url(#cEarGlow)" transform="rotate(-8 120 110)"/></g>
-              <!-- Right ear -->
-              <g><ellipse cx="160" cy="50" rx="19" ry="65" fill="white" stroke="#64748b" stroke-width="2.5" transform="rotate(8 160 110)"/>
-              <ellipse cx="160" cy="45" rx="10" ry="46" fill="url(#cEarGlow)" transform="rotate(8 160 110)"/></g>
-              <!-- Antenna -->
-              <line x1="172" y1="30" x2="185" y2="5" stroke="#38bdf8" stroke-width="1.5" opacity="0.7"/>
-              <circle cx="185" cy="5" r="4" fill="#0ea5e9" opacity="0.9" filter="url(#cGlow)">
-                <animate attributeName="r" values="3;5;3" dur="1.2s" repeatCount="indefinite"/>
-                <animate attributeName="opacity" values="0.6;1;0.6" dur="1.2s" repeatCount="indefinite"/>
-              </circle>
-              <!-- Head -->
-              <ellipse cx="140" cy="150" rx="65" ry="60" fill="white" stroke="#64748b" stroke-width="3"/>
-              <ellipse cx="140" cy="148" rx="55" ry="48" fill="none" stroke="#e2e8f0" stroke-width="0.8" stroke-dasharray="4 3" opacity="0.5"/>
-              <!-- Eyes (robotic rectangles) -->
-              <rect x="100" y="126" width="32" height="24" rx="12" :fill="isDark ? '#0f172a' : '#e2e8f0'" stroke="#94a3b8" stroke-width="1.5"/>
-              <circle cx="116" cy="138" r="7" fill="#3b82f6" filter="url(#cGlow)"/>
-              <circle cx="114" cy="136" r="2.5" fill="white" opacity="0.85"/>
-              <rect x="148" y="126" width="32" height="24" rx="12" :fill="isDark ? '#0f172a' : '#e2e8f0'" stroke="#94a3b8" stroke-width="1.5"/>
-              <circle cx="164" cy="138" r="7" fill="#3b82f6" filter="url(#cGlow)"/>
-              <circle cx="162" cy="136" r="2.5" fill="white" opacity="0.85"/>
-              <!-- Nose -->
-              <polygon points="140,155 136,161 144,161" fill="#94a3b8" stroke="#64748b" stroke-width="1"/>
-              <circle cx="140" cy="159" r="1.5" fill="#3b82f6" opacity="0.6"><animate attributeName="opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite"/></circle>
-              <!-- Whiskers -->
-              <line x1="88" y1="152" x2="113" y2="156" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
-              <line x1="88" y1="162" x2="113" y2="161" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
-              <line x1="167" y1="156" x2="192" y2="152" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
-              <line x1="167" y1="161" x2="192" y2="162" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
-              <!-- Mouth — equalizer when speaking, idle bar otherwise -->
-              <g v-if="isSpeakingAnimating">
-                <rect x="122" y="167" width="36" height="8" rx="4" :fill="isDark ? '#0f172a' : '#e2e8f0'" stroke="#94a3b8" stroke-width="0.8"/>
-                <rect x="125" y="172" width="3" height="0" rx="0.5" fill="#3b82f6" opacity="0.8"><animate attributeName="height" values="1;5;2;4;1" dur="0.4s" repeatCount="indefinite"/><animate attributeName="y" values="172;168;171;169;172" dur="0.4s" repeatCount="indefinite"/></rect>
-                <rect x="130" y="172" width="3" height="0" rx="0.5" fill="#38bdf8" opacity="0.8"><animate attributeName="height" values="2;5;1;5;2" dur="0.35s" repeatCount="indefinite"/><animate attributeName="y" values="171;168;172;168;171" dur="0.35s" repeatCount="indefinite"/></rect>
-                <rect x="135" y="172" width="3" height="0" rx="0.5" fill="#0ea5e9" opacity="0.9"><animate attributeName="height" values="3;6;2;6;3" dur="0.3s" repeatCount="indefinite"/><animate attributeName="y" values="170;167;171;167;170" dur="0.3s" repeatCount="indefinite"/></rect>
-                <rect x="140" y="172" width="3" height="0" rx="0.5" fill="#38bdf8" opacity="0.8"><animate attributeName="height" values="1;5;3;5;1" dur="0.38s" repeatCount="indefinite"/><animate attributeName="y" values="172;168;170;168;172" dur="0.38s" repeatCount="indefinite"/></rect>
-                <rect x="145" y="172" width="3" height="0" rx="0.5" fill="#3b82f6" opacity="0.8"><animate attributeName="height" values="4;1;5;2;4" dur="0.32s" repeatCount="indefinite"/><animate attributeName="y" values="169;172;168;171;169" dur="0.32s" repeatCount="indefinite"/></rect>
-                <rect x="150" y="172" width="3" height="0" rx="0.5" fill="#38bdf8" opacity="0.7"><animate attributeName="height" values="2;5;1;4;2" dur="0.36s" repeatCount="indefinite"/><animate attributeName="y" values="171;168;172;169;171" dur="0.36s" repeatCount="indefinite"/></rect>
-              </g>
-              <g v-else>
-                <rect x="122" y="167" width="36" height="8" rx="4" :fill="isDark ? '#0f172a' : '#e2e8f0'" stroke="#94a3b8" stroke-width="0.8"/>
-                <rect x="128" y="170" width="24" height="2" rx="1" fill="#3b82f6" opacity="0.4"><animate attributeName="opacity" values="0.3;0.5;0.3" dur="3s" repeatCount="indefinite"/></rect>
-              </g>
-              <!-- Body / scrubs -->
-              <path d="M90 200 Q90 185 105 178 L120 195 Q140 205 160 195 L175 178 Q190 185 190 200 L195 290 L85 290 Z" fill="url(#cBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
-              <path d="M110 195 L140 210 L170 195" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
-              <!-- Heartbeat line on scrubs -->
-              <g opacity="0.5">
-                <line x1="105" y1="225" x2="175" y2="225" stroke="#38bdf8" stroke-width="0.6" opacity="0.2"/>
-                <polyline fill="none" stroke="#38bdf8" stroke-width="1" stroke-linecap="round" points="105,225 120,225 125,225 128,215 131,235 134,220 137,230 140,225 175,225" opacity="0.4"/>
-              </g>
-              <!-- Sleeves + hands -->
-              <ellipse cx="88" cy="215" rx="15" ry="12" fill="url(#cBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
-              <ellipse cx="192" cy="215" rx="15" ry="12" fill="url(#cBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
-              <circle cx="80" cy="230" r="10" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
-              <circle cx="200" cy="230" r="10" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
-              <!-- Feet -->
-              <ellipse cx="115" cy="298" rx="18" ry="12" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
-              <ellipse cx="165" cy="298" rx="18" ry="12" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
-              <!-- Name tag -->
-              <rect x="118" y="250" width="44" height="14" rx="3" fill="white" stroke="#94a3b8" stroke-width="0.8"/>
-              <text x="140" y="261" text-anchor="middle" fill="#3b82f6" font-size="7.5" font-weight="bold" font-family="system-ui, sans-serif">DR. HOPPS</text>
-            </svg>
-          </div>
-        </div>
-        <div class="mt-1 text-center">
-          <div class="text-base sm:text-lg font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">{{ doctorAvatar.name || 'Dr. Hopps' }}</div>
-          <div class="text-caption sm:text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-600'">{{ t('voice.physicianAssistant') }}</div>
-          <div class="text-detail mt-1 hidden sm:block" :class="isDark ? 'text-slate-600' : 'text-slate-400'">{{ t('voice.clickToCustomize') }}</div>
-        </div>
+      <!-- Ambient background composition -->
+      <div class="absolute inset-0 pointer-events-none overflow-hidden">
+        <!-- Radial spotlight behind avatar -->
+        <div class="absolute top-[18%] left-1/2 -translate-x-1/2 w-[min(90vw,600px)] h-[min(90vw,600px)] rounded-full opacity-[0.07]"
+          :style="{ background: 'radial-gradient(circle, #3b82f6 0%, transparent 70%)' }"></div>
+        <!-- Secondary ambient glow -->
+        <div class="absolute top-[30%] left-1/2 -translate-x-1/2 w-[min(70vw,420px)] h-[min(70vw,420px)] rounded-full opacity-[0.04]"
+          :style="{ background: 'radial-gradient(circle, #8b5cf6 0%, transparent 65%)' }"></div>
       </div>
 
-      <!-- Subtitle area -->
-      <div class="flex-[1] flex flex-col justify-start items-center relative z-10 px-4">
-        <div v-if="lastUserText" class="mb-2 text-center">
-          <span class="inline-block text-sm px-4 py-1.5 rounded-full border" :class="isDark ? 'bg-blue-600/20 text-blue-200 border-blue-500/15' : 'bg-blue-600 text-white border-blue-700'">{{ lastUserText }}</span>
+      <!-- Compact progress rail -->
+      <div v-if="showStepSidebar" class="relative z-10 flex items-center justify-center gap-3 px-6 py-3 flex-shrink-0">
+        <div class="flex items-center gap-1.5">
+          <div v-for="(step, index) in progressSteps" :key="index" class="flex items-center gap-1.5">
+            <div class="w-2.5 h-2.5 rounded-full transition-all duration-500"
+              :class="currentStep > index ? 'bg-emerald-500 shadow-sm shadow-emerald-500/30' : currentStep === index ? 'bg-blue-500 ring-2 ring-blue-500/25 shadow-sm shadow-blue-500/30' : (isDark ? 'bg-slate-700/80' : 'bg-slate-300')"></div>
+            <span v-if="currentStep === index" class="text-xs font-medium tracking-wide" :class="isDark ? 'text-slate-300' : 'text-slate-500'">{{ step }}</span>
+            <div v-if="index < progressSteps.length - 1" class="w-4 h-px" :class="currentStep > index ? 'bg-emerald-500/40' : (isDark ? 'bg-slate-700/60' : 'bg-slate-300/60')"></div>
+          </div>
         </div>
-        <div v-if="lastAssistantText" class="w-full max-w-3xl rounded-xl px-6 py-5 text-center border shadow-2xl" :class="isDark ? 'bg-black/60 border-slate-700/20' : 'bg-slate-900 border-slate-800'">
-          <p class="text-white text-lg sm:text-xl leading-relaxed font-medium" v-html="formatSubtitle(lastAssistantText)"></p>
+        <span class="text-xs font-bold tabular-nums ml-2" :class="progressPercentage >= 80 ? 'text-emerald-400' : (isDark ? 'text-slate-500' : 'text-slate-400')">{{ Math.round(progressPercentage) }}%</span>
+      </div>
+
+      <!-- ── Central hero stage ── -->
+      <div class="flex-1 flex flex-col items-center relative z-10" style="justify-content: center; padding-bottom: 2vh;">
+
+        <!-- Avatar + Identity + Question as unified cluster -->
+        <div class="flex flex-col items-center w-full max-w-2xl mx-auto px-4" style="gap: clamp(8px, 1.5vh, 16px);">
+
+          <!-- Avatar with stage glow -->
+          <div class="relative cursor-pointer group" @click="showAvatarCustomizer = true" title="Click to customize">
+            <!-- Circular stage platform behind avatar -->
+            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-6 rounded-[50%] blur-md opacity-20"
+              :class="isDark ? 'bg-blue-400' : 'bg-slate-600'"></div>
+
+            <!-- Cat Doctor Avatar -->
+            <div v-if="(doctorAvatar.characterType || 'bunny') === 'cat'" class="w-56 h-60 sm:w-80 sm:h-[22rem] lg:w-[22rem] lg:h-[26rem] avatar-float">
+              <svg viewBox="0 0 300 320" class="w-full h-full" style="filter: drop-shadow(0 12px 30px rgba(0,0,0,0.2))">
+                <polygon points="90,130 70,30 130,100" fill="#f5a623" stroke="#e8941e" stroke-width="2"/>
+                <polygon points="210,130 230,30 170,100" fill="#f5a623" stroke="#e8941e" stroke-width="2"/>
+                <polygon points="95,120 80,50 125,105" fill="#fce4b8"/>
+                <polygon points="205,120 220,50 175,105" fill="#fce4b8"/>
+                <ellipse cx="150" cy="155" rx="75" ry="70" fill="#f5a623"/>
+                <ellipse cx="150" cy="160" rx="68" ry="60" fill="#f9bc4e" opacity="0.6"/>
+                <ellipse cx="120" cy="145" rx="12" ry="14" fill="white"/>
+                <ellipse cx="180" cy="145" rx="12" ry="14" fill="white"/>
+                <circle cx="122" cy="145" r="8" fill="#4a4a4a"/>
+                <circle cx="182" cy="145" r="8" fill="#4a4a4a"/>
+                <circle cx="124" cy="143" r="3" fill="white" opacity="0.9"/>
+                <circle cx="184" cy="143" r="3" fill="white" opacity="0.9"/>
+                <ellipse cx="150" cy="168" rx="6" ry="4.5" fill="#e87da0"/>
+                <line x1="75" y1="160" x2="120" y2="165" stroke="#d49a3e" stroke-width="1.5"/>
+                <line x1="75" y1="172" x2="120" y2="172" stroke="#d49a3e" stroke-width="1.5"/>
+                <line x1="75" y1="184" x2="120" y2="179" stroke="#d49a3e" stroke-width="1.5"/>
+                <line x1="180" y1="165" x2="225" y2="160" stroke="#d49a3e" stroke-width="1.5"/>
+                <line x1="180" y1="172" x2="225" y2="172" stroke="#d49a3e" stroke-width="1.5"/>
+                <line x1="180" y1="179" x2="225" y2="184" stroke="#d49a3e" stroke-width="1.5"/>
+                <g :class="isSpeakingAnimating ? 'cat-mouth-talking' : ''">
+                  <path v-if="!isSpeakingAnimating" d="M140 178 Q150 186 160 178" fill="none" stroke="#c0783a" stroke-width="2" stroke-linecap="round"/>
+                  <g v-if="isSpeakingAnimating">
+                    <ellipse cx="150" cy="182" rx="10" ry="8" fill="#c0484a" class="cat-jaw"/>
+                    <path d="M140 178 Q150 175 160 178" fill="none" stroke="#c0783a" stroke-width="2" stroke-linecap="round"/>
+                    <ellipse cx="150" cy="188" rx="5" ry="4" fill="#e87d7d"/>
+                  </g>
+                </g>
+                <path d="M95 220 Q95 205 115 198 L130 210 Q150 218 170 210 L185 198 Q205 205 205 220 L210 300 L90 300 Z" :fill="doctorAvatar.bunnyColor || '#4fc3f7'" stroke="#333" stroke-width="2.5"/>
+                <path d="M125 210 L150 222 L175 210" fill="white" stroke="#333" stroke-width="1.5"/>
+                <path d="M140 215 Q135 235 142 248" fill="none" stroke="#4a90d9" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="142" cy="250" r="4.5" fill="none" stroke="#4a90d9" stroke-width="1.8"/>
+                <circle cx="88" cy="245" r="10" fill="#f5a623" stroke="#333" stroke-width="2"/>
+                <circle cx="212" cy="245" r="10" fill="#f5a623" stroke="#333" stroke-width="2"/>
+                <ellipse cx="125" cy="305" rx="16" ry="10" fill="#f5a623" stroke="#333" stroke-width="2"/>
+                <ellipse cx="175" cy="305" rx="16" ry="10" fill="#f5a623" stroke="#333" stroke-width="2"/>
+                <rect x="128" y="260" width="44" height="14" rx="3" fill="white" stroke="#b8d8e8" stroke-width="1"/>
+                <text x="150" y="271" text-anchor="middle" fill="#4a7fa5" font-size="7" font-weight="bold" font-family="system-ui">DR. WHISKERS</text>
+              </svg>
+            </div>
+            <!-- Dog Doctor Avatar -->
+            <div v-else-if="(doctorAvatar.characterType || 'bunny') === 'dog'" class="w-56 h-60 sm:w-80 sm:h-[22rem] lg:w-[22rem] lg:h-[26rem] avatar-float">
+              <svg viewBox="0 0 300 320" class="w-full h-full" style="filter: drop-shadow(0 12px 30px rgba(0,0,0,0.2))">
+                <ellipse cx="80" cy="130" rx="22" ry="40" fill="#8B5E3C" transform="rotate(-15 80 130)"/>
+                <ellipse cx="220" cy="130" rx="22" ry="40" fill="#8B5E3C" transform="rotate(15 220 130)"/>
+                <ellipse cx="82" cy="132" rx="14" ry="28" fill="#c49a6c" transform="rotate(-15 82 132)"/>
+                <ellipse cx="218" cy="132" rx="14" ry="28" fill="#c49a6c" transform="rotate(15 218 132)"/>
+                <ellipse cx="150" cy="150" rx="72" ry="68" fill="#c49a6c"/>
+                <ellipse cx="150" cy="155" rx="65" ry="55" fill="#d4aa7c" opacity="0.5"/>
+                <ellipse cx="150" cy="175" rx="35" ry="25" fill="#e8c8a0"/>
+                <ellipse cx="120" cy="140" rx="11" ry="12" fill="white" stroke="#b08860" stroke-width="0.5"/>
+                <ellipse cx="180" cy="140" rx="11" ry="12" fill="white" stroke="#b08860" stroke-width="0.5"/>
+                <circle cx="122" cy="140" r="7" fill="#3d2b1f"/>
+                <circle cx="182" cy="140" r="7" fill="#3d2b1f"/>
+                <circle cx="124" cy="138" r="2.5" fill="white" opacity="0.9"/>
+                <circle cx="184" cy="138" r="2.5" fill="white" opacity="0.9"/>
+                <path d="M110 130 Q120 125 130 131" fill="none" stroke="#7a5a3a" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M170 131 Q180 125 190 130" fill="none" stroke="#7a5a3a" stroke-width="2.5" stroke-linecap="round"/>
+                <ellipse cx="150" cy="165" rx="10" ry="8" fill="#3d2b1f"/>
+                <g :class="isSpeakingAnimating ? 'dog-mouth-talking' : ''">
+                  <path v-if="!isSpeakingAnimating" d="M138 178 Q150 188 162 178" fill="none" stroke="#7a5a3a" stroke-width="2" stroke-linecap="round"/>
+                  <path v-if="!isSpeakingAnimating" d="M146 182 Q150 194 154 182" fill="#e87d7d" stroke="#d06060" stroke-width="0.5"/>
+                  <g v-if="isSpeakingAnimating">
+                    <ellipse cx="150" cy="184" rx="14" ry="10" fill="#5a3020" class="dog-jaw"/>
+                    <ellipse cx="150" cy="180" rx="11" ry="5" fill="#c0584a"/>
+                    <path d="M146 186 Q150 196 154 186" fill="#e87d7d"/>
+                    <path d="M138 178 Q150 174 162 178" fill="none" stroke="#7a5a3a" stroke-width="2" stroke-linecap="round"/>
+                  </g>
+                </g>
+                <path d="M95 220 Q95 205 115 198 L130 210 Q150 218 170 210 L185 198 Q205 205 205 220 L210 300 L90 300 Z" :fill="doctorAvatar.bunnyColor || '#81c784'" stroke="#333" stroke-width="2.5"/>
+                <path d="M125 210 L150 222 L175 210" fill="white" stroke="#333" stroke-width="1.5"/>
+                <path d="M140 215 Q135 235 142 248" fill="none" stroke="#4a90d9" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="142" cy="250" r="4.5" fill="none" stroke="#4a90d9" stroke-width="1.8"/>
+                <circle cx="88" cy="245" r="10" fill="#c49a6c" stroke="#333" stroke-width="2"/>
+                <circle cx="212" cy="245" r="10" fill="#c49a6c" stroke="#333" stroke-width="2"/>
+                <ellipse cx="125" cy="305" rx="16" ry="10" fill="#c49a6c" stroke="#333" stroke-width="2"/>
+                <ellipse cx="175" cy="305" rx="16" ry="10" fill="#c49a6c" stroke="#333" stroke-width="2"/>
+                <rect x="128" y="260" width="44" height="14" rx="3" fill="white" stroke="#b8d8e8" stroke-width="1"/>
+                <text x="150" y="271" text-anchor="middle" fill="#4a7fa5" font-size="7.5" font-weight="bold" font-family="system-ui">DR. BUDDY</text>
+              </svg>
+            </div>
+            <div v-else-if="(doctorAvatar.characterType || 'bunny') === 'human'" class="w-80 h-[22rem] lg:w-[24rem] lg:h-[28rem] flex items-center justify-center avatar-float">
+              <DoctorAvatar :avatar="doctorAvatar" :speaking="isSpeakingAnimating" :size="avatarSize" :show-name="false" />
+            </div>
+
+            <!-- Bunny Doctor Avatar (robotic style) — enlarged + alive -->
+            <div v-else class="w-60 h-72 sm:w-[22rem] sm:h-[28rem] lg:w-[26rem] lg:h-[34rem] avatar-float relative">
+              <!-- Speaking aura rings -->
+              <div v-if="isSpeakingAnimating" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div v-for="i in speakingRings" :key="'ring-'+i" class="absolute rounded-full border speaking-ring"
+                  :style="{ width: (55 + i * 12) + '%', height: (55 + i * 12) + '%', borderColor: 'rgba(59,130,246,' + (0.25 - i * 0.07) + ')', animationDelay: i * 0.3 + 's' }"></div>
+              </div>
+              <!-- Thinking orbital particles -->
+              <div v-if="avatarExpression === 'thinking'" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div v-for="(dot, i) in thinkingDots" :key="'think-'+i" class="absolute thinking-orbit"
+                  :style="{ width: (50 + i * 10) + '%', height: (50 + i * 10) + '%', animationDuration: (3 + i * 0.8) + 's', animationDelay: dot.delay + 's' }">
+                  <div class="absolute -top-1 left-1/2 w-2 h-2 rounded-full bg-blue-400" :style="{ opacity: dot.opacity }"></div>
+                </div>
+              </div>
+              <svg viewBox="-10 -30 260 380" class="w-full h-full relative z-10" style="filter: drop-shadow(0 16px 40px rgba(0,0,0,0.2))">
+                <defs>
+                  <linearGradient id="cEarGlow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.3"/><stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/></linearGradient>
+                  <linearGradient id="cBodyGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient>
+                  <filter id="cGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                  <!-- Blink mask — squashes eye contents vertically -->
+                  <clipPath id="blinkClipL">
+                    <rect x="98" :y="isBlinking ? 135 : 124" width="36" :height="isBlinking ? 4 : 28" rx="12" style="transition: all 0.1s ease-in-out"/>
+                  </clipPath>
+                  <clipPath id="blinkClipR">
+                    <rect x="146" :y="isBlinking ? 135 : 124" width="36" :height="isBlinking ? 4 : 28" rx="12" style="transition: all 0.1s ease-in-out"/>
+                  </clipPath>
+                </defs>
+                <!-- Ears -->
+                <g><ellipse cx="120" cy="55" rx="19" ry="65" fill="white" stroke="#64748b" stroke-width="2.5" transform="rotate(-8 120 110)"/>
+                <ellipse cx="120" cy="50" rx="10" ry="46" fill="url(#cEarGlow)" transform="rotate(-8 120 110)"/></g>
+                <g><ellipse cx="160" cy="50" rx="19" ry="65" fill="white" stroke="#64748b" stroke-width="2.5" transform="rotate(8 160 110)"/>
+                <ellipse cx="160" cy="45" rx="10" ry="46" fill="url(#cEarGlow)" transform="rotate(8 160 110)"/></g>
+                <!-- Antenna -->
+                <line x1="172" y1="30" x2="185" y2="5" stroke="#38bdf8" stroke-width="1.5" opacity="0.7"/>
+                <circle cx="185" cy="5" r="4" :fill="avatarExpression === 'thinking' ? '#f59e0b' : avatarExpression === 'concerned' ? '#ef4444' : '#0ea5e9'" opacity="0.9" filter="url(#cGlow)">
+                  <animate attributeName="r" :values="avatarExpression === 'thinking' ? '3;6;3' : '3;5;3'" :dur="avatarExpression === 'thinking' ? '0.6s' : '1.2s'" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0.6;1;0.6" :dur="avatarExpression === 'thinking' ? '0.6s' : '1.2s'" repeatCount="indefinite"/>
+                </circle>
+                <!-- Head — subtle tilt based on expression -->
+                <g :style="{ transform: avatarExpression === 'listening' ? 'rotate(-2deg)' : avatarExpression === 'concerned' ? 'rotate(1deg)' : 'rotate(0)', transformOrigin: '140px 150px', transition: 'transform 0.6s ease' }">
+                  <ellipse cx="140" cy="150" rx="65" ry="60" fill="white" stroke="#64748b" stroke-width="3"/>
+                  <ellipse cx="140" cy="148" rx="55" ry="48" fill="none" stroke="#e2e8f0" stroke-width="0.8" stroke-dasharray="4 3" opacity="0.5"/>
+                  <!-- LEFT EYE — with tracking + blink -->
+                  <rect x="100" y="126" width="32" height="24" rx="12" :fill="isDark ? '#0f172a' : '#e2e8f0'" stroke="#94a3b8" stroke-width="1.5"/>
+                  <g clip-path="url(#blinkClipL)">
+                    <circle :cx="116 + eyeOffset.x" :cy="138 + eyeOffset.y" r="7" :fill="avatarExpression === 'concerned' ? '#ef4444' : avatarExpression === 'thinking' ? '#f59e0b' : '#3b82f6'" filter="url(#cGlow)" style="transition: cx 0.15s ease, cy 0.15s ease, fill 0.4s ease"/>
+                    <circle :cx="114 + eyeOffset.x * 0.7" :cy="136 + eyeOffset.y * 0.7" r="2.5" fill="white" opacity="0.85" style="transition: cx 0.15s ease, cy 0.15s ease"/>
+                  </g>
+                  <!-- Expression: eyebrow for concerned -->
+                  <line v-if="avatarExpression === 'concerned'" x1="102" y1="122" x2="130" y2="118" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                  <!-- RIGHT EYE — with tracking + blink -->
+                  <rect x="148" y="126" width="32" height="24" rx="12" :fill="isDark ? '#0f172a' : '#e2e8f0'" stroke="#94a3b8" stroke-width="1.5"/>
+                  <g clip-path="url(#blinkClipR)">
+                    <circle :cx="164 + eyeOffset.x" :cy="138 + eyeOffset.y" r="7" :fill="avatarExpression === 'concerned' ? '#ef4444' : avatarExpression === 'thinking' ? '#f59e0b' : '#3b82f6'" filter="url(#cGlow)" style="transition: cx 0.15s ease, cy 0.15s ease, fill 0.4s ease"/>
+                    <circle :cx="162 + eyeOffset.x * 0.7" :cy="136 + eyeOffset.y * 0.7" r="2.5" fill="white" opacity="0.85" style="transition: cx 0.15s ease, cy 0.15s ease"/>
+                  </g>
+                  <!-- Expression: eyebrow for concerned -->
+                  <line v-if="avatarExpression === 'concerned'" x1="150" y1="118" x2="178" y2="122" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                  <!-- Expression: happy arcs for greeting/reassuring -->
+                  <g v-if="avatarExpression === 'greeting' || avatarExpression === 'reassuring'" opacity="0.4">
+                    <path d="M106 142 Q116 148 126 142" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M154 142 Q164 148 174 142" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+                  </g>
+                  <!-- Nose -->
+                  <polygon points="140,155 136,161 144,161" fill="#94a3b8" stroke="#64748b" stroke-width="1"/>
+                  <circle cx="140" cy="159" r="1.5" :fill="avatarExpression === 'concerned' ? '#ef4444' : '#3b82f6'" opacity="0.6"><animate attributeName="opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite"/></circle>
+                  <!-- Whiskers -->
+                  <line x1="88" y1="152" x2="113" y2="156" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
+                  <line x1="88" y1="162" x2="113" y2="161" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
+                  <line x1="167" y1="156" x2="192" y2="152" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
+                  <line x1="167" y1="161" x2="192" y2="162" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
+                  <!-- Mouth — expression-aware -->
+                  <g v-if="isSpeakingAnimating">
+                    <rect x="122" y="167" width="36" height="8" rx="4" :fill="isDark ? '#0f172a' : '#e2e8f0'" stroke="#94a3b8" stroke-width="0.8"/>
+                    <rect x="125" y="172" width="3" height="0" rx="0.5" fill="#3b82f6" opacity="0.8"><animate attributeName="height" values="1;5;2;4;1" dur="0.4s" repeatCount="indefinite"/><animate attributeName="y" values="172;168;171;169;172" dur="0.4s" repeatCount="indefinite"/></rect>
+                    <rect x="130" y="172" width="3" height="0" rx="0.5" fill="#38bdf8" opacity="0.8"><animate attributeName="height" values="2;5;1;5;2" dur="0.35s" repeatCount="indefinite"/><animate attributeName="y" values="171;168;172;168;171" dur="0.35s" repeatCount="indefinite"/></rect>
+                    <rect x="135" y="172" width="3" height="0" rx="0.5" fill="#0ea5e9" opacity="0.9"><animate attributeName="height" values="3;6;2;6;3" dur="0.3s" repeatCount="indefinite"/><animate attributeName="y" values="170;167;171;167;170" dur="0.3s" repeatCount="indefinite"/></rect>
+                    <rect x="140" y="172" width="3" height="0" rx="0.5" fill="#38bdf8" opacity="0.8"><animate attributeName="height" values="1;5;3;5;1" dur="0.38s" repeatCount="indefinite"/><animate attributeName="y" values="172;168;170;168;172" dur="0.38s" repeatCount="indefinite"/></rect>
+                    <rect x="145" y="172" width="3" height="0" rx="0.5" fill="#3b82f6" opacity="0.8"><animate attributeName="height" values="4;1;5;2;4" dur="0.32s" repeatCount="indefinite"/><animate attributeName="y" values="169;172;168;171;169" dur="0.32s" repeatCount="indefinite"/></rect>
+                    <rect x="150" y="172" width="3" height="0" rx="0.5" fill="#38bdf8" opacity="0.7"><animate attributeName="height" values="2;5;1;4;2" dur="0.36s" repeatCount="indefinite"/><animate attributeName="y" values="171;168;172;169;171" dur="0.36s" repeatCount="indefinite"/></rect>
+                  </g>
+                  <g v-else-if="avatarExpression === 'greeting' || avatarExpression === 'reassuring'">
+                    <!-- Smile -->
+                    <path d="M126 168 Q140 180 154 168" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+                  </g>
+                  <g v-else-if="avatarExpression === 'concerned'">
+                    <!-- Flat/worried mouth -->
+                    <rect x="126" y="169" width="28" height="3" rx="1.5" fill="#94a3b8" opacity="0.7"/>
+                  </g>
+                  <g v-else-if="avatarExpression === 'thinking'">
+                    <!-- Small 'o' thinking mouth -->
+                    <ellipse cx="140" cy="172" rx="6" ry="5" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+                  </g>
+                  <g v-else>
+                    <!-- Default idle mouth bar -->
+                    <rect x="122" y="167" width="36" height="8" rx="4" :fill="isDark ? '#0f172a' : '#e2e8f0'" stroke="#94a3b8" stroke-width="0.8"/>
+                    <rect x="128" y="170" width="24" height="2" rx="1" fill="#3b82f6" opacity="0.4"><animate attributeName="opacity" values="0.3;0.5;0.3" dur="3s" repeatCount="indefinite"/></rect>
+                  </g>
+                </g>
+                <!-- Body / scrubs -->
+                <path d="M90 200 Q90 185 105 178 L120 195 Q140 205 160 195 L175 178 Q190 185 190 200 L195 290 L85 290 Z" fill="url(#cBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
+                <path d="M110 195 L140 210 L170 195" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+                <!-- Heartbeat line -->
+                <g opacity="0.5">
+                  <line x1="105" y1="225" x2="175" y2="225" stroke="#38bdf8" stroke-width="0.6" opacity="0.2"/>
+                  <polyline fill="none" stroke="#38bdf8" stroke-width="1" stroke-linecap="round" points="105,225 120,225 125,225 128,215 131,235 134,220 137,230 140,225 175,225" opacity="0.4"/>
+                </g>
+                <!-- Sleeves + hands -->
+                <ellipse cx="88" cy="215" rx="15" ry="12" fill="url(#cBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
+                <ellipse cx="192" cy="215" rx="15" ry="12" fill="url(#cBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
+                <circle cx="80" cy="230" r="10" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
+                <circle cx="200" cy="230" r="10" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
+                <!-- Feet -->
+                <ellipse cx="115" cy="298" rx="18" ry="12" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
+                <ellipse cx="165" cy="298" rx="18" ry="12" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
+                <!-- Name tag -->
+                <rect x="118" y="250" width="44" height="14" rx="3" fill="white" stroke="#94a3b8" stroke-width="0.8"/>
+                <text x="140" y="261" text-anchor="middle" fill="#3b82f6" font-size="7.5" font-weight="bold" font-family="system-ui, sans-serif">DR. HOPPS</text>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Identity module — designed nameplate -->
+          <div class="text-center" style="margin-top: clamp(4px, 0.8vh, 12px);">
+            <div class="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight" :class="isDark ? 'text-white' : 'text-slate-900'">
+              {{ activeSpecialist ? activeSpecialist.name + ', ' + activeSpecialist.credentials : (doctorAvatar.name || 'Dr. Hopps') }}
+            </div>
+            <div class="flex items-center justify-center gap-2 mt-1">
+              <span class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium px-3 py-1 rounded-full border"
+                :class="activeSpecialist
+                  ? 'text-blue-300 bg-blue-500/10 border-blue-500/20'
+                  : (isDark ? 'text-slate-400 bg-slate-800/60 border-slate-700/40' : 'text-slate-500 bg-slate-100 border-slate-200')">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                {{ activeSpecialist ? activeSpecialist.specialty : t('voice.physicianAssistant') }}
+              </span>
+            </div>
+            <div v-if="activeSpecialist && activeSpecialist.credentials" class="text-xs mt-1.5 font-medium" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+              {{ expandCredentials(activeSpecialist.credentials) }}
+            </div>
+            <button v-if="!activeSpecialist" @click="showAvatarCustomizer = true"
+              class="text-xs mt-1.5 font-medium transition-colors cursor-pointer"
+              :class="isDark ? 'text-slate-600 hover:text-slate-400' : 'text-slate-400 hover:text-slate-600'">
+              {{ t('voice.clickToCustomize') }}
+            </button>
+          </div>
+
+          <!-- User's last message (if any) -->
+          <div v-if="lastUserText" class="text-center" style="margin-top: clamp(8px, 1vh, 16px);">
+            <span class="inline-block text-lg sm:text-xl px-5 py-2.5 rounded-2xl border font-medium"
+              :class="isDark ? 'bg-blue-600/15 text-blue-200 border-blue-500/15' : 'bg-blue-600 text-white border-blue-700'">
+              {{ lastUserText }}
+            </span>
+          </div>
+
+          <!-- Main question / assistant prompt — the hero text -->
+          <div v-if="lastAssistantText" class="w-full max-w-4xl text-center" style="margin-top: clamp(6px, 1vh, 14px);">
+            <p class="font-medium leading-snug"
+              style="font-size: clamp(1.15rem, 2.2vw, 1.65rem);"
+              :class="isDark ? 'text-slate-100' : 'text-slate-800'"
+              v-html="formatSubtitle(lastAssistantText)"></p>
+          </div>
+
         </div>
-        <!-- Toggle removed — use nav button instead -->
       </div>
     </div>
 
@@ -546,6 +628,18 @@
               @replay-message="speakMessage"
               @toggle-avatar="avatarMode = true; localStorage.setItem('avatar_mode', 'true')"
             />
+            <!-- Retry Diagnosis Button (shown after a retryable failure) -->
+            <div v-if="retryAvailable && conversationState === 'diagnosed'" class="flex justify-center py-4">
+              <button
+                @click="retryDiagnosis"
+                class="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors shadow-md"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Retry Diagnosis
+              </button>
+            </div>
             <!-- Specialist Handoff Transition Card -->
             <HandoffTransitionCard
               v-if="showHandoffTransition && activeSpecialist"
@@ -646,12 +740,12 @@
     <!-- Input controls are fixed at bottom above -->
 
     <!-- Error Message -->
-    <ErrorMessage 
+    <ErrorMessage
       :visible="!!error"
       :message="error || ''"
       :show-retry="true"
       @close="clearError"
-      @retry="clearError"
+      @retry="retryAvailable ? retryDiagnosis() : clearError()"
     />
     
     <!-- Help Modal -->
@@ -746,6 +840,57 @@ const { t, lang } = useI18n()
 const toast = useToast()
 const { profile: userProfile, isLoggedIn, logout: doLogout } = useUser()
 
+// Medical credential abbreviation expansions
+const credentialMap = {
+  'MD': 'Doctor of Medicine',
+  'DO': 'Doctor of Osteopathic Medicine',
+  'PhD': 'Doctor of Philosophy',
+  'PA': 'Physician Assistant',
+  'NP': 'Nurse Practitioner',
+  'RN': 'Registered Nurse',
+  'FACC': 'Fellow, American College of Cardiology',
+  'FAAD': 'Fellow, American Academy of Dermatology',
+  'FAAN': 'Fellow, American Academy of Neurology',
+  'FAAP': 'Fellow, American Academy of Pediatrics',
+  'FACEP': 'Fellow, American College of Emergency Physicians',
+  'FACG': 'Fellow, American College of Gastroenterology',
+  'FACP': 'Fellow, American College of Physicians',
+  'FACS': 'Fellow, American College of Surgeons',
+  'FCCP': 'Fellow, American College of Chest Physicians',
+  'FAPA': 'Fellow, American Psychiatric Association',
+  'FASE': 'Fellow, American Society of Echocardiography',
+  'DABR': 'Diplomate, American Board of Radiology',
+  'DABFM': 'Diplomate, American Board of Family Medicine',
+  'DABIM': 'Diplomate, American Board of Internal Medicine',
+  'DABP': 'Diplomate, American Board of Pediatrics',
+  'MPH': 'Master of Public Health',
+  'MS': 'Master of Science',
+  'MBA': 'Master of Business Administration',
+  'BCPS': 'Board Certified Pharmacotherapy Specialist',
+  'PharmD': 'Doctor of Pharmacy',
+  'DDS': 'Doctor of Dental Surgery',
+  'DMD': 'Doctor of Medicine in Dentistry',
+  'OD': 'Doctor of Optometry',
+  'DC': 'Doctor of Chiropractic',
+  'DPM': 'Doctor of Podiatric Medicine',
+  'FAAOS': 'Fellow, American Academy of Orthopaedic Surgeons',
+  'FAAFP': 'Fellow, American Academy of Family Physicians',
+  'FIDSA': 'Fellow, Infectious Diseases Society of America',
+  'FACOG': 'Fellow, American College of Obstetricians and Gynecologists',
+  'RD': 'Registered Dietitian',
+  'CNS': 'Certified Nutrition Specialist',
+}
+
+function expandCredentials(credentials) {
+  if (!credentials) return ''
+  const parts = credentials.split(/,\s*/)
+  const expanded = parts.map(c => {
+    const trimmed = c.trim()
+    return credentialMap[trimmed] || null
+  }).filter(Boolean)
+  return expanded.join(' · ')
+}
+
 const userName = computed(() => userProfile.value?.name || '')
 const userEmail = computed(() => userProfile.value?.email || '')
 const userInitials = computed(() => {
@@ -820,6 +965,8 @@ class MedicalQuestionnaireManager {
       { id: 'lifestyle', i18nKey: 'q.lifestyle', type: 'open', phase: 'social' },
     ]
     this.hpiQuestionsGenerated = false
+    this.ageQuestionsInjected = false
+    this.severityQuestionsInjected = false
     this.currentQuestionIndex = 0
     this.userResponses = {}
     this.isComplete = false
@@ -840,6 +987,49 @@ class MedicalQuestionnaireManager {
       const questionId = this.questions[this.currentQuestionIndex].id
       this.userResponses[questionId] = response
       this.currentQuestionIndex++
+
+      // After age is captured, inject age-stratified questions
+      if (questionId === 'age' && !this.ageQuestionsInjected) {
+        this.addAgeStratifiedQuestions(response)
+      }
+    }
+  }
+
+  /**
+   * Inject age-specific screening questions after age is captured.
+   * For elderly patients (>=65): balance, memory, falls screening.
+   * For pediatric patients (<18): guardian presence, pediatrician involvement.
+   */
+  addAgeStratifiedQuestions(ageResponse) {
+    if (this.ageQuestionsInjected) return
+    this.ageQuestionsInjected = true
+
+    const age = parseInt(ageResponse)
+    if (isNaN(age)) return
+
+    const insertAt = this.currentQuestionIndex // Right after age (before gender)
+    const ageQuestions = []
+
+    if (age >= 65) {
+      ageQuestions.push({
+        id: 'elderly_screening',
+        text: 'Do you have any issues with balance, memory, or frequent falls?',
+        type: 'open',
+        phase: 'demographics',
+        aiGenerated: true
+      })
+    } else if (age < 18) {
+      ageQuestions.push({
+        id: 'pediatric_screening',
+        text: 'Is a parent or guardian present? Have you discussed this with a school nurse or pediatrician?',
+        type: 'open',
+        phase: 'demographics',
+        aiGenerated: true
+      })
+    }
+
+    if (ageQuestions.length > 0) {
+      this.questions.splice(insertAt, 0, ...ageQuestions)
     }
   }
 
@@ -1005,11 +1195,94 @@ class MedicalQuestionnaireManager {
     this.questions.splice(slotStart, slotCount, ...replacements)
   }
 
+  /**
+   * Inject emergency screening questions when severity is high (>=8).
+   * Called from the PA interview flow when a severity response is detected.
+   * Returns the emergency questions to prepend to the scripted flow, or [].
+   */
+  getEmergencyScreeningQuestions(severityValue) {
+    if (this.severityQuestionsInjected) return []
+    const severity = parseInt(severityValue)
+    if (isNaN(severity) || severity < 8) return []
+
+    this.severityQuestionsInjected = true
+    return [
+      'Are you having difficulty breathing or chest pain right now?',
+      'Have you lost consciousness, have severe bleeding, or feel you might faint?'
+    ]
+  }
+
+  /**
+   * Context-aware dynamic question injection called after symptoms are captured.
+   * Adds symptom-specific follow-ups, severity-based emergency screening,
+   * and ensures medical history questions are always included.
+   * This method is used by the PA interview flow to get additional targeted questions.
+   * @param {string} symptomText — the user's symptom description
+   * @returns {string[]} — array of additional questions to ask
+   */
+  addDynamicQuestions(symptomText) {
+    const text = (symptomText || '').toLowerCase()
+    const questions = []
+
+    // Chest pain screening
+    if (text.includes('chest') || text.includes('heart') || text.includes('cardiac')) {
+      questions.push(
+        'Does the pain get worse with exertion or deep breaths?',
+        'Do you have shortness of breath, sweating, or nausea?'
+      )
+    }
+
+    // Headache red-flag screening
+    if (text.includes('headache') || text.includes('head pain') || text.includes('migraine')) {
+      questions.push(
+        'Is this the worst headache of your life?',
+        'Do you have neck stiffness, fever, or visual changes?'
+      )
+    }
+
+    // Abdominal pain screening
+    if (text.includes('abdomin') || text.includes('stomach') || text.includes('belly') || text.includes('tummy')) {
+      questions.push(
+        'Where is the pain -- upper, lower, left, or right side?',
+        'Have you had changes in bowel habits, blood in stool, or vomiting?'
+      )
+    }
+
+    // Mental health safety screening
+    if (text.includes('depress') || text.includes('anxiety') || text.includes('suicid') ||
+        text.includes('self-harm') || text.includes('hopeless') || text.includes('panic')) {
+      questions.push(
+        'Have you had thoughts of harming yourself or others?',
+        'How has your sleep and appetite been recently?'
+      )
+    }
+
+    // Breathing issues screening
+    if (text.includes('breath') || text.includes('wheez') || text.includes('asthma') ||
+        text.includes('suffocat') || text.includes('can\'t breathe') || text.includes('dyspnea')) {
+      questions.push(
+        'How quickly did the breathing difficulty come on?',
+        'Do you have chest pain, cough, or wheezing?'
+      )
+    }
+
+    // Medical history questions — always included to ensure comprehensive intake
+    questions.push(
+      'Do you take any medications regularly? If so, what are they?',
+      'Do you have any known allergies, especially to medications?',
+      'Has anyone in your immediate family had serious medical conditions? (heart disease, cancer, diabetes, etc.)'
+    )
+
+    return questions
+  }
+
   reset() {
     this.currentQuestionIndex = 0
     this.userResponses = {}
     this.isComplete = false
     this.hpiQuestionsGenerated = false
+    this.ageQuestionsInjected = false
+    this.severityQuestionsInjected = false
   }
 }
 
@@ -1020,6 +1293,7 @@ const router = useRouter()
 const currentInput = ref('')
 const isLoading = ref(false)
 const error = ref(null)
+const retryAvailable = ref(false) // Set to true when diagnosis fails with a retryable error
 const pendingImageBase64 = ref(null) // Stored image for diagnosis request
 const showImageDescriptionModal = ref(false)
 const pendingImageUrl = ref(null) // Data URL for image preview in modal
@@ -1167,6 +1441,67 @@ const isSpeakingAnimating = computed(() => {
   if (conversationState.value === 'diagnosing') return false
   return isTTSSpeaking.value || avatarTalking.value || showTyping.value
 })
+
+// ── Avatar Life System: eye tracking, blinking, expressions, thinking ──
+
+// Eye tracking — follows mouse cursor
+const eyeOffset = ref({ x: 0, y: 0 })
+function handleMouseMove(e) {
+  if (!avatarMode.value) return
+  const cx = window.innerWidth / 2
+  const cy = window.innerHeight * 0.35
+  const dx = (e.clientX - cx) / cx
+  const dy = (e.clientY - cy) / cy
+  // Clamp movement to subtle range (max ±4px)
+  eyeOffset.value = {
+    x: Math.max(-4, Math.min(4, dx * 4)),
+    y: Math.max(-3, Math.min(3, dy * 3)),
+  }
+}
+
+// Blinking — natural 3-5s interval
+const isBlinking = ref(false)
+let blinkTimer = null
+function startBlinkCycle() {
+  const nextBlink = 2500 + Math.random() * 3000
+  blinkTimer = setTimeout(() => {
+    isBlinking.value = true
+    setTimeout(() => {
+      isBlinking.value = false
+      startBlinkCycle()
+    }, 150)
+  }, nextBlink)
+}
+
+// Expression states: greeting, listening, thinking, concerned, reassuring, speaking
+const avatarExpression = computed(() => {
+  if (conversationState.value === 'diagnosing' || isLoading.value) return 'thinking'
+  if (isSpeakingAnimating.value) return 'speaking'
+  // Check last message for emotional context
+  const lastMsg = lastAssistantText.value?.toLowerCase() || ''
+  if (lastMsg.includes('emergency') || lastMsg.includes('urgent') || lastMsg.includes('immediately') || lastMsg.includes('call 911')) return 'concerned'
+  if (lastMsg.includes('hello') || lastMsg.includes('welcome') || lastMsg.includes('hi,') || lastMsg.includes("let's begin")) return 'greeting'
+  if (lastMsg.includes('good news') || lastMsg.includes('don\'t worry') || lastMsg.includes('manageable') || lastMsg.includes('treatable')) return 'reassuring'
+  return 'listening'
+})
+
+// Thinking particles — orbital dots when processing
+const thinkingDots = computed(() => {
+  if (avatarExpression.value !== 'thinking') return []
+  return [0, 1, 2].map(i => ({
+    delay: i * 0.4,
+    size: 4 + i,
+    opacity: 0.3 + i * 0.15,
+  }))
+})
+
+// Speaking aura rings
+const speakingRings = computed(() => {
+  if (!isSpeakingAnimating.value) return []
+  return [0, 1, 2]
+})
+
+// Note: blink cycle + mouse listener are initialized in the main onMounted below
 const showStepSidebar = computed(() => {
   return conversationState.value === 'gathering' || conversationState.value === 'pa_interview' || conversationState.value === 'specialist_handoff' || conversationState.value === 'followup' || conversationState.value === 'awaiting-confirmation'
 })
@@ -1383,6 +1718,10 @@ onMounted(async () => {
   // Start session inactivity timer (auto-logout after 30 min)
   startSessionTimer()
 
+  // Avatar life system
+  startBlinkCycle()
+  document.addEventListener('mousemove', handleMouseMove)
+
   // Initialize voice capabilities FIRST
   setupVoiceCapabilities()
   
@@ -1399,32 +1738,48 @@ onMounted(async () => {
   
   // Add initial AI greeting — personalized if logged in with profile data
   setTimeout(() => {
+    // Read profile from reactive state + localStorage fallback for completeness
     const profile = userProfile.value || {}
-    const profileName = profile.name ? profile.name.split(' ')[0] : ''
-    const profileAge = profile.age || profile.dateOfBirth ? (profile.age || calculateAge(profile.dateOfBirth)) : null
-    const profileGender = profile.gender || ''
+    let lsProfile = {}
+    try {
+      const raw = localStorage.getItem('user_profile')
+      if (raw) lsProfile = JSON.parse(raw)
+    } catch { /* ignore */ }
+    const merged = { ...lsProfile, ...profile }
+    const profileName = merged.name ? merged.name.split(' ')[0] : ''
+    const profileAge = (merged.age || merged.dateOfBirth) ? (merged.age || calculateAge(merged.dateOfBirth)) : null
+    const profileGender = merged.gender || ''
 
     // Pre-fill demographics from profile if available
-    let skippedQuestions = 0
-    if (profileAge) {
-      questionnaire.value.answers.age = String(profileAge)
-      skippedQuestions++
+    // Question order: [0]=age, [1]=gender, [2]=symptoms...
+    const hasAge = !!profileAge
+    const hasGender = !!profileGender
+    if (hasAge) {
+      questionnaire.value.userResponses['age'] = String(profileAge)
     }
-    if (profileGender) {
-      questionnaire.value.answers.gender = profileGender
-      skippedQuestions++
+    if (hasGender) {
+      questionnaire.value.userResponses['gender'] = profileGender
     }
-    if (skippedQuestions > 0) {
-      questionnaire.value.currentQuestionIndex = skippedQuestions
+    // Skip past the questions we already have answers for
+    if (hasAge && hasGender) {
+      questionnaire.value.currentQuestionIndex = 2
+    } else if (hasAge) {
+      // Skip age (index 0), but still need gender (index 1)
+      questionnaire.value.currentQuestionIndex = 1
     }
+    // If only gender but not age, we still need to ask age first (index 0)
 
     // Build personalized greeting using i18n translations
     let greeting
-    if (profileName && skippedQuestions >= 2) {
+    if (profileName && hasAge && hasGender) {
       greeting = t('chat.greetingWithProfile')
         .replace('{name}', profileName)
         .replace('{age}', profileAge)
         .replace('{gender}', profileGender)
+    } else if (profileName && hasAge) {
+      greeting = t('chat.greetingWithAge')
+        .replace('{name}', profileName)
+        .replace('{age}', profileAge)
     } else if (profileName) {
       greeting = t('chat.greetingWithName').replace('{name}', profileName)
     } else {
@@ -1481,6 +1836,9 @@ onUnmounted(() => {
   if (speakAbort) speakAbort.cancelled = true
   if (speechSynthesis.value) speechSynthesis.value.cancel()
   stopKeepAlive()
+  // Avatar life cleanup
+  clearTimeout(blinkTimer)
+  document.removeEventListener('mousemove', handleMouseMove)
 })
 
 // === INITIALIZATION ===
@@ -1805,6 +2163,11 @@ async function handleSendMessage(message, imageBase64Param = null) {
         await waitForSpeech()
       }
     } else if (conversationState.value === 'diagnosed') {
+      // Check for retry request after a failed diagnosis
+      if (retryAvailable.value && /^(retry|try again|re-run|rerun)$/i.test(message.trim())) {
+        await retryDiagnosis()
+        return
+      }
       await handleFollowUpMessage(message)
     } else {
       // If state is initial, start the conversation
@@ -2095,7 +2458,7 @@ async function handlePaInterview(userMessage) {
   }
 
   // Fallback generic questions if no category matched
-  const scriptedQuestions = matchedCategory ? matchedCategory.questions : [
+  let scriptedQuestions = matchedCategory ? [...matchedCategory.questions] : [
     'When did this first start? Was it sudden or gradual?',
     'On a scale of 1-10, how severe is this?',
     'Have you noticed any other symptoms alongside this?',
@@ -2106,6 +2469,33 @@ async function handlePaInterview(userMessage) {
     'How is this affecting your daily life?',
   ]
   const matchedSpecialty = matchedCategory?.specialty || 'general_medicine'
+
+  // --- Smart branching: inject dynamic symptom-aware + medical history questions ---
+  const dynamicQs = questionnaire.value.addDynamicQuestions(symptoms)
+  if (dynamicQs.length > 0) {
+    // Deduplicate: only add questions not already in the scripted list
+    const existingLower = new Set(scriptedQuestions.map(q => q.toLowerCase()))
+    for (const dq of dynamicQs) {
+      if (!existingLower.has(dq.toLowerCase())) {
+        scriptedQuestions.push(dq)
+        existingLower.add(dq.toLowerCase())
+      }
+    }
+  }
+
+  // --- Severity-based emergency screening ---
+  // If the user just reported severity >= 8, inject emergency questions next
+  if (userMessage && !questionnaire.value.severityQuestionsInjected) {
+    const severityMatch = (userMessage || '').match(/\b([8-9]|10)\b/)
+    if (severityMatch) {
+      const emergencyQs = questionnaire.value.getEmergencyScreeningQuestions(severityMatch[0])
+      if (emergencyQs.length > 0) {
+        // Insert emergency questions right after the current position
+        const nextIdx = Math.max(0, paExchangeCount.value - 1)
+        scriptedQuestions.splice(nextIdx, 0, ...emergencyQs)
+      }
+    }
+  }
 
   try {
     const responses = questionnaire.value.userResponses
@@ -2545,6 +2935,11 @@ async function handleProceedToDiagnosis() {
     }
 
     const onAgentEvent = (event) => {
+      if (event.event === 'agent_start') {
+        // An agent just started running — update activeAgent immediately
+        activeAgent.value = event.agent
+        return
+      }
       if (event.event === 'agent_complete') {
         const agentName = event.agent
 
@@ -2658,6 +3053,9 @@ async function handleProceedToDiagnosis() {
       return
     }
 
+    // Clear retry state on success
+    retryAvailable.value = false
+
     // Finalize agent state
     completedAgents.value = ['triage', 'diagnostician', 'research', 'specialist', 'treatment', 'safety', 'empathy']
     activeAgent.value = null
@@ -2701,7 +3099,9 @@ async function handleProceedToDiagnosis() {
       lifestyleRecommendations: result.lifestyle_recommendations || [],
       warningSignsList: result.warning_signs || [],
       followUpTimeline: result.follow_up_timeline || '',
-      totalTime: result.total_time || 0
+      totalTime: result.total_time || 0,
+      // Triage urgency from agent pipeline
+      urgency: result.urgency || result.agent_details?.triage?.urgency_level || ''
     })
 
     conversationState.value = 'diagnosed'
@@ -2762,13 +3162,20 @@ async function handleProceedToDiagnosis() {
   } catch (err) {
     const errMsg = err.message || 'Unknown error'
     const isAuthError = errMsg.includes('401') || errMsg.includes('authentication') || errMsg.includes('invalid') && errMsg.includes('key') || errMsg.includes('unauthorized') || (err.status === 401)
+    const isNetworkError = errMsg.includes('Failed to fetch') || errMsg.includes('NetworkError') || errMsg.includes('network') || errMsg.includes('ECONNREFUSED') || errMsg.includes('timed out') || errMsg.includes('timeout') || errMsg.includes('ERR_CONNECTION')
     if (isAuthError) {
       const mp = modelPreference.value || 'auto'
       const providerName = mp.startsWith('gpt') ? 'OpenAI' : mp.startsWith('gemini') ? 'Google' : (localStorage.getItem('ai_provider') === 'openai' ? 'OpenAI' : 'Anthropic')
       toast.error(`${providerName} API key is invalid or expired. Please update it in Settings.`, { duration: 10000 })
       addMessage('assistant', `**API Key Error:** Your ${providerName} API key is invalid or has expired.\n\nPlease go to Settings (gear icon) to update your API key.`)
+      retryAvailable.value = false
+    } else if (isNetworkError) {
+      toast.error('Connection error. Please check your network and try again.', { duration: 8000 })
+      addMessage('assistant', `**Connection Error**: Unable to reach the diagnostic service. Please check your internet connection and try again.\n\n_Error: ${errMsg}_`)
+      retryAvailable.value = true
     } else {
       toast.error(`Diagnosis failed: ${errMsg}`)
+      retryAvailable.value = true
     }
     document.title = `ERR: ${errMsg.substring(0, 80)}`
     // Stop timers
@@ -2807,11 +3214,13 @@ async function handleProceedToDiagnosis() {
       localStorage.setItem('avatar_mode', 'false')
     }
 
-    // Add error message with details so user can report the issue
-    const errDetail = err.message || 'Unknown error'
-    addMessage('assistant',
-      `I apologize, but I'm having trouble processing your diagnosis right now.\n\n**Error:** ${errDetail}\n\n**Please check:**\n1. Your API key is valid (Settings > API Keys)\n2. The backend server is running on port 8000\n3. Your internet connection is stable\n\nYou can try again by clicking '+ New' in the header.`
-    )
+    // Add error message with details (only if not already added by auth/network handler above)
+    if (!isAuthError && !isNetworkError) {
+      const errDetail = err.message || 'Unknown error'
+      addMessage('assistant',
+        `I apologize, but I'm having trouble processing your diagnosis right now.\n\n**Error:** ${errDetail}\n\n**Please check:**\n1. Your API key is valid (Settings > API Keys)\n2. The backend server is running on port 8000\n3. Your internet connection is stable\n\nYou can try again by typing "retry" or clicking '+ New' in the header.`
+      )
+    }
 
     conversationState.value = 'diagnosed'
   } finally {
@@ -2820,6 +3229,18 @@ async function handleProceedToDiagnosis() {
     // Restore focus after diagnosis completes
     restoreInputFocus()
   }
+}
+
+/**
+ * Retries the diagnosis after a failure.
+ * Resets the conversation state so handleProceedToDiagnosis can run again.
+ */
+async function retryDiagnosis() {
+  retryAvailable.value = false
+  error.value = null
+  conversationState.value = 'diagnosing'
+  addMessage('assistant', 'Retrying diagnosis... Please wait.')
+  await handleProceedToDiagnosis()
 }
 
 /**
@@ -3880,5 +4301,33 @@ if (import.meta.env.DEV) {
 @keyframes dogJaw {
   0% { transform: scaleY(0.5); }
   100% { transform: scaleY(1.3); }
+}
+
+/* Avatar idle floating animation — subtle, premium */
+.avatar-float {
+  animation: avatarFloat 4s ease-in-out infinite;
+}
+@keyframes avatarFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* Speaking aura rings — expanding pulse */
+.speaking-ring {
+  animation: speakRing 1.8s ease-out infinite;
+}
+@keyframes speakRing {
+  0% { transform: scale(0.95); opacity: 0.4; }
+  100% { transform: scale(1.15); opacity: 0; }
+}
+
+/* Thinking orbital particles — rotating around avatar */
+.thinking-orbit {
+  animation: thinkOrbit 3s linear infinite;
+  border-radius: 50%;
+}
+@keyframes thinkOrbit {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>
