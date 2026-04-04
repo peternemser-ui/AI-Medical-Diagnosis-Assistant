@@ -165,6 +165,14 @@
           :exporting="isExporting"
           @download-pdf="downloadReport"
           @email="shareViaEmail"
+          @find-specialists="showBooking = true"
+        />
+
+        <!-- Appointment Booking Modal -->
+        <AppointmentBooking
+          :visible="showBooking"
+          :specialty="causes[0]?.specialty || ''"
+          @close="showBooking = false"
         />
 
         <!-- What To Do Next — priority action cards -->
@@ -1032,6 +1040,7 @@ import BodyDiagram from './BodyDiagram.vue'
 import NeuralBodySystems from './NeuralBodySystems.vue'
 import NaturalHealingSection from './NaturalHealingSection.vue'
 import DiagnosisSummaryHeader from './DiagnosisSummaryHeader.vue'
+import AppointmentBooking from './AppointmentBooking.vue'
 import NextStepsCards from './NextStepsCards.vue'
 import ThemeLangControls from './ThemeLangControls.vue'
 import { useTheme } from '@/composables/useTheme.js'
@@ -1052,6 +1061,8 @@ const viewMode = ref('advanced')
 const selectedCause = ref(null)
 const selectedCauseRank = ref(0)
 const selectedCauseTests = ref([])
+
+const showBooking = ref(false)
 
 const expandedSections = ref({
   whyDiagnosis: true,

@@ -53,11 +53,6 @@
       </span>
     </div>
 
-    <!-- Explanation -->
-    <div v-if="cause.explanation" class="px-4 py-2.5 text-xs leading-relaxed" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
-      {{ cause.explanation }}
-    </div>
-
     <!-- Red flags inline (always visible when present) -->
     <div v-if="redFlags.length > 0" class="mx-4 mb-2 p-2.5 rounded-lg border" :class="isDark ? 'bg-red-500/5 border-red-500/20' : 'bg-red-50 border-red-200'">
       <div class="flex items-center gap-1.5 mb-1.5">
@@ -108,6 +103,79 @@
       </div>
     </div>
 
+    <!-- Clinical Reasoning (expandable) -->
+    <div v-if="hasReasoningData" class="mx-4 mb-2">
+      <button
+        @click.stop="showReasoning = !showReasoning"
+        class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200"
+        :class="isDark
+          ? 'bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20'
+          : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200'"
+      >
+        <span class="flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          {{ showReasoning ? 'Hide clinical reasoning' : 'View clinical reasoning' }}
+        </span>
+        <svg class="w-4 h-4 transition-transform duration-300" :class="showReasoning ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+
+      <Transition name="reasoning">
+        <div v-if="showReasoning" class="mt-2 space-y-3 overflow-hidden">
+          <!-- Supporting Evidence -->
+          <div v-if="supportingFeatures.length > 0">
+            <div class="text-detail font-bold uppercase tracking-wider mb-1.5" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'">Supporting Evidence</div>
+            <ul class="space-y-1">
+              <li v-for="(feat, i) in supportingFeatures" :key="'sf-' + i"
+                class="text-xs flex items-start gap-1.5" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                <span class="text-emerald-400 mt-0.5 flex-shrink-0 font-bold">+</span>
+                <span>{{ feat }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Against This Diagnosis -->
+          <div v-if="opposingFeatures.length > 0">
+            <div class="text-detail font-bold uppercase tracking-wider mb-1.5" :class="isDark ? 'text-amber-400' : 'text-amber-600'">Against This Diagnosis</div>
+            <ul class="space-y-1">
+              <li v-for="(feat, i) in opposingFeatures" :key="'of-' + i"
+                class="text-xs flex items-start gap-1.5" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                <span class="text-amber-400 mt-0.5 flex-shrink-0 font-bold">&minus;</span>
+                <span>{{ feat }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Clinical Reasoning -->
+          <div v-if="cause.explanation">
+            <div class="text-detail font-bold uppercase tracking-wider mb-1.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Clinical Reasoning</div>
+            <blockquote class="text-xs leading-relaxed pl-3 py-2 border-l-2 rounded-r-lg"
+              :class="isDark
+                ? 'border-indigo-500/50 bg-indigo-500/5 text-slate-300 italic'
+                : 'border-indigo-300 bg-indigo-50/50 text-slate-600 italic'">
+              {{ cause.explanation }}
+            </blockquote>
+          </div>
+
+          <!-- Urgency Assessment -->
+          <div v-if="cause.urgency">
+            <div class="text-detail font-bold uppercase tracking-wider mb-1.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Urgency Assessment</div>
+            <div class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full" :class="urgencyReasoningBadge">
+              <span class="w-2 h-2 rounded-full" :class="urgencyDotColor"></span>
+              <span class="capitalize">{{ cause.urgency }}</span>
+              <span class="font-normal opacity-75">{{ urgencyDescription }}</span>
+            </div>
+          </div>
+
+          <!-- Must Not Miss flag -->
+          <div v-if="cause.must_not_miss || cause.mustNotMiss" class="flex items-center gap-2 px-3 py-2 rounded-lg border"
+            :class="isDark ? 'bg-red-500/5 border-red-500/20' : 'bg-red-50 border-red-200'">
+            <svg class="w-4 h-4 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            <span class="text-xs font-semibold" :class="isDark ? 'text-red-300' : 'text-red-700'">Must-Not-Miss Diagnosis — requires active exclusion</span>
+          </div>
+        </div>
+      </Transition>
+    </div>
+
     <!-- Research links -->
     <div class="px-4 pb-3 flex flex-wrap gap-1.5">
       <a :href="'https://scholar.google.com/scholar?q=' + encodeURIComponent(cause.cause)" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-detail font-medium px-2.5 py-1.5 rounded-lg transition-all hover:scale-105" :class="isDark ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:shadow-lg hover:shadow-blue-500/10' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'">
@@ -148,6 +216,43 @@ const props = defineProps({
 defineEmits(['open-detail'])
 
 const showAllTests = ref(false)
+const showReasoning = ref(false)
+
+const supportingFeatures = computed(() => {
+  return props.cause.supporting_features || props.cause.supportingFeatures || []
+})
+
+const opposingFeatures = computed(() => {
+  return props.cause.opposing_features || props.cause.opposingFeatures || []
+})
+
+const hasReasoningData = computed(() => {
+  return supportingFeatures.value.length > 0
+    || opposingFeatures.value.length > 0
+    || !!props.cause.explanation
+    || !!props.cause.urgency
+    || props.cause.must_not_miss
+    || props.cause.mustNotMiss
+})
+
+const urgencyReasoningBadge = computed(() => {
+  if (props.cause.urgency === 'urgent') return isDark.value ? 'bg-red-500/15 text-red-300' : 'bg-red-50 text-red-700'
+  if (props.cause.urgency === 'soon') return isDark.value ? 'bg-amber-500/15 text-amber-300' : 'bg-amber-50 text-amber-700'
+  return isDark.value ? 'bg-emerald-500/15 text-emerald-300' : 'bg-emerald-50 text-emerald-700'
+})
+
+const urgencyDotColor = computed(() => {
+  if (props.cause.urgency === 'urgent') return 'bg-red-400'
+  if (props.cause.urgency === 'soon') return 'bg-amber-400'
+  return 'bg-emerald-400'
+})
+
+const urgencyDescription = computed(() => {
+  if (props.cause.urgency === 'urgent') return '— Seek prompt medical attention'
+  if (props.cause.urgency === 'soon') return '— Schedule appointment within days'
+  if (props.cause.urgency === 'low') return '— Monitor and follow up as needed'
+  return '— Routine follow-up recommended'
+})
 
 const specialtyIcon = computed(() => {
   const s = (props.cause.specialty || '').toLowerCase()
@@ -237,3 +342,24 @@ const barGradient = computed(() => {
   return 'bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-400'
 })
 </script>
+
+<style scoped>
+.reasoning-enter-active {
+  transition: all 0.3s ease-out;
+  max-height: 600px;
+}
+.reasoning-leave-active {
+  transition: all 0.2s ease-in;
+  max-height: 600px;
+}
+.reasoning-enter-from,
+.reasoning-leave-to {
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+}
+.reasoning-enter-to,
+.reasoning-leave-from {
+  opacity: 1;
+}
+</style>

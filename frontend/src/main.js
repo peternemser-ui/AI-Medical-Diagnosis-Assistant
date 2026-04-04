@@ -9,3 +9,12 @@ document.documentElement.classList.add(savedTheme)
 document.documentElement.lang = localStorage.getItem('lang') || 'en'
 
 createApp(App).use(router).mount('#app')
+
+// Register service worker for PWA offline support
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((err) => {
+      console.warn('SW registration failed:', err)
+    })
+  })
+}
