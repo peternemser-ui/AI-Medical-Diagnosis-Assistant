@@ -669,6 +669,16 @@
           @select="handleQuickQuestion"
         />
 
+        <!-- Body diagram input — interactive body region selector -->
+        <Transition name="slide-up">
+          <div
+            v-if="(conversationState === 'gathering' || conversationState === 'initial') && questionnaire.currentQuestionIndex <= 1 && !isLoading"
+            class="px-3 py-2 max-w-4xl mx-auto w-full"
+          >
+            <BodyDiagramInput @select="handleQuickQuestion" />
+          </div>
+        </Transition>
+
         <!-- Skip to Diagnosis button (appears after 4+ PA exchanges) -->
         <div v-if="conversationState === 'pa_interview' && paExchangeCount >= 4 && !isLoading"
           class="flex justify-center px-3 py-2">
@@ -822,6 +832,7 @@ import DoctorAvatar from '@/components/DoctorAvatar.vue'
 import AvatarCustomizer from '@/components/AvatarCustomizer.vue'
 import HistoryDrawer from '@/components/HistoryDrawer.vue'
 import SymptomChips from '@/components/SymptomChips.vue'
+import BodyDiagramInput from '@/components/BodyDiagramInput.vue'
 import ThemeLangControls from '@/components/ThemeLangControls.vue'
 import OnboardingTour from '@/components/OnboardingTour.vue'
 import ImageDescriptionModal from '@/components/ImageDescriptionModal.vue'
@@ -3254,7 +3265,8 @@ async function handleFollowUpMessage(message) {
     const result = await followup({
       question: message,
       previous_messages: chatMessages.value.slice(-10),
-      original_symptoms: questionnaire.value.userResponses.symptoms || ''
+      original_symptoms: questionnaire.value.userResponses.symptoms || '',
+      language: lang.value || 'en'
     })
 
     estimatedCost.value += result.estimated_cost || 0.02
@@ -4273,6 +4285,12 @@ if (import.meta.env.DEV) {
 </script>
 
 <style scoped>
+/* Slide-up transition for body diagram */
+.slide-up-enter-active { transition: all 0.3s ease-out; }
+.slide-up-enter-from { opacity: 0; transform: translateY(8px); }
+.slide-up-leave-active { transition: all 0.2s ease-in; }
+.slide-up-leave-to { opacity: 0; transform: translateY(4px); }
+
 /* Bunny mouth talking animation */
 .bunny-mouth-talking .bunny-jaw {
   animation: bunnyJaw 0.25s ease-in-out infinite alternate;

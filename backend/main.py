@@ -721,14 +721,24 @@ async def followup_question(
                 "estimated_cost": 0.0,
             }
 
+        # Build language instruction for non-English follow-ups
+        fu_lang = getattr(followup_req, 'language', 'en') or 'en'
+        FU_LANG_NAMES = {"en":"English","zh":"Chinese (Simplified)","es":"Spanish","fr":"French","hi":"Hindi","de":"German","pt":"Portuguese","ja":"Japanese","ko":"Korean","ar":"Arabic","ru":"Russian","it":"Italian"}
+        fu_lang_suffix = ""
+        if fu_lang != "en" and fu_lang in FU_LANG_NAMES:
+            fu_lang_suffix = f"\nIMPORTANT: Respond entirely in {FU_LANG_NAMES[fu_lang]}."
+
         if provider == "openai":
             # Quick OpenAI follow-up
             from openai import OpenAI
             client = OpenAI(api_key=api_key)
+            system_msg = "You are a medical AI assistant providing follow-up guidance."
+            if fu_lang_suffix:
+                system_msg += fu_lang_suffix
             resp = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": "You are a medical AI assistant providing follow-up guidance."},
+                    {"role": "system", "content": system_msg},
                     {"role": "user", "content": f"Patient follow-up question: {followup_req.question}\nOriginal symptoms: {followup_req.original_symptoms}"}
                 ],
                 max_tokens=1500,
@@ -741,6 +751,7 @@ async def followup_question(
             question=followup_req.question,
             previous_diagnosis=followup_req.previous_diagnosis,
             original_symptoms=followup_req.original_symptoms,
+            language=fu_lang,
         )
 
         return {
@@ -936,6 +947,7 @@ async def generate_question(
             previous_questions=request_data.previous_questions,
             questions_asked=request_data.questions_asked,
             total_ai_questions=request_data.total_ai_questions,
+            language=gen_lang,
         )
 
         return {"question": question, "estimated_cost": 0.01}

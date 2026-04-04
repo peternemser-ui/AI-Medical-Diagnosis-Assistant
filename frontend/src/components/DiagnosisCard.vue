@@ -325,9 +325,15 @@ const headerBg = computed(() => {
 })
 
 const urgencyBadge = computed(() => {
-  if (props.cause.urgency === 'urgent') return 'bg-red-500/20 text-red-300 border border-red-500/30'
-  if (props.cause.urgency === 'soon') return 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-  return 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+  if (props.cause.urgency === 'urgent') return isDark.value
+    ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+    : 'bg-red-100 text-red-700 border border-red-300'
+  if (props.cause.urgency === 'soon') return isDark.value
+    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+    : 'bg-amber-100 text-amber-700 border border-amber-300'
+  return isDark.value
+    ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+    : 'bg-blue-100 text-blue-700 border border-blue-300'
 })
 
 const confidenceColor = computed(() => {

@@ -1590,6 +1590,7 @@ class OrchestratorAgent:
         question: str,
         previous_diagnosis: dict[str, Any] | None = None,
         original_symptoms: str = "",
+        language: str = "en",
     ) -> dict[str, Any]:
         """Handle follow-up questions using the treatment agent with full context."""
         context = {}
@@ -1598,8 +1599,17 @@ class OrchestratorAgent:
         if original_symptoms:
             context["original_symptoms"] = original_symptoms
 
+        LANG_NAMES = {
+            "en": "English", "zh": "Chinese (Simplified)", "es": "Spanish", "fr": "French",
+            "hi": "Hindi", "de": "German", "pt": "Portuguese", "ja": "Japanese",
+            "ko": "Korean", "ar": "Arabic", "ru": "Russian", "it": "Italian",
+        }
+        lang_suffix = ""
+        if language and language != "en" and language in LANG_NAMES:
+            lang_suffix = f"\n\nIMPORTANT: Respond entirely in {LANG_NAMES[language]}."
+
         result = await self.treatment.run(
-            f"Patient follow-up question: {question}",
+            f"Patient follow-up question: {question}{lang_suffix}",
             context=context,
         )
         return {
@@ -1621,10 +1631,20 @@ class OrchestratorAgent:
         previous_questions: list[str],
         questions_asked: int,
         total_ai_questions: int,
+        language: str = "en",
     ) -> str:
         """Generate a follow-up question using the diagnostician agent."""
         history_block = "\n".join(f"- {h}" for h in conversation_history[-5:]) if conversation_history else "None yet"
         prev_q_block = "\n".join(f"- {q}" for q in previous_questions) if previous_questions else "None yet"
+
+        LANG_NAMES = {
+            "en": "English", "zh": "Chinese (Simplified)", "es": "Spanish", "fr": "French",
+            "hi": "Hindi", "de": "German", "pt": "Portuguese", "ja": "Japanese",
+            "ko": "Korean", "ar": "Arabic", "ru": "Russian", "it": "Italian",
+        }
+        lang_suffix = ""
+        if language and language != "en" and language in LANG_NAMES:
+            lang_suffix = f"\nIMPORTANT: Write the question in {LANG_NAMES[language]}."
 
         prompt = (
             f"Generate ONE specific follow-up question for this patient.\n\n"
@@ -1633,7 +1653,7 @@ class OrchestratorAgent:
             f"This is question {questions_asked + 1} of {total_ai_questions}.\n\n"
             f"Conversation so far:\n{history_block}\n\n"
             f"Questions already asked (DO NOT repeat):\n{prev_q_block}\n\n"
-            f"Return ONLY the question text, nothing else."
+            f"Return ONLY the question text, nothing else.{lang_suffix}"
         )
 
         result = await self.diagnostician.run(prompt)

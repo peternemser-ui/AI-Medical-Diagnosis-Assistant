@@ -25,7 +25,7 @@
             <!-- Step icon -->
             <div class="flex justify-center mb-6">
               <div
-                class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
+                class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-all duration-300"
                 :class="isDark ? 'bg-blue-500/15' : 'bg-blue-50'"
               >
                 {{ steps[currentStep].icon }}
@@ -42,10 +42,12 @@
               Step {{ currentStep + 1 }} of {{ steps.length }}
             </p>
 
-            <!-- Step 1: Agent pipeline -->
+            <!-- Step 1: Welcome + 7-agent system -->
             <div v-if="currentStep === 0" class="space-y-4">
               <p class="text-center leading-relaxed" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
-                Your symptoms are analyzed by <span class="font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">7 specialized AI agents</span> working together for a thorough assessment.
+                Welcome to your personal AI medical team. Your symptoms are analyzed by
+                <span class="font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">7 specialized AI agents</span>
+                working together for a thorough, evidence-based assessment.
               </p>
               <div class="grid grid-cols-4 sm:grid-cols-7 gap-2 mt-4">
                 <div
@@ -58,33 +60,53 @@
                   <span class="text-detail font-medium leading-tight text-center" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ agent.name }}</span>
                 </div>
               </div>
+              <p class="text-xs text-center mt-3" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+                Triage, Diagnostician, and Research run in parallel for faster results.
+              </p>
             </div>
 
-            <!-- Step 2: How it works -->
+            <!-- Step 2: API Key Setup -->
             <div v-if="currentStep === 1" class="space-y-4">
+              <p class="text-center leading-relaxed" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                To power the AI agents, you need an API key from Anthropic (Claude) or OpenAI. Your key stays in your browser and is never sent to our servers.
+              </p>
               <div class="flex flex-col gap-3">
                 <div
-                  v-for="(item, i) in howItWorks"
+                  v-for="(item, i) in apiKeyPoints"
                   :key="i"
-                  class="flex items-start gap-3 p-3 rounded-xl transition-colors"
+                  class="flex items-center gap-2.5 p-2.5 rounded-lg"
                   :class="isDark ? 'bg-slate-800/60' : 'bg-slate-50'"
                 >
-                  <div
-                    class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                    :class="isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'"
-                  >
-                    {{ i + 1 }}
-                  </div>
-                  <p class="text-sm leading-relaxed" :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ item }}</p>
+                  <svg class="w-4 h-4 flex-shrink-0" :class="isDark ? 'text-blue-400' : 'text-blue-600'" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                  <span class="text-sm" :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ item }}</span>
                 </div>
               </div>
+              <div class="flex justify-center mt-4">
+                <button
+                  @click="navigateTo('/setup')"
+                  class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors shadow-lg shadow-blue-500/25"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/>
+                  </svg>
+                  Configure API Key
+                </button>
+              </div>
+              <p v-if="hasApiKey" class="text-xs text-center text-emerald-500 font-medium mt-1">
+                API key already configured
+              </p>
             </div>
 
-            <!-- Step 3: Reports -->
+            <!-- Step 3: Profile Setup -->
             <div v-if="currentStep === 2" class="space-y-4">
+              <p class="text-center leading-relaxed" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                Setting up your profile helps the AI agents provide more personalized and accurate assessments based on your age, gender, and medical history.
+              </p>
               <div class="flex flex-col gap-3">
                 <div
-                  v-for="(item, i) in reportFeatures"
+                  v-for="(item, i) in profilePoints"
                   :key="i"
                   class="flex items-start gap-3 p-3 rounded-xl transition-colors"
                   :class="isDark ? 'bg-slate-800/60' : 'bg-slate-50'"
@@ -96,9 +118,23 @@
                   </div>
                 </div>
               </div>
+              <div class="flex justify-center mt-4">
+                <button
+                  @click="navigateTo('/profile')"
+                  class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-purple-600 hover:bg-purple-500 text-white transition-colors shadow-lg shadow-purple-500/25"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+                  </svg>
+                  Complete Profile
+                </button>
+              </div>
+              <p v-if="hasProfile" class="text-xs text-center text-emerald-500 font-medium mt-1">
+                Profile already set up
+              </p>
             </div>
 
-            <!-- Step 4: Privacy -->
+            <!-- Step 4: Start Consultation -->
             <div v-if="currentStep === 3" class="space-y-4">
               <div class="flex justify-center mb-2">
                 <div
@@ -106,13 +142,16 @@
                   :class="isDark ? 'bg-emerald-500/10' : 'bg-emerald-50'"
                 >
                   <svg class="w-10 h-10" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
               </div>
+              <p class="text-center leading-relaxed" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                You're all set! Start your first consultation and let the 7 AI agents analyze your symptoms with evidence-based medical reasoning.
+              </p>
               <div class="flex flex-col gap-2">
                 <div
-                  v-for="(item, i) in privacyPoints"
+                  v-for="(item, i) in readyPoints"
                   :key="i"
                   class="flex items-center gap-2.5 p-2.5 rounded-lg"
                   :class="isDark ? 'bg-slate-800/60' : 'bg-slate-50'"
@@ -163,7 +202,7 @@
               ></button>
             </div>
 
-            <!-- Next / Get Started -->
+            <!-- Next / Begin Consultation -->
             <div class="w-24 flex justify-end">
               <button
                 v-if="currentStep < steps.length - 1"
@@ -175,9 +214,9 @@
               <button
                 v-else
                 @click="handleComplete"
-                class="text-sm font-semibold px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500 transition-all shadow-lg shadow-blue-500/25"
+                class="text-sm font-semibold px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500 transition-all shadow-lg shadow-emerald-500/25 whitespace-nowrap"
               >
-                Get Started
+                Begin Consultation
               </button>
             </div>
           </div>
@@ -188,7 +227,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme.js'
 
 const props = defineProps({
@@ -200,43 +240,52 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
+const router = useRouter()
 const { isDark } = useTheme()
 const currentStep = ref(0)
 
+const hasApiKey = computed(() => {
+  return !!(localStorage.getItem('api_key_configured') || localStorage.getItem('anthropic_api_key') || localStorage.getItem('openai_api_key'))
+})
+
+const hasProfile = computed(() => {
+  return !!(localStorage.getItem('user_profile') || localStorage.getItem('patient_age'))
+})
+
 const agents = [
-  { name: 'Triage', icon: '🚦' },
-  { name: 'Diagnostician', icon: '🔬' },
-  { name: 'Research', icon: '📚' },
-  { name: 'Specialist', icon: '🏥' },
-  { name: 'Treatment', icon: '💊' },
-  { name: 'Safety', icon: '🛡️' },
-  { name: 'Empathy', icon: '💙' },
+  { name: 'Triage', icon: '\u{1F6A6}' },
+  { name: 'Diagnostician', icon: '\u{1F52C}' },
+  { name: 'Research', icon: '\u{1F4DA}' },
+  { name: 'Specialist', icon: '\u{1F3E5}' },
+  { name: 'Treatment', icon: '\u{1F48A}' },
+  { name: 'Safety', icon: '\u{1F6E1}\uFE0F' },
+  { name: 'Empathy', icon: '\u{1F499}' },
 ]
 
 const steps = [
-  { title: 'Welcome to Your AI Medical Team', icon: '👋' },
-  { title: 'How It Works', icon: '⚡' },
-  { title: 'Your Reports', icon: '📋' },
-  { title: 'Privacy First', icon: '🔒' },
+  { title: 'Welcome to Your AI Medical Team', icon: '\u{1F44B}' },
+  { title: 'Set Up Your API Key', icon: '\u{1F511}' },
+  { title: 'Complete Your Profile', icon: '\u{1F464}' },
+  { title: 'Ready to Begin', icon: '\u{1F680}' },
 ]
 
-const howItWorks = [
-  'Answer about 15 clinical questions so we can understand your symptoms in detail.',
-  'Our 7 AI agents analyze your responses in parallel using evidence-based reasoning.',
-  'Receive a comprehensive diagnosis with confidence scores, recommended tests, and next steps.',
+const apiKeyPoints = [
+  'Get a free API key from Anthropic (Claude) or OpenAI',
+  'Your key is stored locally in your browser only',
+  'Powers all 7 AI agents for accurate diagnosis',
 ]
 
-const reportFeatures = [
-  { icon: '💾', title: 'Saved Locally', desc: 'All reports are stored in your browser. Access them anytime from the Reports page.' },
-  { icon: '📄', title: 'Export as PDF', desc: 'Download professional medical reports to share with your healthcare provider.' },
-  { icon: '🗺️', title: 'Find a Specialist', desc: 'Use the built-in specialist finder to locate relevant doctors near you.' },
+const profilePoints = [
+  { icon: '\u{1F9EC}', title: 'Age & Gender', desc: 'Helps narrow down age-specific and gender-specific conditions.' },
+  { icon: '\u{1FA7A}', title: 'Medical History', desc: 'Existing conditions and medications inform safer recommendations.' },
+  { icon: '\u{26A0}\uFE0F', title: 'Allergies', desc: 'The Safety Agent uses this to flag contraindications.' },
 ]
 
-const privacyPoints = [
-  'All data stays on your device — nothing is stored on our servers.',
-  'Your API key is saved in your browser only, never transmitted elsewhere.',
-  'Conversation history is stored locally and you can delete it anytime.',
-  'You are in full control of your medical information.',
+const readyPoints = [
+  'Describe your symptoms in natural language',
+  'Answer follow-up questions from the AI agents',
+  'Receive a comprehensive diagnosis with confidence scores',
+  'Export your report as PDF to share with your doctor',
 ]
 
 function nextStep() {
@@ -259,6 +308,13 @@ function handleSkip() {
 function handleComplete() {
   localStorage.setItem('onboarding_complete', 'true')
   emit('close')
+  router.push('/consult')
+}
+
+function navigateTo(path) {
+  localStorage.setItem('onboarding_complete', 'true')
+  emit('close')
+  router.push(path)
 }
 </script>
 

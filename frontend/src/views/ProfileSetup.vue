@@ -159,8 +159,8 @@
                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
               </svg>
               <div>
-                <p class="text-red-300 text-xs">{{ loginError }}</p>
-                <button @click="mode = 'signup'" class="text-blue-400 hover:text-blue-300 text-xs mt-1 underline underline-offset-2">Create a new account instead</button>
+                <p class="text-xs" :class="isDark ? 'text-red-300' : 'text-red-600'">{{ loginError }}</p>
+                <button @click="mode = 'signup'" class="text-xs mt-1 underline underline-offset-2" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'">Create a new account instead</button>
               </div>
             </div>
 
@@ -168,7 +168,8 @@
             <button
               @click="handleLogin"
               :disabled="!loginEmail.trim()"
-              class="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-medium py-3 rounded-xl text-sm transition-all duration-200 flex items-center justify-center gap-2"
+              class="w-full bg-blue-600 hover:bg-blue-500 disabled:cursor-not-allowed text-white font-medium py-3 rounded-xl text-sm transition-all duration-200 flex items-center justify-center gap-2"
+              :class="isDark ? 'disabled:bg-slate-700 disabled:text-slate-500' : 'disabled:bg-slate-300 disabled:text-slate-400'"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
@@ -177,7 +178,7 @@
             </button>
 
             <p class="text-center text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-              Don't have an account? <button @click="mode = 'signup'" class="text-blue-400 hover:text-blue-300 underline underline-offset-2">Sign up</button>
+              Don't have an account? <button @click="mode = 'signup'" class="underline underline-offset-2" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'">Sign up</button>
             </p>
           </div>
         </div>
@@ -572,7 +573,7 @@
               <svg class="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
               </svg>
-              <p class="text-red-300 text-xs">{{ error }}</p>
+              <p class="text-xs" :class="isDark ? 'text-red-300' : 'text-red-600'">{{ error }}</p>
             </div>
 
             <!-- Save Button -->
@@ -592,7 +593,7 @@
             </button>
 
             <p v-if="!isEditing" class="text-center text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-              Already have an account? <button @click="handleLogin" class="text-blue-400 hover:text-blue-300 underline underline-offset-2">Log in</button>
+              Already have an account? <button @click="handleLogin" class="underline underline-offset-2" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'">Log in</button>
             </p>
           </div>
         </div>
