@@ -25,7 +25,7 @@
       </div>
       <div class="flex items-center gap-2">
         <ThemeLangControls />
-        <router-link to="/" class="p-1.5 rounded-lg transition-colors"
+        <router-link to="/consult" class="p-1.5 rounded-lg transition-colors"
           :class="isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-900'">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>

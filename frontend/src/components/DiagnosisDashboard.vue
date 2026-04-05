@@ -149,6 +149,32 @@
       <!-- Main Content Area -->
       <div class="flex-1 min-w-0 px-4 py-5 space-y-5">
 
+        <!-- Incomplete Analysis Banner -->
+        <div v-if="isIncomplete" class="rounded-xl border px-5 py-4 flex items-start gap-3"
+          :class="isDark ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-200'">
+          <svg class="w-5 h-5 mt-0.5 flex-shrink-0" :class="isDark ? 'text-amber-400' : 'text-amber-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+          </svg>
+          <div class="flex-1">
+            <h3 class="text-sm font-semibold" :class="isDark ? 'text-amber-300' : 'text-amber-800'">Analysis Partially Incomplete</h3>
+            <p class="text-xs mt-1" :class="isDark ? 'text-amber-400/80' : 'text-amber-700'">
+              Some analysis sections could not be fully completed:
+              <span v-for="(section, i) in missingSections" :key="section">
+                <strong>{{ sectionLabel(section) }}</strong><span v-if="i < missingSections.length - 1">, </span>
+              </span>.
+              The available results are shown below.
+            </p>
+            <button @click="$router.push('/consult')"
+              class="mt-2.5 inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+              :class="isDark ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Re-analyze
+            </button>
+          </div>
+        </div>
+
         <!-- ============================================================== -->
         <!-- LAYER 1: EXECUTIVE SUMMARY (Hero Area)                         -->
         <!-- ============================================================== -->
@@ -1425,6 +1451,28 @@ const causes = computed(() => {
   // Fallback: try to extract from answer text or agent_details
   return _extractCausesFromText(diagnosisData.value)
 })
+
+// Completeness status from backend
+const isIncomplete = computed(() => {
+  const d = diagnosisData.value
+  if (!d) return false
+  // Check backend flag first
+  if (d.completeness_status === 'INCOMPLETE') return true
+  // Fallback: detect locally if causes are empty
+  return causes.value.length === 0
+})
+const missingSections = computed(() => {
+  return diagnosisData.value?.missing_sections || []
+})
+function sectionLabel(key) {
+  const labels = {
+    differential_diagnosis: 'Differential Diagnosis',
+    treatment: 'Treatment Plan',
+    recommended_tests: 'Recommended Tests',
+    specialist: 'Specialist Consultation',
+  }
+  return labels[key] || key
+}
 
 const patientAge = computed(() => diagnosisData.value?.age || diagnosisData.value?.patientAge || '')
 const patientGender = computed(() => diagnosisData.value?.gender || diagnosisData.value?.patientGender || '')

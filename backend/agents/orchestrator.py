@@ -459,21 +459,33 @@ class OrchestratorAgent:
         try:
             specialty_focus_str = specialists_consulted[0] if specialists_consulted else (
                 specialty_focus if 'specialty_focus' in dir() else "general medicine")
+            spec_prompt = (
+                f"Provide specialist consultation for this case. You MUST respond with a JSON object containing: specialist_assessment (string), specialty_specific_tests (array of strings), diagnostic_criteria (array of strings), severity_assessment (string). Respond ONLY with valid JSON.\n"
+                f"Focus specialty: {specialty_focus_str}\n\n"
+                f"Patient:\n{patient_summary}"
+            )
+            spec_context = {
+                "triage_assessment": agent_results.get("triage", {}),
+                "differential_diagnosis": agent_results.get("diagnosis", {}),
+                "research_evidence": agent_results.get("research", {}),
+            }
             spec_result = await specialist_agent.run(
-                (
-                    f"Provide specialist consultation for this case. You MUST respond with a JSON object containing: specialist_assessment (string), specialty_specific_tests (array of strings), diagnostic_criteria (array of strings), severity_assessment (string). Respond ONLY with valid JSON.\n"
-                    f"Focus specialty: {specialty_focus_str}\n\n"
-                    f"Patient:\n{patient_summary}"
-                ),
-                context={
-                    "triage_assessment": agent_results.get("triage", {}),
-                    "differential_diagnosis": agent_results.get("diagnosis", {}),
-                    "research_evidence": agent_results.get("research", {}),
-                },
+                spec_prompt,
+                context=spec_context,
                 images=images,
                 use_tools=True,
                 max_iterations=4,
+                timeout=240.0,
             )
+            # If timed out with tools, retry once without tools (single-shot)
+            if spec_result.get("timed_out"):
+                logger.warning("Specialist timed out with tools — retrying without tools (single-shot)")
+                spec_result = await specialist_agent.run(
+                    spec_prompt,
+                    context=spec_context,
+                    images=images,
+                    use_tools=False,
+                )
             agent_results["specialist"] = self._validate_agent_output(
                 self._extract_agent_data(spec_result), SpecialistOutput
             )
@@ -505,20 +517,31 @@ class OrchestratorAgent:
         logger.info("Step 5/7: Running Treatment Agent")
         t0 = time.time()
         try:
+            treat_prompt = (
+                f"Create a comprehensive treatment plan for this patient. You MUST respond with a JSON object containing: treatment_plans (array of objects with condition, first_line, medications), lifestyle_recommendations (array of strings), warning_signs (array of strings), follow_up_timeline (string), immediate_actions (array of strings). Respond ONLY with valid JSON.\n\n"
+                f"Patient:\n{patient_summary}"
+            )
+            treat_context = {
+                "triage_assessment": agent_results.get("triage", {}),
+                "differential_diagnosis": agent_results.get("diagnosis", {}),
+                "research_evidence": agent_results.get("research", {}),
+                "specialist_consultation": agent_results.get("specialist", {}),
+            }
             treat_result = await self.treatment.run(
-                (
-                    f"Create a comprehensive treatment plan for this patient. You MUST respond with a JSON object containing: treatment_plans (array of objects with condition, first_line, medications), lifestyle_recommendations (array of strings), warning_signs (array of strings), follow_up_timeline (string), immediate_actions (array of strings). Respond ONLY with valid JSON.\n\n"
-                    f"Patient:\n{patient_summary}"
-                ),
-                context={
-                    "triage_assessment": agent_results.get("triage", {}),
-                    "differential_diagnosis": agent_results.get("diagnosis", {}),
-                    "research_evidence": agent_results.get("research", {}),
-                    "specialist_consultation": agent_results.get("specialist", {}),
-                },
+                treat_prompt,
+                context=treat_context,
                 use_tools=True,
                 max_iterations=4,
+                timeout=240.0,
             )
+            # If timed out with tools, retry once without tools (single-shot)
+            if treat_result.get("timed_out"):
+                logger.warning("Treatment timed out with tools — retrying without tools (single-shot)")
+                treat_result = await self.treatment.run(
+                    treat_prompt,
+                    context=treat_context,
+                    use_tools=False,
+                )
             agent_results["treatment"] = self._validate_agent_output(
                 self._extract_agent_data(treat_result), TreatmentOutput
             )
@@ -1329,20 +1352,30 @@ class OrchestratorAgent:
             specialty_focus = "general medicine"
 
         try:
+            spec_prompt_s = (
+                f"Provide specialist consultation for this case. You MUST respond with a JSON object containing: specialist_assessment (string), specialty_specific_tests (array of strings), diagnostic_criteria (array of strings), severity_assessment (string). Respond ONLY with valid JSON.\n"
+                f"Focus specialty: {specialty_focus}\n\n"
+                f"Patient:\n{patient_summary}"
+            )
+            spec_context_s = {
+                "triage_assessment": agent_results.get("triage", {}),
+                "differential_diagnosis": agent_results.get("diagnosis", {}),
+                "research_evidence": agent_results.get("research", {}),
+            }
             spec_result = await self.specialist.run(
-                (
-                    f"Provide specialist consultation for this case. You MUST respond with a JSON object containing: specialist_assessment (string), specialty_specific_tests (array of strings), diagnostic_criteria (array of strings), severity_assessment (string). Respond ONLY with valid JSON.\n"
-                    f"Focus specialty: {specialty_focus}\n\n"
-                    f"Patient:\n{patient_summary}"
-                ),
-                context={
-                    "triage_assessment": agent_results.get("triage", {}),
-                    "differential_diagnosis": agent_results.get("diagnosis", {}),
-                    "research_evidence": agent_results.get("research", {}),
-                },
+                spec_prompt_s,
+                context=spec_context_s,
                 use_tools=True,
                 max_iterations=4,
+                timeout=240.0,
             )
+            if spec_result.get("timed_out"):
+                logger.warning("[stream] Specialist timed out with tools — retrying without tools")
+                spec_result = await self.specialist.run(
+                    spec_prompt_s,
+                    context=spec_context_s,
+                    use_tools=False,
+                )
             agent_results["specialist"] = self._validate_agent_output(
                 self._extract_agent_data(spec_result), SpecialistOutput
             )
@@ -1375,20 +1408,30 @@ class OrchestratorAgent:
         await event_queue.put({"event": "agent_start", "agent": "treatment"})
         t0 = time.time()
         try:
+            treat_prompt_s = (
+                f"Create a comprehensive treatment plan for this patient. You MUST respond with a JSON object containing: treatment_plans (array of objects with condition, first_line, medications), lifestyle_recommendations (array of strings), warning_signs (array of strings), follow_up_timeline (string), immediate_actions (array of strings). Respond ONLY with valid JSON.\n\n"
+                f"Patient:\n{patient_summary}"
+            )
+            treat_context_s = {
+                "triage_assessment": agent_results.get("triage", {}),
+                "differential_diagnosis": agent_results.get("diagnosis", {}),
+                "research_evidence": agent_results.get("research", {}),
+                "specialist_consultation": agent_results.get("specialist", {}),
+            }
             treat_result = await self.treatment.run(
-                (
-                    f"Create a comprehensive treatment plan for this patient. You MUST respond with a JSON object containing: treatment_plans (array of objects with condition, first_line, medications), lifestyle_recommendations (array of strings), warning_signs (array of strings), follow_up_timeline (string), immediate_actions (array of strings). Respond ONLY with valid JSON.\n\n"
-                    f"Patient:\n{patient_summary}"
-                ),
-                context={
-                    "triage_assessment": agent_results.get("triage", {}),
-                    "differential_diagnosis": agent_results.get("diagnosis", {}),
-                    "research_evidence": agent_results.get("research", {}),
-                    "specialist_consultation": agent_results.get("specialist", {}),
-                },
+                treat_prompt_s,
+                context=treat_context_s,
                 use_tools=True,
                 max_iterations=4,
+                timeout=240.0,
             )
+            if treat_result.get("timed_out"):
+                logger.warning("[stream] Treatment timed out with tools — retrying without tools")
+                treat_result = await self.treatment.run(
+                    treat_prompt_s,
+                    context=treat_context_s,
+                    use_tools=False,
+                )
             agent_results["treatment"] = self._validate_agent_output(
                 self._extract_agent_data(treat_result), TreatmentOutput
             )
@@ -1705,6 +1748,12 @@ class OrchestratorAgent:
         text = result.get("text", "")
         parsed = self._safe_parse(text)
         if "raw_text" not in parsed:
+            # Preserve raw text for fallback extraction if key arrays are empty
+            # (partial parse may get outer fields but lose nested arrays)
+            diff = parsed.get("differential_diagnosis")
+            if isinstance(diff, list) and len(diff) == 0 and text:
+                parsed["raw_text"] = text
+                logger.info("Partial parse detected (empty differential_diagnosis) — preserving raw_text for fallback")
             return parsed
 
         # Third: merge published data with text-parsed data
@@ -1960,9 +2009,10 @@ class OrchestratorAgent:
                 causes.append({"cause": d, "value": 50, "explanation": "", "urgency": "routine", "specialty": "Primary Care"})
 
         # Fallback: if causes empty but raw text exists, try to extract from text
-        if not causes and diagnosis.get("raw_text"):
-            logger.warning("No structured diagnoses found — extracting from raw text")
-            raw = diagnosis["raw_text"]
+        raw_text_source = diagnosis.get("raw_text") or results.get("diagnosis_raw") or ""
+        if not causes and raw_text_source:
+            logger.warning("No structured diagnoses found — extracting from raw text (%d chars)", len(raw_text_source))
+            raw = raw_text_source
             import re
 
             # Strategy 1: Find all JSON objects in the text via bracket matching, then
@@ -2051,6 +2101,48 @@ class OrchestratorAgent:
                             "specialty": "Primary Care",
                         })
 
+        # Final fallback: if no causes were extracted from any source, build from triage + empathy
+        fallback_tests = []
+        if not causes:
+            logger.warning("[SYNTH] All extraction strategies failed — building fallback diagnosis from triage + empathy")
+            # Try to infer condition from empathy patient_summary or triage domain
+            summary = empathy.get("patient_summary", "") or ""
+            triage_domain = triage.get("domain", "general_medicine") or "general_medicine"
+            triage_domains = triage.get("symptom_domains", []) or []
+
+            # Extract condition name from empathy summary (often mentions it)
+            import re
+            condition_match = re.search(r'(?:called|known as|condition called|diagnosed with|suggests?|consistent with|sounds like)\s+([A-Za-z\s\-\(\)]+?)(?:\s*[\.\,\(]|\s+is\b|\s+which\b)', summary, re.IGNORECASE)
+            condition_name = condition_match.group(1).strip() if condition_match else f"Condition requiring {triage_domain.replace('_', ' ').title()} evaluation"
+
+            # Build specialty from triage domains
+            specialty = triage_domains[0].replace('_', ' ').title() if triage_domains else triage_domain.replace('_', ' ').title()
+
+            urgency = triage.get("urgency_level", triage.get("urgency", "routine")) or "routine"
+
+            causes.append({
+                "cause": condition_name,
+                "value": 65,
+                "explanation": summary[:500] if summary else f"Based on triage assessment. Detailed differential analysis timed out — please consult a healthcare professional for a complete evaluation.",
+                "urgency": urgency,
+                "specialty": specialty,
+                "supporting_features": [f.get("finding", str(f)) if isinstance(f, dict) else str(f) for f in triage.get("red_flags", [])[:3]],
+                "opposing_features": [],
+                "must_not_miss": False,
+            })
+
+            # Add recommended tests from safety recommendations if available
+            safety_recs = safety.get("recommendations", [])
+            fallback_tests = []
+            for rec in safety_recs:
+                rec_str = str(rec).lower()
+                if any(term in rec_str for term in ['order', 'test', 'screen', 'check', 'labs', 'workup', 'blood']):
+                    # Extract the actionable part
+                    clean = re.sub(r'^(CRITICAL|HIGH|MODERATE|LOW)\s*[—\-:]\s*', '', str(rec))
+                    fallback_tests.append(clean[:120])
+            if fallback_tests:
+                logger.info("[SYNTH] Extracted %d fallback tests from safety recommendations", len(fallback_tests))
+
         # Extract red flags — handle both flat strings and structured dicts
         raw_flags = triage.get("red_flags", [])
         red_flags = []
@@ -2061,12 +2153,19 @@ class OrchestratorAgent:
                 red_flags.append(f)
 
         # Extract follow-up questions (try multiple key names)
-        additional_questions = (
+        additional_questions_raw = (
             diagnosis.get("follow_up_questions")
             or diagnosis.get("additional_questions")
             or diagnosis.get("questions")
             or []
         )
+        # Normalize: agents may return list of dicts with 'question' key or list of strings
+        additional_questions = []
+        for q in (additional_questions_raw if isinstance(additional_questions_raw, list) else []):
+            if isinstance(q, dict):
+                additional_questions.append(q.get("question") or q.get("text") or str(q))
+            elif isinstance(q, str) and q.strip():
+                additional_questions.append(q)
 
         # Extract recommended tests (try multiple key names)
         recommended_tests = (
@@ -2093,14 +2192,19 @@ class OrchestratorAgent:
             or []
         )
         if isinstance(specialist_tests, list):
-            # Flatten to strings before deduplicating (agents may return dicts or strings)
+            # Merge and deduplicate — keep rich objects when available
+            seen_names = set()
             combined = []
             for item in recommended_tests + specialist_tests:
                 if isinstance(item, dict):
-                    combined.append(item.get("test") or item.get("name") or item.get("description") or str(item))
-                elif isinstance(item, str) and item.strip():
+                    name = item.get("test") or item.get("name") or item.get("description") or str(item)
+                    if name not in seen_names:
+                        seen_names.add(name)
+                        combined.append(item)  # Keep rich object
+                elif isinstance(item, str) and item.strip() and item not in seen_names:
+                    seen_names.add(item)
                     combined.append(item)
-            recommended_tests = list(dict.fromkeys(combined))  # dedupe preserving order
+            recommended_tests = combined
 
         # Fallback: extract tests from raw text
         if not recommended_tests:
@@ -2117,6 +2221,11 @@ class OrchestratorAgent:
                         t = t.strip().rstrip('.-:*')
                         if t and len(t) > 3 and t not in recommended_tests:
                             recommended_tests.append(t)
+
+        # Final fallback: use safety recommendations as tests if still empty
+        if not recommended_tests and fallback_tests:
+            recommended_tests = fallback_tests[:8]
+            logger.info("[SYNTH] Using %d fallback tests from safety agent", len(recommended_tests))
 
         # Build the comprehensive text answer
         answer = self._build_text_answer(
@@ -2221,6 +2330,40 @@ class OrchestratorAgent:
                 warning_signs.append(ws)
         follow_up = treatment.get("follow_up_timeline", "")
 
+        # Fallback: if treatment is empty but empathy produced action_checklist,
+        # extract treatment-like items from the empathy output
+        if not medications and not lifestyle and not warning_signs and action_checklist:
+            logger.info("Treatment empty — extracting fallback from empathy action_checklist (%d items)", len(action_checklist))
+            for item in action_checklist:
+                item_lower = item.lower() if isinstance(item, str) else ""
+                if any(kw in item_lower for kw in ["spf", "sunscreen", "balm", "cream", "ointment", "medication", "prescription", "take", "apply"]):
+                    lifestyle.append(item)
+                elif any(kw in item_lower for kw in ["emergency", "call 911", "seek immediate", "go to er", "worsening", "bleeding", "spreading"]):
+                    warning_signs.append(item)
+                elif any(kw in item_lower for kw in ["avoid", "wear", "diet", "exercise", "sleep", "reduce", "limit", "stop"]):
+                    lifestyle.append(item)
+            if not follow_up and action_checklist:
+                # Use the checklist's timeframe hints as follow-up
+                for item in action_checklist:
+                    if isinstance(item, str) and any(kw in item.lower() for kw in ["this week", "appointment", "follow-up", "follow up", "schedule"]):
+                        follow_up = item
+                        break
+
+        # ── Completeness validation ──
+        missing_sections = []
+        if not causes:
+            missing_sections.append("differential_diagnosis")
+        if not medications and not lifestyle:
+            missing_sections.append("treatment")
+        if not recommended_tests:
+            missing_sections.append("recommended_tests")
+        spec_assessment = specialist.get("specialist_assessment", "")
+        if not spec_assessment or spec_assessment == "Not available":
+            missing_sections.append("specialist")
+        completeness_status = "COMPLETE" if not missing_sections else "INCOMPLETE"
+        if missing_sections:
+            logger.warning("Incomplete diagnosis — missing: %s", missing_sections)
+
         return {
             "answer": answer,
             "confidence_scores": confidence_scores,
@@ -2237,6 +2380,9 @@ class OrchestratorAgent:
             "lifestyle_recommendations": lifestyle,
             "warning_signs": warning_signs,
             "follow_up_timeline": follow_up,
+            # Completeness
+            "completeness_status": completeness_status,
+            "missing_sections": missing_sections,
             # Agent details
             "agent_details": {
                 "triage": triage,

@@ -414,13 +414,31 @@
                     <rect x="146" :y="isBlinking ? 135 : 124" width="36" :height="isBlinking ? 4 : 28" rx="12" style="transition: all 0.1s ease-in-out"/>
                   </clipPath>
                 </defs>
-                <!-- Ears -->
-                <g><ellipse cx="120" cy="55" rx="19" ry="65" fill="white" stroke="#64748b" stroke-width="2.5" transform="rotate(-8 120 110)"/>
+                <!-- Ears — with idle twitch -->
+                <g class="bunny-ear-left"><ellipse cx="120" cy="55" rx="19" ry="65" fill="white" stroke="#64748b" stroke-width="2.5" transform="rotate(-8 120 110)"/>
                 <ellipse cx="120" cy="50" rx="10" ry="46" fill="url(#cEarGlow)" transform="rotate(-8 120 110)"/></g>
-                <g><ellipse cx="160" cy="50" rx="19" ry="65" fill="white" stroke="#64748b" stroke-width="2.5" transform="rotate(8 160 110)"/>
+                <g class="bunny-ear-right"><ellipse cx="160" cy="50" rx="19" ry="65" fill="white" stroke="#64748b" stroke-width="2.5" transform="rotate(8 160 110)"/>
                 <ellipse cx="160" cy="45" rx="10" ry="46" fill="url(#cEarGlow)" transform="rotate(8 160 110)"/></g>
                 <!-- Antenna -->
                 <line x1="172" y1="30" x2="185" y2="5" stroke="#38bdf8" stroke-width="1.5" opacity="0.7"/>
+                <!-- Antenna sparkle particles -->
+                <circle cx="185" cy="5" r="2" fill="#7dd3fc" opacity="0">
+                  <animate attributeName="cx" values="185;178;172" dur="1.8s" repeatCount="indefinite"/>
+                  <animate attributeName="cy" values="5;-5;-12" dur="1.8s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0;0.7;0" dur="1.8s" repeatCount="indefinite"/>
+                  <animate attributeName="r" values="2;1.5;0" dur="1.8s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="185" cy="5" r="1.5" fill="#a78bfa" opacity="0">
+                  <animate attributeName="cx" values="185;192;198" dur="2.2s" repeatCount="indefinite" begin="0.6s"/>
+                  <animate attributeName="cy" values="5;-8;-16" dur="2.2s" repeatCount="indefinite" begin="0.6s"/>
+                  <animate attributeName="opacity" values="0;0.6;0" dur="2.2s" repeatCount="indefinite" begin="0.6s"/>
+                  <animate attributeName="r" values="1.5;1;0" dur="2.2s" repeatCount="indefinite" begin="0.6s"/>
+                </circle>
+                <circle cx="185" cy="5" r="1" fill="#38bdf8" opacity="0">
+                  <animate attributeName="cx" values="185;183;180" dur="2.5s" repeatCount="indefinite" begin="1.2s"/>
+                  <animate attributeName="cy" values="5;-2;-10" dur="2.5s" repeatCount="indefinite" begin="1.2s"/>
+                  <animate attributeName="opacity" values="0;0.5;0" dur="2.5s" repeatCount="indefinite" begin="1.2s"/>
+                </circle>
                 <circle cx="185" cy="5" r="4" :fill="avatarExpression === 'thinking' ? '#f59e0b' : avatarExpression === 'concerned' ? '#ef4444' : '#0ea5e9'" opacity="0.9" filter="url(#cGlow)">
                   <animate attributeName="r" :values="avatarExpression === 'thinking' ? '3;6;3' : '3;5;3'" :dur="avatarExpression === 'thinking' ? '0.6s' : '1.2s'" repeatCount="indefinite"/>
                   <animate attributeName="opacity" values="0.6;1;0.6" :dur="avatarExpression === 'thinking' ? '0.6s' : '1.2s'" repeatCount="indefinite"/>
@@ -486,22 +504,31 @@
                     <rect x="128" y="170" width="24" height="2" rx="1" fill="#3b82f6" opacity="0.4"><animate attributeName="opacity" values="0.3;0.5;0.3" dur="3s" repeatCount="indefinite"/></rect>
                   </g>
                 </g>
-                <!-- Body / scrubs -->
-                <path d="M90 200 Q90 185 105 178 L120 195 Q140 205 160 195 L175 178 Q190 185 190 200 L195 290 L85 290 Z" fill="url(#cBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
-                <path d="M110 195 L140 210 L170 195" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
-                <!-- Heartbeat line -->
-                <g opacity="0.5">
-                  <line x1="105" y1="225" x2="175" y2="225" stroke="#38bdf8" stroke-width="0.6" opacity="0.2"/>
-                  <polyline fill="none" stroke="#38bdf8" stroke-width="1" stroke-linecap="round" points="105,225 120,225 125,225 128,215 131,235 134,220 137,230 140,225 175,225" opacity="0.4"/>
+                <!-- Body / scrubs — with breathing -->
+                <g class="bunny-breathing">
+                  <path d="M90 200 Q90 185 105 178 L120 195 Q140 205 160 195 L175 178 Q190 185 190 200 L195 290 L85 290 Z" fill="url(#cBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
+                  <path d="M110 195 L140 210 L170 195" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
                 </g>
-                <!-- Sleeves + hands -->
+                <!-- Heartbeat line — animated scroll -->
+                <g opacity="0.6">
+                  <line x1="105" y1="225" x2="175" y2="225" stroke="#38bdf8" stroke-width="0.6" opacity="0.2"/>
+                  <polyline class="bunny-heartbeat" fill="none" stroke="#38bdf8" stroke-width="1.2" stroke-linecap="round" points="105,225 120,225 125,225 128,215 131,235 134,220 137,230 140,225 175,225"/>
+                  <!-- Traveling pulse dot -->
+                  <circle r="2.5" fill="#38bdf8" filter="url(#cGlow)" opacity="0.8">
+                    <animate attributeName="cx" values="105;120;125;128;131;134;137;140;175;105" dur="2.5s" repeatCount="indefinite"/>
+                    <animate attributeName="cy" values="225;225;225;215;235;220;230;225;225;225" dur="2.5s" repeatCount="indefinite"/>
+                  </circle>
+                </g>
+                <!-- Sleeves + hands — right hand waves when idle -->
                 <ellipse cx="88" cy="215" rx="15" ry="12" fill="url(#cBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
                 <ellipse cx="192" cy="215" rx="15" ry="12" fill="url(#cBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
                 <circle cx="80" cy="230" r="10" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
-                <circle cx="200" cy="230" r="10" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
-                <!-- Feet -->
+                <g :class="avatarExpression === 'greeting' ? 'bunny-wave' : 'bunny-hand-idle'">
+                  <circle cx="200" cy="230" r="10" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
+                </g>
+                <!-- Feet — with tap animation -->
                 <ellipse cx="115" cy="298" rx="18" ry="12" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
-                <ellipse cx="165" cy="298" rx="18" ry="12" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
+                <ellipse class="bunny-foot-tap" cx="165" cy="298" rx="18" ry="12" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
                 <!-- Name tag -->
                 <rect x="118" y="250" width="44" height="14" rx="3" fill="white" stroke="#94a3b8" stroke-width="0.8"/>
                 <text x="140" y="261" text-anchor="middle" fill="#3b82f6" font-size="7.5" font-weight="bold" font-family="system-ui, sans-serif">DR. HOPPS</text>
@@ -627,6 +654,7 @@
               @followup-selected="handleQuickQuestion"
               @replay-message="speakMessage"
               @toggle-avatar="avatarMode = true; localStorage.setItem('avatar_mode', 'true')"
+              @open-camera="showCameraOverlay = true"
             />
             <!-- Retry Diagnosis Button (shown after a retryable failure) -->
             <div v-if="retryAvailable && conversationState === 'diagnosed'" class="flex justify-center py-4">
@@ -727,10 +755,10 @@
       @save="saveDoctorAvatar"
     />
 
-    <!-- Camera Capture Overlay -->
+    <!-- Camera Capture Overlay — rear camera for symptom photos -->
     <div v-if="showCameraOverlay" class="fixed inset-0 z-[9999] bg-black">
       <CameraCapture
-        mode="general"
+        mode="wound"
         :show-guide="false"
         :quality="0.92"
         @capture="handleCameraCapture"
@@ -1310,6 +1338,7 @@ const showImageDescriptionModal = ref(false)
 const pendingImageUrl = ref(null) // Data URL for image preview in modal
 const pendingImageBase64Raw = ref(null) // Raw base64 for the pending image
 const showCameraOverlay = ref(false) // Camera capture overlay visibility
+const photoSuggested = ref(false) // Track whether we already suggested a photo for visual symptoms
 const estimatedCost = ref(0.0)
 const hasStarted = ref(false)
 const chatMessages = ref([])
@@ -2592,6 +2621,27 @@ async function handlePaInterview(userMessage) {
 
       // Store PA's question in conversation history
       paConversation.value.push({ role: 'assistant', content: question })
+
+      // ── Visual symptom detection: suggest taking a photo ──
+      if (!photoSuggested.value && !pendingImageBase64.value && paExchangeCount.value <= 3) {
+        const visualKeywords = ['lip', 'lips', 'skin', 'rash', 'mole', 'sore', 'crack', 'cracked',
+          'bump', 'wound', 'blister', 'swelling', 'swollen', 'bruise', 'cut', 'burn', 'itch',
+          'peel', 'flaky', 'lesion', 'spot', 'patch', 'lump', 'discolor', 'red', 'redness',
+          'acne', 'pimple', 'wart', 'boil', 'hive', 'eczema', 'psoriasis', 'fungus', 'ring',
+          'bite', 'sting', 'scratch', 'scab', 'ulcer', 'growth', 'mark', 'dry skin',
+          'eye', 'eyelid', 'tongue', 'gum', 'nail', 'hair loss', 'bald']
+        const symptomText = symptoms.toLowerCase()
+        const hasVisualSymptom = visualKeywords.some(kw => symptomText.includes(kw))
+        if (hasVisualSymptom) {
+          photoSuggested.value = true
+          await new Promise(resolve => setTimeout(resolve, 600))
+          addMessage('assistant',
+            'A photo of the affected area would really help me give you a more accurate assessment. You can take one now or skip and continue describing your symptoms.',
+            { photoSuggestion: true }
+          )
+          await waitForSpeech()
+        }
+      }
 
       // Update progress (PA interview is ~20-80% of the progress bar)
       const progress = Math.min(20 + Math.round((paExchangeCount.value / 15) * 60), 80)
@@ -4321,13 +4371,97 @@ if (import.meta.env.DEV) {
   100% { transform: scaleY(1.3); }
 }
 
-/* Avatar idle floating animation — subtle, premium */
+/* Avatar idle floating animation — lively sway */
 .avatar-float {
-  animation: avatarFloat 4s ease-in-out infinite;
+  animation: avatarFloat 4s ease-in-out infinite, avatarSway 6s ease-in-out infinite;
 }
 @keyframes avatarFloat {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes avatarSway {
+  0%, 100% { rotate: 0deg; }
+  25% { rotate: -1.5deg; }
+  75% { rotate: 1.5deg; }
+}
+
+/* Ear twitch — staggered for natural feel */
+.bunny-ear-left {
+  transform-origin: 120px 110px;
+  animation: earTwitchL 5s ease-in-out infinite;
+}
+.bunny-ear-right {
+  transform-origin: 160px 110px;
+  animation: earTwitchR 5s ease-in-out infinite 0.3s;
+}
+@keyframes earTwitchL {
+  0%, 85%, 100% { transform: rotate(0deg); }
+  88% { transform: rotate(-6deg); }
+  91% { transform: rotate(2deg); }
+  94% { transform: rotate(-3deg); }
+  97% { transform: rotate(0deg); }
+}
+@keyframes earTwitchR {
+  0%, 80%, 100% { transform: rotate(0deg); }
+  83% { transform: rotate(5deg); }
+  86% { transform: rotate(-2deg); }
+  89% { transform: rotate(3deg); }
+  92% { transform: rotate(0deg); }
+}
+
+/* Breathing — subtle body scale */
+.bunny-breathing {
+  transform-origin: 140px 240px;
+  animation: breathe 3.5s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: scaleX(1) scaleY(1); }
+  50% { transform: scaleX(1.012) scaleY(1.008); }
+}
+
+/* Heartbeat line glow pulse */
+.bunny-heartbeat {
+  stroke-dasharray: 70;
+  stroke-dashoffset: 0;
+  animation: heartbeatPulse 2.5s ease-in-out infinite;
+}
+@keyframes heartbeatPulse {
+  0%, 100% { opacity: 0.4; stroke-width: 1.2; }
+  50% { opacity: 0.9; stroke-width: 1.8; }
+}
+
+/* Hand wave — greeting bounce */
+.bunny-wave {
+  transform-origin: 200px 215px;
+  animation: handWave 0.6s ease-in-out infinite alternate;
+}
+@keyframes handWave {
+  0% { transform: rotate(-15deg) translateY(0); }
+  100% { transform: rotate(15deg) translateY(-8px); }
+}
+
+/* Idle hand — occasional subtle movement */
+.bunny-hand-idle {
+  transform-origin: 200px 230px;
+  animation: handIdle 6s ease-in-out infinite;
+}
+@keyframes handIdle {
+  0%, 90%, 100% { transform: translateY(0); }
+  93% { transform: translateY(-4px); }
+  96% { transform: translateY(-2px); }
+}
+
+/* Foot tap — playful bounce */
+.bunny-foot-tap {
+  transform-origin: 165px 298px;
+  animation: footTap 4s ease-in-out infinite;
+}
+@keyframes footTap {
+  0%, 70%, 100% { transform: scaleY(1) translateY(0); }
+  75% { transform: scaleY(0.85) translateY(2px); }
+  80% { transform: scaleY(1.05) translateY(-3px); }
+  85% { transform: scaleY(0.9) translateY(1px); }
+  90% { transform: scaleY(1) translateY(0); }
 }
 
 /* Speaking aura rings — expanding pulse */
