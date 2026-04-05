@@ -2276,20 +2276,23 @@ function handleImageDescriptionSubmit({ imageUrl, description }) {
   pendingImageBase64.value = pendingImageBase64Raw.value
 
   // Build a message that includes the visual description
-  const imageMessage = `[Image attached] ${description}`
+  const imageMessage = `[Image attached] Visual symptoms: ${description}`
 
   // Add the user message with the image preview
   addMessage('user', imageMessage, { imageUrl })
 
-  // Append the visual description to the current questionnaire response
-  // so it gets included in the symptoms data sent to the backend
-  if (conversationState.value === 'gathering') {
-    // If we're in the middle of gathering, store as additional context
-    const currentQ = questionnaire.value.questions[questionnaire.value.currentQuestionIndex]
-    if (currentQ) {
-      // Don't advance the questionnaire, just note the image was added
-      addMessage('assistant', 'Thank you for sharing the image. I\'ve noted your visual description. Please continue answering the current question.')
-    }
+  // Add the visual description to PA conversation so the PA agent has context
+  if (conversationState.value === 'pa_interview' || conversationState.value === 'specialist_handoff') {
+    paConversation.value.push({
+      role: 'user',
+      content: `The patient has attached a clinical photograph showing: ${description}. Please consider these visual findings in your assessment.`
+    })
+    // Trigger the PA to respond to the image context
+    handlePaInterview()
+  } else if (conversationState.value === 'gathering') {
+    // During initial gathering, store as additional symptom context
+    questionnaire.value.userResponses['visual_symptoms'] = description
+    addMessage('assistant', 'Thank you for sharing the image. I\'ve noted your visual symptoms and will include them in the analysis. Please continue with the current question.')
   }
 
   // Clean up pending state
