@@ -14,6 +14,7 @@ export function buildPrintReport({
   tcmRecommendations, ayurvedicRecommendations, holisticRecommendations,
   chatTranscript, estimatedCost, tokenUsage,
   specialistDoctor, specialistSpecialty,
+  providerDisplay, modelUsed,
 }) {
   // -- Sanitization --------------------------------------------------------
   const sanitize = (text) => {
@@ -102,7 +103,7 @@ export function buildPrintReport({
         <td style="text-align:right;vertical-align:middle;">
           <div style="font-size:12px;color:#e2e8f0;font-weight:600;margin-bottom:4px;">${date}</div>
           <div style="font-size:10px;color:#cbd5e1;">Patient: ${age} y/o ${gender}</div>
-          <div style="margin-top:6px;">${badge(urgency, uBg, uColor)}</div>
+          <div style="margin-top:6px;">${badge(urgency, uBg, uColor)}${providerDisplay ? ` ${badge(providerDisplay, '#1e293b', '#60a5fa')}` : ''}</div>
         </td>
       </tr></table>
       ${chiefComplaint ? `<div style="margin-top:12px;padding-top:10px;border-top:1px solid #334155;">
@@ -403,6 +404,11 @@ export function buildPrintReport({
   // -- Appendix D: Technical Notes -----------------------------------------
   let appendixD = ''
   const techParts = []
+
+  if (providerDisplay) {
+    techParts.push(`<div style="font-size:8px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">AI Model</div>
+      <div style="font-size:10px;color:#0f172a;font-weight:600;margin-bottom:8px;">${san(providerDisplay)}${modelUsed ? ` <span style="color:#94a3b8;font-weight:400;">(${san(modelUsed)})</span>` : ''}</div>`)
+  }
 
   if (agentList && agentList.length > 0) {
     const rows = agentList.map(a =>

@@ -3165,7 +3165,11 @@ async function handleProceedToDiagnosis() {
       followUpTimeline: result.follow_up_timeline || '',
       totalTime: result.total_time || 0,
       // Triage urgency from agent pipeline
-      urgency: result.urgency || result.agent_details?.triage?.urgency_level || ''
+      urgency: result.urgency || result.agent_details?.triage?.urgency_level || '',
+      // Provider/model info
+      provider: result.provider || '',
+      providerDisplay: result.provider_display || '',
+      modelUsed: result.model_used || '',
     })
 
     conversationState.value = 'diagnosed'

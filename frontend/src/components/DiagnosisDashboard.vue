@@ -399,6 +399,10 @@
                     <span class="text-detail font-semibold text-white/50">Total</span>
                     <span class="text-detail font-bold tabular-nums" style="color: #60a5fa">{{ totalPipelineTime ? totalPipelineTime.toFixed(1) + 's' : '--' }}</span>
                   </div>
+                  <div v-if="providerDisplay" class="flex items-center justify-between text-detail">
+                    <span class="text-white/30">Model</span>
+                    <span class="font-semibold text-blue-400">{{ providerDisplay }}</span>
+                  </div>
                   <div v-if="estimatedCost !== null" class="flex items-center justify-between text-detail">
                     <span class="text-white/30">AI Cost</span>
                     <span class="font-semibold" style="color: #22c55e">${{ estimatedCost }}</span>
@@ -2064,6 +2068,13 @@ const totalPipelineTime = computed(() => {
   return diagnosisData.value?.total_time || diagnosisData.value?.totalTime || 0
 })
 
+const providerDisplay = computed(() => {
+  return diagnosisData.value?.provider_display || diagnosisData.value?.providerDisplay || ''
+})
+const modelUsed = computed(() => {
+  return diagnosisData.value?.model_used || diagnosisData.value?.modelUsed || ''
+})
+
 const agentColors = {
   'Symptom Analyzer': '#3b82f6',
   'Medical Diagnostician': '#8b5cf6',
@@ -2428,6 +2439,8 @@ function _buildReportData() {
     chatTranscript: chatTranscript.value,
     estimatedCost: estimatedCost.value,
     tokenUsage: tokenUsage.value,
+    providerDisplay: providerDisplay.value,
+    modelUsed: modelUsed.value,
   }
 }
 

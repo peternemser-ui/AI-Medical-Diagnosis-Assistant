@@ -111,12 +111,53 @@ async function fetchWithErrorHandling(url, options = {}, _retried = false) {
   }
 }
 
+// Track which providers have valid keys (persists across page loads)
+let _validProviders = JSON.parse(localStorage.getItem('_valid_providers') || '{}')
+
+export function getValidProviders() {
+  return { ..._validProviders }
+}
+
+export function getBestProvider() {
+  // Return the first provider with a valid key, in priority order
+  for (const p of ['anthropic', 'openai', 'google']) {
+    if (_validProviders[p] === true) return p
+  }
+  return null
+}
+
 export async function validateApiKeys() {
   const result = await fetchWithErrorHandling(`${API_BASE_URL}/api/validate-key`, {
     method: 'POST',
     headers: getAuthHeaders(),
   })
+
+  // Update valid providers cache
+  if (result && result.results) {
+    for (const [provider, status] of Object.entries(result.results)) {
+      _validProviders[provider] = status.valid === true
+    }
+    localStorage.setItem('_valid_providers', JSON.stringify(_validProviders))
+
+    // Auto-set the best provider if current one is invalid
+    const currentProvider = localStorage.getItem('ai_provider') || 'anthropic'
+    if (_validProviders[currentProvider] === false) {
+      const best = getBestProvider()
+      if (best) {
+        localStorage.setItem('ai_provider', best)
+        console.info(`[API] Auto-switched from invalid ${currentProvider} to ${best}`)
+      }
+    }
+  }
+
   return result
+}
+
+/**
+ * Quick check if any valid API key is available (synchronous, from cache).
+ */
+export function hasValidApiKey() {
+  return Object.values(_validProviders).some(v => v === true)
 }
 
 export async function diagnose(data) {

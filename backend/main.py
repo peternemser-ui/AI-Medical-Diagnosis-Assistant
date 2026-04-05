@@ -499,7 +499,11 @@ async def diagnose_symptoms(
 
             if provider == "openai":
                 logger.info("OpenAI key detected — using OpenAI single-model diagnosis")
-                return await _openai_diagnosis(api_key, diagnosis_request)
+                result = await _openai_diagnosis(api_key, diagnosis_request)
+                result["provider"] = "openai"
+                result["model_used"] = diagnosis_request.model_preference or "gpt-4o"
+                result["provider_display"] = "GPT-4o (OpenAI)"
+                return result
 
             # Ollama: use local model via multi-agent pipeline
             if provider == "ollama":
@@ -544,6 +548,20 @@ async def diagnose_symptoms(
                 diagnosis_request.specialist_routing or "generic",
                 provider,
             )
+
+            # Inject provider/model metadata into result
+            result["provider"] = provider
+            result["model_used"] = diagnosis_request.model_preference or "auto"
+            if provider == "ollama":
+                result["model_used"] = diagnosis_request.model_preference or "llama3.1:8b"
+            elif provider == "anthropic":
+                result["model_used"] = "claude-sonnet-4-6"
+            result["provider_display"] = {
+                "anthropic": "Claude (Anthropic)",
+                "openai": "GPT-4o (OpenAI)",
+                "google": "Gemini (Google)",
+                "ollama": f"Ollama ({diagnosis_request.model_preference or 'llama3.1:8b'})",
+            }.get(provider, provider)
 
             # Debug: dump result to file for inspection
             try:
@@ -611,6 +629,9 @@ async def diagnose_symptoms_stream(
             if provider == "openai":
                 logger.info("OpenAI key detected — returning single SSE event")
                 result = await _openai_diagnosis(api_key, diagnosis_request)
+                result["provider"] = "openai"
+                result["model_used"] = diagnosis_request.model_preference or "gpt-4o"
+                result["provider_display"] = "GPT-4o (OpenAI)"
 
                 async def openai_generator():
                     yield f"data: {json.dumps({'event': 'complete', 'result': result})}\n\n"
@@ -675,11 +696,25 @@ async def diagnose_symptoms_stream(
 
             asyncio.create_task(_run_streaming_pipeline())
 
+            _stream_provider = provider
+            _stream_model = diagnosis_request.model_preference or "auto"
+            _stream_display = {
+                "anthropic": "Claude (Anthropic)",
+                "openai": "GPT-4o (OpenAI)",
+                "google": "Gemini (Google)",
+                "ollama": f"Ollama ({diagnosis_request.model_preference or 'llama3.1:8b'})",
+            }.get(provider, provider)
+
             async def event_generator():
-                yield {"data": json.dumps({"event": "started", "message": f"Pipeline started (provider: {provider})"})}
+                yield {"data": json.dumps({"event": "started", "message": f"Pipeline started (provider: {_stream_provider})", "provider": _stream_provider, "provider_display": _stream_display})}
                 while True:
                     try:
                         event = await asyncio.wait_for(event_queue.get(), timeout=10.0)
+                        # Inject provider/model info into the final result
+                        if event.get("event") == "complete" and "result" in event:
+                            event["result"]["provider"] = _stream_provider
+                            event["result"]["model_used"] = _stream_model
+                            event["result"]["provider_display"] = _stream_display
                         yield {"data": json.dumps(event)}
                         if event.get("event") == "complete":
                             break
