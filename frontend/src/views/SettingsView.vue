@@ -450,6 +450,7 @@ import ThemeLangControls from '@/components/ThemeLangControls.vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { useI18n } from '@/composables/useI18n.js'
 import { getProfile, getPreferences, savePreference, exportAllData, clearUserData } from '@/services/userService.js'
+import { clearAllEncryptedDataIncludingKeys } from '@/services/encryptedStorage.js'
 import { clearHistory as clearHistoryFn } from '@/services/historyService.js'
 import { validateApiKeys, API_BASE_URL } from '@/services/api.js'
 
@@ -636,6 +637,7 @@ function handleClearHistory() {
 function handleClearAll() {
   confirmDialog.message = 'Are you sure you want to clear ALL data including your profile, preferences, API keys, and consultation history? This cannot be undone.'
   confirmDialog.action = () => {
+    clearAllEncryptedDataIncludingKeys()  // Nuclear: wipe ALL encrypted data including API keys
     clearUserData()
     clearHistoryFn()
     localStorage.removeItem('anthropic_api_key')
