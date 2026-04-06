@@ -94,7 +94,7 @@
         </div>
         <div>
           <div class="text-detail font-semibold uppercase tracking-wider mb-0.5" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ t('diagnosis.urgency') }}</div>
-          <div class="text-sm font-bold capitalize" :class="urgencyTextColor">{{ cause.urgency || t('diagnosis.routine') }}</div>
+          <div class="text-sm font-bold capitalize" :class="urgencyTextColor">{{ urgencyLabel }}</div>
         </div>
         <div>
           <div class="text-detail font-semibold uppercase tracking-wider mb-0.5" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ t('diagnosis.specialty') }}</div>
@@ -297,8 +297,9 @@ const confidenceDotColor = computed(() => {
 })
 
 const urgencyTextColor = computed(() => {
-  if (props.cause.urgency === 'urgent') return isDark.value ? 'text-red-400' : 'text-red-600'
-  if (props.cause.urgency === 'soon') return isDark.value ? 'text-amber-400' : 'text-amber-600'
+  const level = urgencyLevel.value
+  if (level === 'emergency' || level === 'urgent') return isDark.value ? 'text-red-400' : 'text-red-600'
+  if (level === 'soon') return isDark.value ? 'text-amber-400' : 'text-amber-600'
   return isDark.value ? 'text-emerald-400' : 'text-emerald-600'
 })
 
