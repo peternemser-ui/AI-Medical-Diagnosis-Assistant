@@ -164,6 +164,10 @@
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
                 {{ t('nav.apiKeys') }}
               </router-link>
+              <router-link v-if="userProfile?.role === 'admin'" to="/admin" @click="showUserMenu = false" class="flex items-center gap-2 px-3 py-2 text-xs transition-colors" :class="isDark ? 'text-violet-400 hover:bg-slate-800' : 'text-violet-600 hover:bg-violet-50'">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+                Admin Dashboard
+              </router-link>
               <div class="border-t my-1" :class="isDark ? 'border-slate-700/50' : 'border-slate-200'"></div>
               <button @click="handleLogout" class="flex items-center gap-2 px-3 py-2 text-xs transition-colors w-full text-left" :class="isDark ? 'text-red-400 hover:bg-slate-800' : 'text-red-500 hover:bg-red-50'">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
