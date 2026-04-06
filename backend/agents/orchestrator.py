@@ -2111,35 +2111,94 @@ class OrchestratorAgent:
                             "specialty": "Primary Care",
                         })
 
-        # Final fallback: if no causes were extracted from any source, build from triage + empathy
+        # Final fallback: if no causes were extracted from any source, build from ALL available agent data
         fallback_tests = []
         if not causes:
-            logger.warning("[SYNTH] All extraction strategies failed — building fallback diagnosis from triage + empathy")
-            # Try to infer condition from empathy patient_summary or triage domain
-            summary = empathy.get("patient_summary", "") or ""
+            logger.warning("[SYNTH] All extraction strategies failed — building fallback diagnosis from all agent data")
+            import re
+
+            summary = empathy.get("patient_summary", "") or empathy.get("plain_language_explanation", "") or ""
+            problem_rep = diagnosis.get("problem_representation", "") or ""
+            must_not_miss_str = diagnosis.get("must_not_miss", "")
             triage_domain = triage.get("domain", "general_medicine") or "general_medicine"
             triage_domains = triage.get("symptom_domains", []) or []
 
-            # Extract condition name from empathy summary (often mentions it)
-            import re
-            condition_match = re.search(r'(?:called|known as|condition called|diagnosed with|suggests?|consistent with|sounds like)\s+([A-Za-z\s\-\(\)]+?)(?:\s*[\.\,\(]|\s+is\b|\s+which\b)', summary, re.IGNORECASE)
-            condition_name = condition_match.group(1).strip() if condition_match else f"Condition requiring {triage_domain.replace('_', ' ').title()} evaluation"
+            # Strategy 1: Extract condition name from empathy summary using multiple patterns
+            condition_name = None
+            patterns = [
+                r'(?:called|known as|condition called|diagnosed with)\s+([A-Za-z\s\-\(\)]+?)(?:\s*[\.\,\(\—\-\–]|\s+is\b|\s+which\b)',
+                r'(?:suggests?|consistent with|sounds like|indicative of|likely|probably)\s+([A-Za-z\s\-\(\)]+?)(?:\s*[\.\,\(\—\-\–]|\s+is\b|\s+which\b|\s+and\b)',
+                r'(?:you have|you may have|this is|this could be)\s+(?:a condition called\s+)?([A-Za-z\s\-]+?)(?:\s*[\.\,\(\—\-\–]|\s+is\b|\s+which\b)',
+            ]
+            for pat in patterns:
+                match = re.search(pat, summary, re.IGNORECASE)
+                if match:
+                    name = match.group(1).strip().rstrip('.-:')
+                    if len(name) > 3 and len(name) < 80:
+                        condition_name = name
+                        logger.info("[SYNTH] Extracted condition from empathy: '%s'", condition_name)
+                        break
+
+            # Strategy 2: Use must_not_miss diagnosis if it's a string (not a list)
+            if not condition_name and isinstance(must_not_miss_str, str) and must_not_miss_str.strip():
+                condition_name = must_not_miss_str.strip()
+                logger.info("[SYNTH] Using must_not_miss as condition: '%s'", condition_name)
+
+            # Strategy 3: Extract from problem_representation
+            if not condition_name and problem_rep:
+                # Look for diagnosis-like phrases in problem representation
+                prob_match = re.search(r'(?:concerning for|suggestive of|suspicious for|consistent with)\s+([A-Za-z\s\-/]+?)(?:\s*[\.\,\;]|\s+(?:in|with|on|of)\b)', problem_rep, re.IGNORECASE)
+                if prob_match:
+                    condition_name = prob_match.group(1).strip()
+                    logger.info("[SYNTH] Extracted condition from problem_rep: '%s'", condition_name)
+
+            # Strategy 4: Use triage domain as last resort
+            if not condition_name:
+                condition_name = f"Condition requiring {triage_domain.replace('_', ' ').title()} evaluation"
+                logger.warning("[SYNTH] Using generic fallback name: '%s'", condition_name)
 
             # Build specialty from triage domains
             specialty = triage_domains[0].replace('_', ' ').title() if triage_domains else triage_domain.replace('_', ' ').title()
-
             urgency = triage.get("urgency_level", triage.get("urgency", "routine")) or "routine"
 
+            # Build primary cause
             causes.append({
                 "cause": condition_name,
                 "value": 65,
-                "explanation": summary[:500] if summary else f"Based on triage assessment. Detailed differential analysis timed out — please consult a healthcare professional for a complete evaluation.",
+                "explanation": summary[:500] if summary else problem_rep[:500] if problem_rep else "Based on clinical assessment.",
                 "urgency": urgency,
                 "specialty": specialty,
                 "supporting_features": [f.get("finding", str(f)) if isinstance(f, dict) else str(f) for f in triage.get("red_flags", [])[:3]],
                 "opposing_features": [],
-                "must_not_miss": False,
+                "must_not_miss": bool(must_not_miss_str),
             })
+
+            # If must_not_miss is different from primary, add it as a secondary diagnosis
+            if isinstance(must_not_miss_str, str) and must_not_miss_str.strip() and must_not_miss_str.strip() != condition_name:
+                causes.append({
+                    "cause": must_not_miss_str.strip(),
+                    "value": 30,
+                    "explanation": "Must-not-miss diagnosis identified by the diagnostic team. This condition must be ruled out even if less likely.",
+                    "urgency": "urgent",
+                    "specialty": specialty,
+                    "supporting_features": [],
+                    "opposing_features": [],
+                    "must_not_miss": True,
+                })
+
+            # Also check if must_not_miss is a list with structured data
+            if isinstance(must_not_miss_str, list):
+                for mnm in must_not_miss_str[:3]:
+                    mnm_name = mnm.get("condition", mnm.get("name", "")) if isinstance(mnm, dict) else str(mnm)
+                    if mnm_name and mnm_name != condition_name:
+                        causes.append({
+                            "cause": mnm_name,
+                            "value": 25,
+                            "explanation": mnm.get("reasoning", "Must-not-miss — requires exclusion.") if isinstance(mnm, dict) else "Must-not-miss diagnosis.",
+                            "urgency": "urgent",
+                            "specialty": specialty,
+                            "must_not_miss": True,
+                        })
 
             # Add recommended tests from safety recommendations if available
             safety_recs = safety.get("recommendations", [])
