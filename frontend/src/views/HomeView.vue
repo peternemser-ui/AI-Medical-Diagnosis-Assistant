@@ -847,9 +847,14 @@ function onClickOutsideUserMenu(e) {
 onMounted(() => document.addEventListener('click', onClickOutsideUserMenu))
 onUnmounted(() => document.removeEventListener('click', onClickOutsideUserMenu))
 
-function handleLogout() {
+async function handleLogout() {
   showUserMenu.value = false
+  try {
+    const { logout: authLogout } = await import('@/services/authService.js')
+    await authLogout()
+  } catch { /* best effort */ }
   doLogout()
+  router.push('/login')
 }
 
 // ─── Animated background ───
