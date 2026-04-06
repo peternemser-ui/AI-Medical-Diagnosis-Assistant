@@ -12,6 +12,11 @@ vi.mock('../useToast.js', () => ({
   })
 }))
 
+// Mock cryptoService used by the composable
+vi.mock('@/services/cryptoService.js', () => ({
+  clearSessionKey: vi.fn(),
+}))
+
 // Mock onUnmounted since we're not in a component setup context
 vi.mock('vue', async () => {
   const actual = await vi.importActual('vue')
@@ -42,8 +47,8 @@ describe('useSessionTimeout', () => {
 
     expect(isWarningVisible.value).toBe(false)
 
-    // Advance to just past the warning threshold (28 minutes)
-    vi.advanceTimersByTime(28 * 60 * 1000 + 100)
+    // Advance to just past the warning threshold (13 minutes = 15min timeout - 2min warning)
+    vi.advanceTimersByTime(13 * 60 * 1000 + 100)
     expect(isWarningVisible.value).toBe(true)
   })
 
@@ -52,7 +57,7 @@ describe('useSessionTimeout', () => {
     startSessionTimer()
 
     // Advance past warning
-    vi.advanceTimersByTime(28 * 60 * 1000 + 100)
+    vi.advanceTimersByTime(13 * 60 * 1000 + 100)
     expect(isWarningVisible.value).toBe(true)
 
     stopTimer()
@@ -64,15 +69,15 @@ describe('useSessionTimeout', () => {
     startSessionTimer()
 
     // Advance past warning threshold
-    vi.advanceTimersByTime(28 * 60 * 1000 + 100)
+    vi.advanceTimersByTime(13 * 60 * 1000 + 100)
     expect(isWarningVisible.value).toBe(true)
 
     // Reset should hide warning and reschedule
     resetTimer()
     expect(isWarningVisible.value).toBe(false)
 
-    // After another 28 minutes the warning should appear again
-    vi.advanceTimersByTime(28 * 60 * 1000 + 100)
+    // After another 13 minutes the warning should appear again
+    vi.advanceTimersByTime(13 * 60 * 1000 + 100)
     expect(isWarningVisible.value).toBe(true)
   })
 
@@ -81,7 +86,7 @@ describe('useSessionTimeout', () => {
     startSessionTimer()
     startSessionTimer() // second call should be no-op
 
-    vi.advanceTimersByTime(28 * 60 * 1000 + 100)
+    vi.advanceTimersByTime(13 * 60 * 1000 + 100)
     expect(isWarningVisible.value).toBe(true)
   })
 })
