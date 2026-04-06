@@ -99,6 +99,11 @@ const routes = [
     component: () => import('@/views/SessionDetail.vue'),
   },
   {
+    path: '/pricing',
+    name: 'Pricing',
+    component: () => import('@/views/PricingView.vue')
+  },
+  {
     path: '/compare',
     name: 'Compare',
     component: () => import('@/views/CompareView.vue')
@@ -173,6 +178,16 @@ const routes = [
         path: 'improve',
         name: 'admin-improve',
         component: () => import('@/views/admin/AdminImprove.vue'),
+      },
+      {
+        path: 'developer',
+        name: 'admin-developer',
+        component: () => import('@/views/admin/AdminDeveloperPortal.vue'),
+      },
+      {
+        path: 'referrals',
+        name: 'admin-referrals',
+        component: () => import('@/views/admin/AdminReferrals.vue'),
       },
     ]
   },

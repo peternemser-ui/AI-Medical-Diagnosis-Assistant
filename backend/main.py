@@ -15,7 +15,7 @@ from typing import Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -70,6 +70,12 @@ app.include_router(auth_router)
 
 from medication_routes import medication_router
 app.include_router(medication_router)
+
+from revenue_routes import revenue_router
+app.include_router(revenue_router)
+
+from subscription_routes import subscription_router
+app.include_router(subscription_router)
 
 
 # ── Helpers ──────────────────────────────────────────────────────────
@@ -481,6 +487,39 @@ async def diagnose_symptoms(
     Runs the full multi-agent pipeline:
     Triage → Diagnostician → Specialist → Treatment
     """
+    # ── Subscription usage gate ──────────────────────────────────────
+    from agents.subscription_agent import SubscriptionManager
+    from auth import get_optional_user
+    from fastapi.responses import JSONResponse
+
+    user = await get_optional_user(request)
+    if user:
+        sub = SubscriptionManager()
+        usage = sub.check_usage(user["id"])
+        if not usage["can_diagnose"]:
+            return JSONResponse(status_code=402, content={
+                "error": "usage_limit",
+                "message": f"You've used all {usage['limit']} diagnoses this month. Upgrade to continue.",
+                "current_tier": usage["tier"],
+                "used": usage["used"],
+                "limit": usage["limit"],
+                "upgrade_url": "/pricing",
+            })
+        # Check model access
+        model_pref_check = diagnosis_request.model_preference or "auto"
+        if model_pref_check != "auto" and not sub.can_use_model(user["id"], model_pref_check):
+            prompt = sub.get_upgrade_prompt(user["id"], model_pref_check)
+            return JSONResponse(status_code=402, content={
+                "error": "model_locked",
+                "message": f"Your {usage['tier']} plan doesn't include {model_pref_check}. {prompt['message']}",
+                "current_tier": usage["tier"],
+                "upgrade_url": "/pricing",
+            })
+        # Track usage after checks pass (increment at end of pipeline would be better,
+        # but doing it here is simpler and prevents abuse)
+        sub.increment_usage(user["id"])
+    # ── End subscription gate ────────────────────────────────────────
+
     model_pref = diagnosis_request.model_preference or 'auto'
     all_keys = _get_all_api_keys(request)
     failed_providers = []
@@ -607,6 +646,35 @@ async def diagnose_symptoms_stream(
     Final event:
       data: {"event": "complete", "result": { ... }}\n\n
     """
+    # ── Subscription usage gate ──────────────────────────────────────
+    from agents.subscription_agent import SubscriptionManager
+    from auth import get_optional_user
+
+    user = await get_optional_user(http_request)
+    if user:
+        sub = SubscriptionManager()
+        usage = sub.check_usage(user["id"])
+        if not usage["can_diagnose"]:
+            return JSONResponse(status_code=402, content={
+                "error": "usage_limit",
+                "message": f"You've used all {usage['limit']} diagnoses this month. Upgrade to continue.",
+                "current_tier": usage["tier"],
+                "used": usage["used"],
+                "limit": usage["limit"],
+                "upgrade_url": "/pricing",
+            })
+        model_pref_check = diagnosis_request.model_preference or "auto"
+        if model_pref_check != "auto" and not sub.can_use_model(user["id"], model_pref_check):
+            prompt = sub.get_upgrade_prompt(user["id"], model_pref_check)
+            return JSONResponse(status_code=402, content={
+                "error": "model_locked",
+                "message": f"Your {usage['tier']} plan doesn't include {model_pref_check}. {prompt['message']}",
+                "current_tier": usage["tier"],
+                "upgrade_url": "/pricing",
+            })
+        sub.increment_usage(user["id"])
+    # ── End subscription gate ────────────────────────────────────────
+
     model_pref = diagnosis_request.model_preference or 'auto'
     all_keys = _get_all_api_keys(http_request)
     failed_providers = []

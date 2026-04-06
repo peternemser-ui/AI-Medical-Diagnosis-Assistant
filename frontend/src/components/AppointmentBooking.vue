@@ -191,6 +191,7 @@
                     <!-- Actions -->
                     <div class="flex items-center gap-2 mt-3">
                       <a v-if="doc.phone" :href="'tel:' + doc.phone"
+                        @click="trackReferral(doc, 'call')"
                         class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors"
                         :class="isDark
                           ? 'bg-blue-500/15 text-blue-400 hover:bg-blue-500/25'
@@ -201,6 +202,7 @@
                         Call Office
                       </a>
                       <a :href="getDirectionsUrl(doc.address)" target="_blank" rel="noopener"
+                        @click="trackReferral(doc, 'directions')"
                         class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors"
                         :class="isDark
                           ? 'bg-purple-500/15 text-purple-400 hover:bg-purple-500/25'
@@ -323,6 +325,22 @@ function getDirectionsUrl(address) {
   if (!address) return '#'
   const query = address.replace(/\n/g, ', ')
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`
+}
+
+function trackReferral(doc, actionType) {
+  // Fire-and-forget referral tracking
+  fetch(`${API_BASE_URL}/api/referrals/track`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      user_id: localStorage.getItem('user_id') || 'anonymous',
+      doctor_npi: doc.npi || '',
+      doctor_name: doc.name || '',
+      specialty: doc.specialty || props.specialty || '',
+      action_type: actionType,
+      location: locationQuery.value || '',
+    }),
+  }).catch(() => {}) // silently ignore tracking errors
 }
 </script>
 

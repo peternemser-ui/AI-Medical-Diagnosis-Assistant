@@ -181,13 +181,15 @@ export async function diagnoseStream(data, onEvent) {
 
   if (!response.ok) {
     let errorMessage = `Request failed with status ${response.status}`
+    let errorDetails = null
     try {
       const errorData = await response.json()
       errorMessage = errorData.message || errorData.detail || errorMessage
+      errorDetails = errorData
     } catch {
       errorMessage = response.statusText || errorMessage
     }
-    throw new ApiError(errorMessage, response.status)
+    throw new ApiError(errorMessage, response.status, errorDetails)
   }
 
   const reader = response.body.getReader()

@@ -882,6 +882,16 @@
       :visible="showOnboarding"
       @close="showOnboarding = false"
     />
+
+    <!-- Upgrade Prompt Modal -->
+    <UpgradePrompt
+      :visible="showUpgradePrompt"
+      :used="upgradeUsed"
+      :limit="upgradeLimit"
+      :current-tier="upgradeCurrentTier"
+      @close="showUpgradePrompt = false"
+      @continue-ollama="handleContinueOllama"
+    />
   </div>
 </template>
 
@@ -912,6 +922,7 @@ import ThemeLangControls from '@/components/ThemeLangControls.vue'
 import OnboardingTour from '@/components/OnboardingTour.vue'
 import ImageDescriptionModal from '@/components/ImageDescriptionModal.vue'
 import CameraCapture from '@/components/CameraCapture.vue'
+import UpgradePrompt from '@/components/UpgradePrompt.vue'
 import HandoffTransitionCard from '@/components/HandoffTransitionCard.vue'
 import { getSpecialist } from '@/data/specialistDoctors.js'
 import { saveSession } from '@/services/historyService.js'
@@ -1380,6 +1391,12 @@ const currentInput = ref('')
 const isLoading = ref(false)
 const error = ref(null)
 const retryAvailable = ref(false) // Set to true when diagnosis fails with a retryable error
+
+// Subscription / upgrade prompt state
+const showUpgradePrompt = ref(false)
+const upgradeUsed = ref(null)
+const upgradeLimit = ref(null)
+const upgradeCurrentTier = ref('free')
 const pendingImageBase64 = ref(null) // Stored image for diagnosis request
 const showImageDescriptionModal = ref(false)
 const pendingImageUrl = ref(null) // Data URL for image preview in modal
@@ -3296,8 +3313,29 @@ async function handleProceedToDiagnosis() {
 
   } catch (err) {
     const errMsg = err.message || 'Unknown error'
+    const isUsageLimit = err.status === 402 || errMsg.includes('usage_limit') || errMsg.includes('model_locked')
     const isAuthError = errMsg.includes('401') || errMsg.includes('authentication') || errMsg.includes('invalid') && errMsg.includes('key') || errMsg.includes('unauthorized') || (err.status === 401)
     const isNetworkError = errMsg.includes('Failed to fetch') || errMsg.includes('NetworkError') || errMsg.includes('network') || errMsg.includes('ECONNREFUSED') || errMsg.includes('timed out') || errMsg.includes('timeout') || errMsg.includes('ERR_CONNECTION')
+
+    // Handle subscription usage limit (402)
+    if (isUsageLimit) {
+      const details = err.details || {}
+      upgradeUsed.value = details.used ?? null
+      upgradeLimit.value = details.limit ?? null
+      upgradeCurrentTier.value = details.current_tier || 'free'
+      showUpgradePrompt.value = true
+      addMessage('assistant', `**Usage Limit Reached:** ${errMsg}\n\nYou can upgrade your plan or continue with Ollama (local, free).`)
+      if (elapsedTimer.value) { clearInterval(elapsedTimer.value); elapsedTimer.value = null }
+      stopAgentSimulation(null)
+      if (chatMessages.value.length > 0 && chatMessages.value[chatMessages.value.length - 1].text.includes('Multi-agent')) {
+        chatMessages.value.pop()
+      }
+      conversationState.value = 'diagnosed'
+      isLoading.value = false
+      showTyping.value = false
+      return
+    }
+
     if (isAuthError) {
       const mp = modelPreference.value || 'auto'
       const providerName = mp.startsWith('gpt') ? 'OpenAI' : mp.startsWith('gemini') ? 'Google' : (localStorage.getItem('ai_provider') === 'openai' ? 'OpenAI' : 'Anthropic')
@@ -3376,6 +3414,18 @@ async function retryDiagnosis() {
   conversationState.value = 'diagnosing'
   addMessage('assistant', 'Retrying diagnosis... Please wait.')
   await handleProceedToDiagnosis()
+}
+
+/**
+ * Continue with Ollama (local, free) when user hits subscription limit.
+ * Switches model preference to Ollama and retries.
+ */
+function handleContinueOllama() {
+  modelPreference.value = 'llama3.1:8b'
+  localStorage.setItem('ai_provider', 'ollama')
+  addMessage('assistant', 'Switching to Ollama (local AI). Retrying your diagnosis...')
+  conversationState.value = 'diagnosing'
+  handleProceedToDiagnosis()
 }
 
 /**
