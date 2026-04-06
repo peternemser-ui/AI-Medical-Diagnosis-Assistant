@@ -376,54 +376,51 @@
                 compact
               />
 
-              <!-- Compact Agent Performance — Neural Glow -->
-              <div class="rounded-2xl overflow-hidden relative" style="background: linear-gradient(145deg, #0a0f1c, #070b16, #05070d); border: 1px solid rgba(255,255,255,0.06)">
-                <!-- Ambient glow -->
-                <div class="absolute inset-0 pointer-events-none overflow-hidden">
-                  <div class="absolute w-[120px] h-[120px] -top-[40px] -right-[30px] rounded-full blur-[60px] opacity-[0.05]"
-                    style="background: radial-gradient(circle, #8b5cf6, transparent)"></div>
-                </div>
+              <!-- Compact Agent Performance — Theme-aware -->
+              <div class="rounded-2xl overflow-hidden relative border"
+                :class="isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'">
 
                 <button @click="expandedSections.agentPerf = !expandedSections.agentPerf"
-                  class="relative z-10 w-full px-3.5 py-2.5 flex items-center justify-between transition-colors hover:bg-white/[0.02]">
+                  class="relative z-10 w-full px-3.5 py-2.5 flex items-center justify-between transition-colors"
+                  :class="isDark ? 'hover:bg-slate-800/60' : 'hover:bg-slate-50'">
                   <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500/50 to-cyan-500/30 flex items-center justify-center border border-white/10">
+                    <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-sm">
                       <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                     </div>
-                    <span class="text-detail font-bold uppercase tracking-wider text-white/70">Agent Performance</span>
+                    <span class="text-detail font-bold uppercase tracking-wider" :class="isDark ? 'text-slate-400' : 'text-slate-600'">Agent Performance</span>
                   </div>
-                  <svg class="w-3.5 h-3.5 transition-transform text-white/20" :class="expandedSections.agentPerf ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                  <svg class="w-3.5 h-3.5 transition-transform" :class="[expandedSections.agentPerf ? 'rotate-180' : '', isDark ? 'text-slate-500' : 'text-slate-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
                 <div v-if="expandedSections.agentPerf" class="relative z-10 px-3.5 pb-3.5 space-y-2">
-                  <div class="h-px w-full mb-1" style="background: linear-gradient(to right, transparent, rgba(255,255,255,0.06), transparent)"></div>
+                  <div class="h-px w-full mb-1" :class="isDark ? 'bg-slate-800' : 'bg-slate-100'"></div>
                   <div v-for="agent in agentList" :key="agent.name" class="flex items-center gap-2 text-detail group">
-                    <span class="w-2 h-2 rounded-full flex-shrink-0" :style="{ backgroundColor: agent.color, boxShadow: `0 0 4px ${agent.color}40` }"></span>
-                    <span class="w-20 truncate text-white/40 group-hover:text-white/60 transition-colors">{{ agent.name }}</span>
-                    <div class="flex-1 h-1.5 rounded-full overflow-hidden bg-white/[0.04]">
-                      <div class="h-full rounded-full transition-all duration-500" :style="{ width: agent.barWidth + '%', background: `linear-gradient(90deg, ${agent.color}90, ${agent.color}60)`, boxShadow: `0 0 6px ${agent.color}30` }"></div>
+                    <span class="w-2 h-2 rounded-full flex-shrink-0" :style="{ backgroundColor: agent.color }"></span>
+                    <span class="w-20 truncate transition-colors" :class="isDark ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-700'">{{ agent.name }}</span>
+                    <div class="flex-1 h-1.5 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
+                      <div class="h-full rounded-full transition-all duration-500" :style="{ width: agent.barWidth + '%', background: agent.color }"></div>
                     </div>
-                    <span class="w-10 text-right tabular-nums font-medium text-white/35">{{ formatTime(agent.time) }}</span>
+                    <span class="w-10 text-right tabular-nums font-medium" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ formatTime(agent.time) }}</span>
                   </div>
-                  <div class="flex items-center justify-between pt-2 mt-1" style="border-top: 1px solid rgba(255,255,255,0.05)">
-                    <span class="text-detail font-semibold text-white/50">Total</span>
-                    <span class="text-detail font-bold tabular-nums" style="color: #60a5fa">{{ totalPipelineTime ? totalPipelineTime.toFixed(1) + 's' : '--' }}</span>
+                  <div class="flex items-center justify-between pt-2 mt-1 border-t" :class="isDark ? 'border-slate-800' : 'border-slate-100'">
+                    <span class="text-detail font-semibold" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Total</span>
+                    <span class="text-detail font-bold tabular-nums text-blue-500">{{ totalPipelineTime ? totalPipelineTime.toFixed(1) + 's' : '--' }}</span>
                   </div>
                   <div v-if="providerDisplay" class="flex items-center justify-between text-detail">
-                    <span class="text-white/30">Model</span>
-                    <span class="font-semibold text-blue-400">{{ providerDisplay }}</span>
+                    <span :class="isDark ? 'text-slate-500' : 'text-slate-400'">Model</span>
+                    <span class="font-semibold text-blue-500">{{ providerDisplay }}</span>
                   </div>
                   <div v-if="estimatedCost !== null" class="flex items-center justify-between text-detail">
-                    <span class="text-white/30">AI Cost</span>
-                    <span class="font-semibold" style="color: #22c55e">${{ estimatedCost }}</span>
+                    <span :class="isDark ? 'text-slate-500' : 'text-slate-400'">AI Cost</span>
+                    <span class="font-semibold text-emerald-500">${{ estimatedCost }}</span>
                   </div>
-                  <div v-if="tokenUsage" class="text-tiny text-right text-white/20">
+                  <div v-if="tokenUsage" class="text-tiny text-right" :class="isDark ? 'text-slate-600' : 'text-slate-400'">
                     {{ tokenUsage.total_input_tokens?.toLocaleString() || 0 }} in / {{ tokenUsage.total_output_tokens?.toLocaleString() || 0 }} out tokens
                   </div>
                 </div>
                 <!-- Collapsed summary -->
                 <div v-else class="relative z-10 px-3.5 pb-2.5 flex items-center justify-between text-detail">
-                  <span class="text-white/30 tabular-nums">{{ totalPipelineTime ? totalPipelineTime.toFixed(1) + 's' : '--' }} total</span>
-                  <span v-if="estimatedCost !== null" class="font-semibold" style="color: #22c55e">${{ estimatedCost }}</span>
+                  <span class="tabular-nums" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ totalPipelineTime ? totalPipelineTime.toFixed(1) + 's' : '--' }} total</span>
+                  <span v-if="estimatedCost !== null" class="font-semibold text-emerald-500">${{ estimatedCost }}</span>
                 </div>
               </div>
             </div>
