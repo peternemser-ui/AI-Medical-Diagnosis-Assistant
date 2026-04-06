@@ -442,7 +442,7 @@
               <svg viewBox="-10 -30 260 380" class="w-full h-full relative z-10" style="filter: drop-shadow(0 16px 40px rgba(0,0,0,0.2))">
                 <defs>
                   <linearGradient id="cEarGlow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.3"/><stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/></linearGradient>
-                  <linearGradient id="cBodyGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient>
+                  <linearGradient id="cBodyGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" :stop-color="activeSpecialist ? activeSpecialist.accentHex + 'cc' : '#a78bfa'"/><stop offset="100%" :stop-color="activeSpecialist ? activeSpecialist.accentHex : '#7c3aed'"/></linearGradient>
                   <filter id="cGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                   <!-- Blink mask — squashes eye contents vertically -->
                   <clipPath id="blinkClipL">
@@ -477,7 +477,7 @@
                   <animate attributeName="cy" values="5;-2;-10" dur="2.5s" repeatCount="indefinite" begin="1.2s"/>
                   <animate attributeName="opacity" values="0;0.5;0" dur="2.5s" repeatCount="indefinite" begin="1.2s"/>
                 </circle>
-                <circle cx="185" cy="5" r="4" :fill="avatarExpression === 'thinking' ? '#f59e0b' : avatarExpression === 'concerned' ? '#ef4444' : '#0ea5e9'" opacity="0.9" filter="url(#cGlow)">
+                <circle cx="185" cy="5" r="4" :fill="avatarExpression === 'thinking' ? '#f59e0b' : avatarExpression === 'concerned' ? '#ef4444' : (activeSpecialist ? activeSpecialist.accentHex : '#0ea5e9')" opacity="0.9" filter="url(#cGlow)">
                   <animate attributeName="r" :values="avatarExpression === 'thinking' ? '3;6;3' : '3;5;3'" :dur="avatarExpression === 'thinking' ? '0.6s' : '1.2s'" repeatCount="indefinite"/>
                   <animate attributeName="opacity" values="0.6;1;0.6" :dur="avatarExpression === 'thinking' ? '0.6s' : '1.2s'" repeatCount="indefinite"/>
                 </circle>
@@ -567,9 +567,9 @@
                 <!-- Feet — with tap animation -->
                 <ellipse cx="115" cy="298" rx="18" ry="12" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
                 <ellipse class="bunny-foot-tap" cx="165" cy="298" rx="18" ry="12" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
-                <!-- Name tag -->
-                <rect x="118" y="250" width="44" height="14" rx="3" fill="white" stroke="#94a3b8" stroke-width="0.8"/>
-                <text x="140" y="261" text-anchor="middle" fill="#3b82f6" font-size="7.5" font-weight="bold" font-family="system-ui, sans-serif">DR. HOPPS</text>
+                <!-- Name tag — shows specialist name when active -->
+                <rect x="108" y="250" width="64" height="14" rx="3" fill="white" :stroke="activeSpecialist ? activeSpecialist.accentHex || '#94a3b8' : '#94a3b8'" stroke-width="0.8"/>
+                <text x="140" y="261" text-anchor="middle" :fill="activeSpecialist ? activeSpecialist.accentHex || '#3b82f6' : '#3b82f6'" font-size="6" font-weight="bold" font-family="system-ui, sans-serif">{{ activeSpecialist ? activeSpecialist.name.split(' ').slice(0, 2).join(' ').toUpperCase() : 'DR. HOPPS' }}</text>
               </svg>
             </div>
           </div>
