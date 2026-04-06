@@ -264,10 +264,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import BodyAreaIcon from './BodyAreaIcon.vue'
-import MedicalIllustration from './MedicalIllustration.vue'
+const MedicalIllustration = defineAsyncComponent(() => import('./MedicalIllustration.vue'))
 
 const { isDark } = useTheme()
 

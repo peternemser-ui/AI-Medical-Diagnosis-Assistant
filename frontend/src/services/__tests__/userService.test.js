@@ -1,11 +1,25 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+
+// Mock encrypted storage dependencies
+vi.mock('../cryptoService.js', () => ({
+  isUnlocked: vi.fn(() => false),
+}))
+
+vi.mock('../encryptedStorage.js', () => ({
+  getEncryptedProfile: vi.fn(() => Promise.resolve({})),
+  saveEncryptedProfile: vi.fn(() => Promise.resolve()),
+  clearAllEncryptedData: vi.fn(),
+  getEncryptedHistory: vi.fn(() => Promise.resolve([])),
+}))
+
 import {
   getProfile,
   saveProfile,
-  getSavedAccounts,
-  saveAccountToList,
-  loginWithEmail,
   clearUserData,
+  getPreferences,
+  savePreference,
+  savePreferences,
+  isProfileComplete,
 } from '../userService.js'
 
 beforeEach(() => {
@@ -31,101 +45,116 @@ describe('getProfile', () => {
     expect(profile.email).toBe('')
     expect(profile.allergies).toEqual([])
   })
+
+  it('reads from auth_user cache as fallback', () => {
+    localStorage.setItem('auth_user', JSON.stringify({ name: 'JWT User', email: 'jwt@test.com', id: 'u1' }))
+    const profile = getProfile()
+    expect(profile.name).toBe('JWT User')
+    expect(profile.email).toBe('jwt@test.com')
+  })
 })
 
 describe('saveProfile', () => {
-  it('merges new data into existing profile', () => {
-    saveProfile({ name: 'Bob', email: 'bob@test.com' })
-    const profile = getProfile()
-    expect(profile.name).toBe('Bob')
-    expect(profile.email).toBe('bob@test.com')
+  it('persists profile to localStorage', async () => {
+    await saveProfile({ name: 'Bob', email: 'bob@test.com' })
+    const raw = localStorage.getItem('user_profile')
+    expect(raw).toBeTruthy()
+    const parsed = JSON.parse(raw)
+    expect(parsed.name).toBe('Bob')
+    expect(parsed.email).toBe('bob@test.com')
   })
 
-  it('preserves existing fields when saving partial data', () => {
-    saveProfile({ name: 'Carol', email: 'carol@test.com', city: 'NYC' })
-    saveProfile({ city: 'LA' })
+  it('reads back the same data via getProfile()', async () => {
+    await saveProfile({ name: 'Carol', city: 'NYC' })
+    const profile = getProfile()
+    expect(profile.name).toBe('Carol')
+    expect(profile.city).toBe('NYC')
+  })
+
+  it('preserves existing fields when saving partial data', async () => {
+    await saveProfile({ name: 'Carol', email: 'carol@test.com', city: 'NYC' })
+    await saveProfile({ city: 'LA' })
     const profile = getProfile()
     expect(profile.name).toBe('Carol')
     expect(profile.city).toBe('LA')
   })
 
-  it('adds the profile to accounts list when name and email are set', () => {
-    saveProfile({ name: 'Dan', email: 'dan@test.com' })
-    const accounts = getSavedAccounts()
-    expect(accounts).toHaveLength(1)
-    expect(accounts[0].email).toBe('dan@test.com')
-  })
-})
-
-describe('getSavedAccounts', () => {
-  it('returns an empty array when no accounts are stored', () => {
-    expect(getSavedAccounts()).toEqual([])
-  })
-})
-
-describe('saveAccountToList', () => {
-  it('adds a new account', () => {
-    saveAccountToList({ name: 'Eve', email: 'eve@test.com' })
-    const accounts = getSavedAccounts()
-    expect(accounts).toHaveLength(1)
-    expect(accounts[0].name).toBe('Eve')
-  })
-
-  it('updates an existing account with the same email', () => {
-    saveAccountToList({ name: 'Eve', email: 'eve@test.com' })
-    saveAccountToList({ name: 'Eve Updated', email: 'eve@test.com' })
-    const accounts = getSavedAccounts()
-    expect(accounts).toHaveLength(1)
-    expect(accounts[0].name).toBe('Eve Updated')
-  })
-
-  it('keeps multiple accounts with different emails', () => {
-    saveAccountToList({ name: 'A', email: 'a@test.com' })
-    saveAccountToList({ name: 'B', email: 'b@test.com' })
-    expect(getSavedAccounts()).toHaveLength(2)
-  })
-})
-
-describe('loginWithEmail', () => {
-  it('returns the matching account and sets it as active profile', () => {
-    saveAccountToList({ name: 'Frank', email: 'frank@test.com', city: 'Boston' })
-    const result = loginWithEmail('frank@test.com')
-    expect(result).not.toBeNull()
-    expect(result.name).toBe('Frank')
-
-    const profile = getProfile()
-    expect(profile.name).toBe('Frank')
-  })
-
-  it('performs case-insensitive email matching', () => {
-    saveAccountToList({ name: 'Grace', email: 'grace@test.com' })
-    const result = loginWithEmail('Grace@Test.com')
-    expect(result).not.toBeNull()
-    expect(result.name).toBe('Grace')
-  })
-
-  it('returns null when no matching account exists', () => {
-    const result = loginWithEmail('nobody@test.com')
-    expect(result).toBeNull()
+  it('profile survives across save/load cycle', async () => {
+    const data = {
+      name: 'Test User',
+      email: 'test@example.com',
+      bloodType: 'O+',
+      allergies: ['penicillin'],
+      gender: 'female',
+    }
+    await saveProfile(data)
+    const loaded = getProfile()
+    expect(loaded.name).toBe('Test User')
+    expect(loaded.email).toBe('test@example.com')
+    expect(loaded.bloodType).toBe('O+')
+    expect(loaded.allergies).toEqual(['penicillin'])
+    expect(loaded.gender).toBe('female')
   })
 })
 
 describe('clearUserData', () => {
-  it('removes profile and preferences but preserves accounts list', () => {
-    saveProfile({ name: 'Hank', email: 'hank@test.com' })
+  it('removes preferences', async () => {
+    await saveProfile({ name: 'Hank', email: 'hank@test.com' })
     localStorage.setItem('user_preferences', JSON.stringify({ theme: 'light' }))
 
     clearUserData()
 
-    // Profile should be reset to defaults
-    const profile = getProfile()
-    expect(profile.name).toBe('')
-
-    // Preferences should be gone
     expect(localStorage.getItem('user_preferences')).toBeNull()
+  })
 
-    // Accounts list should still contain Hank
-    const accounts = getSavedAccounts()
-    expect(accounts.some(a => a.email === 'hank@test.com')).toBe(true)
+  it('does NOT delete API keys', async () => {
+    localStorage.setItem('anthropic_api_key', 'sk-ant-test-key')
+    localStorage.setItem('openai_api_key', 'sk-test-key')
+    localStorage.setItem('google_api_key', 'AIza-test-key')
+
+    clearUserData()
+
+    expect(localStorage.getItem('anthropic_api_key')).toBe('sk-ant-test-key')
+    expect(localStorage.getItem('openai_api_key')).toBe('sk-test-key')
+    expect(localStorage.getItem('google_api_key')).toBe('AIza-test-key')
+  })
+})
+
+describe('preferences', () => {
+  it('returns defaults when empty', () => {
+    const prefs = getPreferences()
+    expect(prefs.theme).toBe('dark')
+    expect(prefs.language).toBe('en')
+    expect(prefs.voiceInput).toBe(true)
+  })
+
+  it('savePreference updates a single key', () => {
+    savePreference('theme', 'light')
+    const prefs = getPreferences()
+    expect(prefs.theme).toBe('light')
+    expect(prefs.language).toBe('en') // other defaults preserved
+  })
+
+  it('savePreferences merges multiple keys', () => {
+    savePreferences({ theme: 'light', language: 'es' })
+    const prefs = getPreferences()
+    expect(prefs.theme).toBe('light')
+    expect(prefs.language).toBe('es')
+  })
+})
+
+describe('isProfileComplete', () => {
+  it('returns false for empty profile', () => {
+    expect(isProfileComplete()).toBe(false)
+  })
+
+  it('returns true when name is set', async () => {
+    await saveProfile({ name: 'Test User' })
+    expect(isProfileComplete()).toBe(true)
+  })
+
+  it('returns false when name is only whitespace', async () => {
+    await saveProfile({ name: '   ' })
+    expect(isProfileComplete()).toBe(false)
   })
 })

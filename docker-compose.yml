@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database — encrypted patient data storage
+  postgres:
+    image: postgres:16-alpine
+    container_name: meddiagnose-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: meddiagnose
+      POSTGRES_USER: meddiagnose_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-meddiagnose_secure_2026}
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meddiagnose_user -d meddiagnose"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis — session cache, rate limiting, pub/sub for real-time
+  redis:
+    image: redis:7-alpine
+    container_name: meddiagnose-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-meddiagnose_redis_2026} --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-meddiagnose_redis_2026}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: meddiagnose-api
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://meddiagnose_user:${POSTGRES_PASSWORD:-meddiagnose_secure_2026}@postgres:5432/meddiagnose
+      REDIS_URL: redis://:${REDIS_PASSWORD:-meddiagnose_redis_2026}@redis:6379/0
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGINS: "http://localhost:3000,http://meddiagnose-web:3000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Vite Frontend (dev)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev
+    container_name: meddiagnose-web
+    restart: unless-stopped
+    environment:
+      VITE_BACKEND_URL: "http://backend:8000"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      backend:
+        condition: service_healthy
+    command: npx vite --host 0.0.0.0 --port 3000
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
