@@ -2282,8 +2282,16 @@ function closeImageDescriptionModal() {
 function handleImageDescriptionSubmit({ imageUrl, description }) {
   showImageDescriptionModal.value = false
 
-  // Store the raw base64 for the diagnosis request
-  pendingImageBase64.value = pendingImageBase64Raw.value
+  // Store the image base64 for the diagnosis request
+  // Use the annotated imageUrl if available (contains user markup), otherwise fall back to raw
+  if (imageUrl && imageUrl.startsWith('data:image')) {
+    // Extract base64 from data URL
+    const base64Part = imageUrl.split(',')[1]
+    if (base64Part) pendingImageBase64.value = base64Part
+    else pendingImageBase64.value = pendingImageBase64Raw.value
+  } else {
+    pendingImageBase64.value = pendingImageBase64Raw.value
+  }
 
   // Build a message that includes the visual description
   const imageMessage = `[Image attached] Visual symptoms: ${description}`
