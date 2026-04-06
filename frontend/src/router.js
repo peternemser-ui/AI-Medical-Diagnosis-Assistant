@@ -202,6 +202,11 @@ const routes = [
         name: 'admin-referrals',
         component: () => import('@/views/admin/AdminReferrals.vue'),
       },
+      {
+        path: 'system',
+        name: 'AdminSystem',
+        component: () => import('@/views/admin/SystemInsightDashboard.vue'),
+      },
     ]
   },
   // Medication Management (nested layout)

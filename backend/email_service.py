@@ -13,6 +13,8 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
 class EmailService:
     def __init__(self):
         self.smtp_host = os.getenv("SMTP_HOST", "")
@@ -54,7 +56,7 @@ class EmailService:
         logs = []
         if log_path.exists():
             try: logs = json.loads(log_path.read_text())
-            except: pass
+            except Exception: pass
         logs.append({"to": to, "subject": subject, "timestamp": datetime.now().isoformat(), "body_preview": body[:200]})
         log_path.write_text(json.dumps(logs[-50:], indent=2))
 
@@ -63,7 +65,7 @@ class EmailService:
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
             <h1 style="color:#3b82f6;">Welcome, {name}!</h1>
             <p>Your AI medical assistant is ready. 7 specialized agents are standing by to help.</p>
-            <a href="http://localhost:3000/consult" style="display:inline-block;padding:12px 24px;background:#3b82f6;color:white;text-decoration:none;border-radius:8px;">Start Your First Consultation</a>
+            <a href="{FRONTEND_URL}/consult" style="display:inline-block;padding:12px 24px;background:#3b82f6;color:white;text-decoration:none;border-radius:8px;">Start Your First Consultation</a>
             <p style="color:#64748b;font-size:12px;margin-top:20px;">MedDiagnose AI — For informational purposes only.</p>
         </div>""")
 
@@ -76,7 +78,7 @@ class EmailService:
                 <strong>{diagnosis}</strong><br/>
                 Confidence: {confidence}%
             </div>
-            <a href="http://localhost:3000/dashboard" style="display:inline-block;padding:12px 24px;background:#3b82f6;color:white;text-decoration:none;border-radius:8px;margin-top:16px;">View Full Report</a>
+            <a href="{FRONTEND_URL}/dashboard" style="display:inline-block;padding:12px 24px;background:#3b82f6;color:white;text-decoration:none;border-radius:8px;margin-top:16px;">View Full Report</a>
         </div>""")
 
     def send_upgrade_confirmation(self, email, name, tier, price):
@@ -92,5 +94,5 @@ class EmailService:
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
             <h1 style="color:#f59e0b;">Usage Alert</h1>
             <p>Hi {name}, you've used {used} of {limit} diagnoses this month.</p>
-            <a href="http://localhost:3000/pricing" style="display:inline-block;padding:12px 24px;background:#f59e0b;color:white;text-decoration:none;border-radius:8px;">Upgrade for More</a>
+            <a href="{FRONTEND_URL}/pricing" style="display:inline-block;padding:12px 24px;background:#f59e0b;color:white;text-decoration:none;border-radius:8px;">Upgrade for More</a>
         </div>""")

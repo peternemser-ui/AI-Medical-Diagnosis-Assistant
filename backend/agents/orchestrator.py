@@ -244,7 +244,9 @@ class OrchestratorAgent:
             esi_level = triage.get("esi_level", 5)
             if isinstance(esi_level, str):
                 try: esi_level = int(esi_level)
-                except Exception: esi_level = 5
+                except Exception as e:
+                    logger.warning("ESI level parsing failed, defaulting to 5: %s", e)
+                    esi_level = 5
 
         if esi_level <= 1 or (esi_level == 2 and triage.get("requires_life_saving_intervention")):
             logger.warning("ESI-%d EMERGENCY detected — fast path activated", esi_level)
@@ -384,7 +386,9 @@ class OrchestratorAgent:
                     top_confidence = first.get("confidence", 0) or first.get("confidence_pct", 0) or first.get("value", 0)
                     if isinstance(top_confidence, str):
                         try: top_confidence = int(top_confidence)
-                        except Exception: top_confidence = 0
+                        except Exception as e:
+                            logger.warning("Confidence extraction failed: %s", e)
+                            top_confidence = 0
 
         if top_confidence > 0 and top_confidence < 50 and isinstance(research, dict):
             logger.info("Low confidence (%d%%) — re-invoking Diagnostician with research evidence", top_confidence)
@@ -410,7 +414,9 @@ class OrchestratorAgent:
                 rev_conf = rev_first.get("confidence", 0) or rev_first.get("confidence_pct", 0) or 0
                 if isinstance(rev_conf, str):
                     try: rev_conf = int(rev_conf)
-                    except Exception: rev_conf = 0
+                    except Exception as e:
+                        logger.warning("Revision confidence parsing failed: %s", e)
+                        rev_conf = 0
                 if rev_conf > top_confidence:
                     logger.info("Revision improved confidence: %d%% -> %d%%", top_confidence, rev_conf)
                     diagnosis = revised_data
