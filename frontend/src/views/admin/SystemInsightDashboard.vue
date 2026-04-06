@@ -213,7 +213,7 @@ function statusDotClass(status) {
 const health = reactive({ ok: false, version: '', model: '', ollama: '' })
 
 const apiKeyStatuses = computed(() => [
-  { name: 'Anthropic', valid: !!localStorage.getItem('api_key_configured') },
+  { name: 'Anthropic', valid: !!localStorage.getItem('anthropic_api_key') },
   { name: 'OpenAI', valid: !!localStorage.getItem('openai_api_key') },
   { name: 'Google', valid: !!localStorage.getItem('google_api_key') },
 ])
@@ -223,10 +223,10 @@ async function fetchHealth() {
     const res = await fetch('/health')
     if (!res.ok) throw new Error('unhealthy')
     const data = await res.json()
-    health.ok = true
-    health.version = data.version || ''
-    health.model = data.model || data.active_model || ''
-    health.ollama = data.ollama_status || data.ollama || ''
+    health.ok = data.status === 'healthy'
+    health.version = data.architecture || ''
+    health.model = data.api_key_configured ? 'Configured' : 'No API key'
+    health.ollama = data.ollama_available ? `Available (${(data.ollama_models || []).join(', ')})` : 'Not available'
   } catch {
     health.ok = false
   }
@@ -245,22 +245,40 @@ async function fetchMetrics() {
     const res = await fetch('/api/admin/audit/latest')
     if (!res.ok) return
     const data = await res.json()
-    const items = Array.isArray(data) ? data : (data.items || [])
-    if (!items.length) return
 
-    // Compute average pipeline time
-    const times = items
-      .map(i => i.total_time || i.pipeline_time || i.duration)
-      .filter(Boolean)
-    if (times.length) {
-      metrics.avgTime = Math.round(times.reduce((a, b) => a + b, 0) / times.length)
+    // The audit endpoint returns { stats, recommendations, recent_cases }
+    const stats = data.stats || {}
+    const cases = data.recent_cases || []
+
+    if (stats.average_score !== undefined) {
+      metrics.successRate = Math.round(stats.average_score)
     }
 
-    // Success rate
-    const successes = items.filter(i => i.status === 'success' || i.status === 'complete' || !i.error).length
-    metrics.successRate = Math.round((successes / items.length) * 100)
+    if (cases.length) {
+      // Compute average pipeline time from case audits
+      const times = cases.map(c => c.total_time).filter(Boolean)
+      if (times.length) {
+        metrics.avgTime = Math.round(times.reduce((a, b) => a + b, 0) / times.length * 1000)
+      }
+    }
 
-    // Common failure
+    // Common failure from recommendations
+    const recs = data.recommendations || []
+    if (recs.length) {
+      metrics.commonFailure = recs[0].title || ''
+    }
+
+    // Skip the old parsing — the data structure is different
+    return
+  } catch {
+    return
+  }
+}
+
+// Legacy parsing placeholder — kept for compatibility
+function _legacyParsing() {
+    const items = []
+    if (!items.length) return
     const failures = items.filter(i => i.error || i.status === 'error')
     if (failures.length) {
       const agents = failures.map(f => f.failed_agent || f.agent || 'unknown')
