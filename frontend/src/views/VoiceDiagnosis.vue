@@ -288,6 +288,44 @@
         <span class="text-xs font-bold tabular-nums ml-2" :class="progressPercentage >= 80 ? 'text-emerald-400' : (isDark ? 'text-slate-500' : 'text-slate-400')">{{ Math.round(progressPercentage) }}%</span>
       </div>
 
+      <!-- Specialist Handoff Overlay (avatar mode) -->
+      <Transition
+        enter-active-class="transition-all duration-700 ease-out"
+        enter-from-class="opacity-0 scale-90"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition-all duration-500 ease-in"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-90"
+      >
+        <div v-if="showHandoffTransition && activeSpecialist" class="absolute inset-0 z-30 flex flex-col items-center justify-center px-6">
+          <!-- Backdrop blur -->
+          <div class="absolute inset-0" :class="isDark ? 'bg-slate-900/80' : 'bg-white/80'" style="backdrop-filter: blur(12px);"></div>
+          <!-- Content -->
+          <div class="relative z-10 flex flex-col items-center gap-4 text-center">
+            <!-- Specialist emoji (large) -->
+            <div class="text-6xl sm:text-7xl animate-bounce" style="animation-duration: 1.5s;">{{ activeSpecialist.emoji }}</div>
+            <!-- Connecting animation -->
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></div>
+              <span class="text-sm font-medium uppercase tracking-wider" :class="isDark ? 'text-blue-400' : 'text-blue-600'">Connecting to Specialist</span>
+              <div class="w-2 h-2 rounded-full bg-blue-500 animate-ping" style="animation-delay: 0.3s;"></div>
+            </div>
+            <!-- Doctor name -->
+            <div class="text-2xl sm:text-3xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">{{ activeSpecialist.name }}</div>
+            <div class="text-sm font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ activeSpecialist.credentials }}</div>
+            <!-- Specialty badge -->
+            <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border"
+              :style="{ borderColor: activeSpecialist.accentHex + '40', backgroundColor: activeSpecialist.accentHex + '15', color: activeSpecialist.accentHex }">
+              {{ activeSpecialist.specialty }}
+            </span>
+            <!-- Credential expansion -->
+            <div v-if="activeSpecialist.credentials" class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+              {{ expandCredentials(activeSpecialist.credentials) }}
+            </div>
+          </div>
+        </div>
+      </Transition>
+
       <!-- ── Central hero stage ── -->
       <div class="flex-1 flex flex-col items-center relative z-10" style="justify-content: center; padding-bottom: 2vh;">
 
