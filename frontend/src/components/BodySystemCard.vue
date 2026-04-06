@@ -99,7 +99,7 @@
 
     <!-- Tooltip -->
     <div
-      class="tooltip absolute -bottom-10 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-lg text-detail font-medium text-white/90 bg-black/80 backdrop-blur-sm border border-white/10 pointer-events-none transition-all duration-200 z-20"
+      class="tooltip absolute bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-lg text-detail font-medium text-white/90 bg-black/80 backdrop-blur-sm border border-white/10 pointer-events-none transition-all duration-200 z-20"
       :class="hovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'"
     >
       Analyze conditions related to {{ system.name }}

@@ -77,75 +77,72 @@
             </div>
           </div>
 
-          <!-- Right: Body Icon + Confidence + Stats -->
-          <div class="flex flex-row lg:flex-col items-start lg:items-center gap-5 flex-shrink-0">
-            <!-- Body area icon (large) with label -->
-            <div v-if="topCause.cause" class="hidden lg:flex flex-col items-center gap-2">
-              <div class="w-36 h-36 rounded-3xl flex items-center justify-center border"
-                :class="isDark
-                  ? 'bg-slate-700/30 border-slate-600/20'
-                  : 'bg-slate-50 border-slate-200'">
-                <BodyAreaIcon
-                  :area="bodyAreaKey"
-                  :size="120"
-                  :color="isDark ? '#94a3b8' : '#64748b'"
-                />
-              </div>
-              <span class="text-detail font-bold uppercase tracking-[0.08em] text-center break-words max-w-[220px] leading-tight"
-                :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ (topCause.specialty || 'General Medicine').toUpperCase() }}</span>
-            </div>
+          <!-- Right: Stacked vertically — Confidence → Illustration → Name → Stats -->
+          <div class="flex flex-col items-center gap-4 flex-shrink-0 w-full lg:w-auto lg:min-w-[220px]">
 
             <!-- Confidence ring -->
             <div v-if="topCause.value" class="relative flex flex-col items-center">
-              <div class="w-28 h-28 rounded-full flex items-center justify-center relative"
+              <div class="w-30 h-30 rounded-full flex items-center justify-center relative" style="width:7.5rem;height:7.5rem;"
                 :style="confidenceRingStyle">
                 <div class="text-center">
                   <div class="text-3xl font-black tabular-nums" :style="{ color: confidenceColor }">
                     {{ topCause.value }}%
                   </div>
-                  <div class="text-tiny font-bold uppercase tracking-widest mt-0.5"
+                  <div class="text-xs font-bold uppercase tracking-widest mt-0.5"
                     :class="isDark ? 'text-slate-400' : 'text-slate-600'">confidence</div>
                 </div>
               </div>
               <!-- Primary diagnosis name + confidence label -->
               <div class="mt-3 text-center">
-                <div class="text-xs font-bold truncate max-w-[180px]" :class="isDark ? 'text-white' : 'text-slate-900'">{{ topCause.cause || 'Awaiting Analysis' }}</div>
-                <span class="text-caption font-semibold"
+                <div class="text-sm font-bold text-center max-w-[250px] leading-snug" :class="isDark ? 'text-white' : 'text-slate-900'">{{ topCause.cause || 'Awaiting Analysis' }}</div>
+                <span class="text-xs font-semibold mt-1 inline-block"
                   :style="{ color: confidenceColor }">{{ confidenceLabel }}</span>
               </div>
+            </div>
 
-              <!-- Separator -->
-              <div class="w-full my-4 border-t" :class="isDark ? 'border-slate-700/60' : 'border-slate-200'"></div>
+            <!-- Divider -->
+            <hr class="w-full max-w-[200px] border-t" style="margin:0.5em 0;" :class="isDark ? 'border-slate-700/50' : 'border-slate-200'" />
 
-              <!-- Mini differential chart -->
-              <div v-if="otherCauses.length > 0" class="w-full space-y-1.5">
-                <div v-for="c in otherCauses" :key="c.cause" class="flex items-center gap-2">
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between mb-0.5">
-                      <span class="text-tiny font-medium truncate" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ c.cause.length > 22 ? c.cause.slice(0, 22) + '...' : c.cause }}</span>
-                      <span class="text-tiny font-bold tabular-nums ml-1" :style="{ color: miniBarColor(c.value) }">{{ c.value }}%</span>
-                    </div>
-                    <div class="h-1.5 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-700/60' : 'bg-slate-200'">
-                      <div class="h-full rounded-full transition-all duration-700" :style="{ width: c.value + '%', background: miniBarColor(c.value) }"></div>
-                    </div>
+            <!-- Medical Illustration -->
+            <div v-if="topCause.cause" class="hidden lg:block">
+              <MedicalIllustration
+                :condition="topCause.cause || ''"
+                :specialty="topCause.specialty || ''"
+                :size="192"
+              />
+            </div>
+
+            <!-- Divider -->
+            <hr class="w-full max-w-[200px] border-t" style="margin:0.5em 0;" :class="isDark ? 'border-slate-700/50' : 'border-slate-200'" />
+
+            <!-- Mini differential chart -->
+            <div v-if="otherCauses.length > 0" class="w-full max-w-[220px] space-y-1.5">
+              <div v-for="c in otherCauses" :key="c.cause" class="flex items-center gap-2">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-tiny font-medium truncate" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ c.cause.length > 22 ? c.cause.slice(0, 22) + '...' : c.cause }}</span>
+                    <span class="text-tiny font-bold tabular-nums ml-1" :style="{ color: miniBarColor(c.value) }">{{ c.value }}%</span>
+                  </div>
+                  <div class="h-1.5 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-700/60' : 'bg-slate-200'">
+                    <div class="h-full rounded-full transition-all duration-700" :style="{ width: c.value + '%', background: miniBarColor(c.value) }"></div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Stat pills -->
-            <div class="flex flex-row lg:flex-col gap-2">
-              <div class="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl border"
+            <!-- Stat pills — horizontal row -->
+            <div class="flex flex-wrap justify-center gap-2">
+              <div class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border"
                 :class="isDark ? 'bg-slate-700/40 border-slate-600/40 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'">
                 <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                 <span class="font-semibold">{{ causesCount }}</span> conditions
               </div>
-              <div v-if="testsCount > 0" class="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl border"
+              <div v-if="testsCount > 0" class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border"
                 :class="isDark ? 'bg-slate-700/40 border-slate-600/40 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'">
                 <svg class="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
                 <span class="font-semibold">{{ testsCount }}</span> tests
               </div>
-              <div v-if="flagsCount > 0" class="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl border"
+              <div v-if="flagsCount > 0" class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border"
                 :class="isDark ? 'bg-red-500/10 border-red-500/20 text-red-300' : 'bg-red-50 border-red-200 text-red-600'">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                 <span class="font-semibold">{{ flagsCount }}</span> {{ flagsCount === 1 ? 'flag' : 'flags' }}
@@ -229,7 +226,16 @@
             class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-colors"
             :class="isDark ? 'bg-slate-700/40 hover:bg-slate-700 border-slate-600/40 text-slate-200' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            Email Report
+            Send to Doctor
+          </button>
+          <button @click="$emit('copy-summary')"
+            class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-colors"
+            :class="copiedSummary
+              ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+              : (isDark ? 'bg-slate-700/40 hover:bg-slate-700 border-slate-600/40 text-slate-200' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700')">
+            <svg v-if="copiedSummary" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+            {{ copiedSummary ? 'Copied!' : 'Copy Summary' }}
           </button>
           <router-link to="/consult"
             class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-colors"
@@ -237,6 +243,59 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             New Assessment
           </router-link>
+          <button @click="$emit('find-specialists')"
+            class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-colors"
+            :class="isDark ? 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Find Specialists
+          </button>
+        </div>
+
+        <!-- What to Tell Your Doctor (Ada Health / K Health-inspired) -->
+        <div v-if="topCause.cause" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Tell Your Doctor Card -->
+          <div class="rounded-xl border p-5"
+            :class="isDark ? 'bg-blue-500/5 border-blue-500/15' : 'bg-blue-50/60 border-blue-200'">
+            <div class="flex items-center gap-2.5 mb-3">
+              <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                :class="isDark ? 'bg-blue-500/20' : 'bg-blue-100'">
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                </svg>
+              </div>
+              <h4 class="text-sm font-bold" :class="isDark ? 'text-blue-300' : 'text-blue-800'">What to Tell Your Doctor</h4>
+            </div>
+            <ul class="space-y-2">
+              <li v-for="(point, i) in doctorTalkingPoints" :key="'dtp-' + i"
+                class="flex items-start gap-2 text-xs leading-relaxed"
+                :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                <span class="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" :class="isDark ? 'bg-blue-400' : 'bg-blue-500'"></span>
+                <span>{{ point }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Questions to Ask Card -->
+          <div class="rounded-xl border p-5"
+            :class="isDark ? 'bg-violet-500/5 border-violet-500/15' : 'bg-violet-50/60 border-violet-200'">
+            <div class="flex items-center gap-2.5 mb-3">
+              <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                :class="isDark ? 'bg-violet-500/20' : 'bg-violet-100'">
+                <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h4 class="text-sm font-bold" :class="isDark ? 'text-violet-300' : 'text-violet-800'">Questions to Ask Your Doctor</h4>
+            </div>
+            <ul class="space-y-2">
+              <li v-for="(q, i) in doctorQuestions" :key="'dq-' + i"
+                class="flex items-start gap-2 text-xs leading-relaxed"
+                :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                <span class="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" :class="isDark ? 'bg-violet-400' : 'bg-violet-500'"></span>
+                <span>{{ q }}</span>
+              </li>
+            </ul>
+          </div>
         </div>
 
         <!-- Disclaimer -->
@@ -252,9 +311,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import BodyAreaIcon from './BodyAreaIcon.vue'
+const MedicalIllustration = defineAsyncComponent(() => import('./MedicalIllustration.vue'))
 
 const { isDark } = useTheme()
 
@@ -268,12 +328,53 @@ const props = defineProps({
   testsCount: { type: Number, default: 0 },
   flagsCount: { type: Number, default: 0 },
   exporting: { type: Boolean, default: false },
+  copiedSummary: { type: Boolean, default: false },
 })
 
-defineEmits(['download-pdf', 'email'])
+defineEmits(['download-pdf', 'email', 'copy-summary', 'find-specialists'])
 
 const topCause = computed(() => props.causes[0] || {})
 const otherCauses = computed(() => props.causes.slice(1, 5))
+
+// "What to tell your doctor" - generated from diagnosis data
+const doctorTalkingPoints = computed(() => {
+  const points = []
+  const cause = topCause.value
+  if (props.chiefComplaint) {
+    points.push(`My main concern is: "${props.chiefComplaint}"`)
+  }
+  if (cause.cause) {
+    points.push(`An AI assessment suggested ${cause.cause} (${cause.value || '?'}% confidence) as a possible cause.`)
+  }
+  if (props.flagsCount > 0) {
+    points.push(`The assessment identified ${props.flagsCount} potential red flag${props.flagsCount > 1 ? 's' : ''} that may need attention.`)
+  }
+  if (props.testsCount > 0) {
+    points.push(`${props.testsCount} diagnostic test${props.testsCount > 1 ? 's were' : ' was'} recommended to confirm or rule out conditions.`)
+  }
+  if (props.causes.length > 1) {
+    points.push(`Other possibilities considered: ${props.causes.slice(1, 3).map(c => c.cause).join(', ')}.`)
+  }
+  return points.length > 0 ? points : ['Share your symptoms and this report with your doctor for a professional evaluation.']
+})
+
+// "Questions to ask your doctor" - generated contextually
+const doctorQuestions = computed(() => {
+  const qs = []
+  const cause = topCause.value
+  if (cause.cause) {
+    qs.push(`Could my symptoms be caused by ${cause.cause}? What tests would confirm this?`)
+  }
+  if (cause.specialty) {
+    qs.push(`Should I see a ${cause.specialty} specialist for further evaluation?`)
+  }
+  qs.push('Are there any lifestyle changes that could help manage these symptoms?')
+  if (props.flagsCount > 0) {
+    qs.push('What warning signs should prompt me to seek emergency care?')
+  }
+  qs.push('What is the expected timeline for improvement with treatment?')
+  return qs.slice(0, 4)
+})
 
 const barColors = ['#8b5cf6', '#3b82f6', '#06b6d4', '#f59e0b', '#ef4444']
 function miniBarColor(value) {

@@ -161,6 +161,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login as authLogin } from '@/services/authService'
 import { saveProfile } from '@/services/userService'
+import { trackEvent, EVENTS } from '@/services/analytics'
 
 const router = useRouter()
 
@@ -185,10 +186,9 @@ async function handleLogin() {
 
   try {
     const data = await authLogin(email.value, password.value)
-    // Reset and sync user_profile with the authenticated user
-    localStorage.removeItem('user_profile')
+    // Merge auth user data into existing profile (preserve gender, DOB, etc.)
     if (data.user) {
-      saveProfile({
+      await saveProfile({
         email: data.user.email,
         name: data.user.name || data.user.email.split('@')[0],
         ...(data.user.profile_data || {}),
@@ -196,6 +196,7 @@ async function handleLogin() {
     }
     // Mark API key as configured so the consult guard passes
     localStorage.setItem('api_key_configured', 'true')
+    trackEvent(EVENTS.LOGIN, { method: 'email' })
     router.push('/consult')
   } catch (e) {
     error.value = e.message || 'Login failed. Please try again.'

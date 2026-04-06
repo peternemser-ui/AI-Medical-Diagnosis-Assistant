@@ -227,6 +227,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { signup as authSignup } from '@/services/authService'
 import { saveProfile } from '@/services/userService'
+import { trackEvent, EVENTS } from '@/services/analytics'
 
 const router = useRouter()
 
@@ -288,12 +289,13 @@ async function handleSignup() {
     const data = await authSignup(name.value.trim(), email.value.trim(), password.value)
     // Reset user_profile for the new account (clear old profile data)
     localStorage.removeItem('user_profile')
-    saveProfile({
+    await saveProfile({
       name: name.value.trim(),
       email: email.value.trim(),
       ...(data.user?.profile_data || {}),
     })
     localStorage.setItem('api_key_configured', 'true')
+    trackEvent(EVENTS.SIGNUP, { method: 'email' })
     router.push('/setup')
   } catch (e) {
     error.value = e.message || 'Signup failed. Please try again.'

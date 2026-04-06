@@ -59,6 +59,45 @@
           </div>
         </section>
 
+        <!-- Change Password Section -->
+        <section class="backdrop-blur-xl rounded-2xl border shadow-lg overflow-hidden"
+          :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'">
+          <div class="px-6 py-4 border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🔒</span>
+              <h3 class="text-sm font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Change Password</h3>
+            </div>
+          </div>
+          <div class="px-6 py-4 space-y-3">
+            <div>
+              <label class="text-xs font-medium mb-1 block" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Current Password</label>
+              <input v-model="currentPassword" type="password" placeholder="Enter current password"
+                class="w-full px-3 py-2 text-sm rounded-lg border"
+                :class="isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'" />
+            </div>
+            <div>
+              <label class="text-xs font-medium mb-1 block" :class="isDark ? 'text-slate-400' : 'text-slate-500'">New Password</label>
+              <input v-model="newPassword" type="password" placeholder="Min 12 chars, uppercase, lowercase, number, special"
+                class="w-full px-3 py-2 text-sm rounded-lg border"
+                :class="isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'" />
+            </div>
+            <div>
+              <label class="text-xs font-medium mb-1 block" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Confirm New Password</label>
+              <input v-model="confirmPassword" type="password" placeholder="Repeat new password"
+                class="w-full px-3 py-2 text-sm rounded-lg border"
+                :class="isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'" />
+            </div>
+            <div v-if="passwordError" class="text-xs text-red-500 font-medium">{{ passwordError }}</div>
+            <div v-if="passwordSuccess" class="text-xs text-emerald-500 font-medium">{{ passwordSuccess }}</div>
+            <button @click="changePassword"
+              :disabled="!currentPassword || !newPassword || !confirmPassword || changingPassword"
+              class="px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              :class="isDark ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'">
+              {{ changingPassword ? 'Changing...' : 'Update Password' }}
+            </button>
+          </div>
+        </section>
+
         <!-- Appearance Section -->
         <section class="backdrop-blur-xl rounded-2xl border shadow-lg overflow-hidden"
           :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'">
@@ -450,6 +489,7 @@ import ThemeLangControls from '@/components/ThemeLangControls.vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { useI18n } from '@/composables/useI18n.js'
 import { getProfile, getPreferences, savePreference, exportAllData, clearUserData } from '@/services/userService.js'
+import { clearAllEncryptedDataIncludingKeys } from '@/services/encryptedStorage.js'
 import { clearHistory as clearHistoryFn } from '@/services/historyService.js'
 import { validateApiKeys, API_BASE_URL } from '@/services/api.js'
 
@@ -462,6 +502,59 @@ const apiProvider = ref('anthropic')
 const apiKey = ref('')
 const showApiKey = ref(false)
 const apiKeySaved = ref(false)
+
+// Change password state
+const currentPassword = ref('')
+const newPassword = ref('')
+const confirmPassword = ref('')
+const passwordError = ref('')
+const passwordSuccess = ref('')
+const changingPassword = ref(false)
+
+async function changePassword() {
+  passwordError.value = ''
+  passwordSuccess.value = ''
+
+  if (newPassword.value !== confirmPassword.value) {
+    passwordError.value = 'New passwords do not match.'
+    return
+  }
+  if (newPassword.value.length < 12) {
+    passwordError.value = 'Password must be at least 12 characters.'
+    return
+  }
+
+  changingPassword.value = true
+  try {
+    const { getAccessToken } = await import('@/services/authService.js')
+    const token = getAccessToken()
+    const res = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        old_password: currentPassword.value,
+        new_password: newPassword.value,
+      }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      passwordError.value = err.detail || 'Failed to change password.'
+      return
+    }
+    passwordSuccess.value = 'Password changed successfully!'
+    currentPassword.value = ''
+    newPassword.value = ''
+    confirmPassword.value = ''
+    setTimeout(() => { passwordSuccess.value = '' }, 3000)
+  } catch (e) {
+    passwordError.value = e.message || 'Network error.'
+  } finally {
+    changingPassword.value = false
+  }
+}
 
 const providers = [
   { id: 'anthropic', name: 'Anthropic', keyPrefix: 'sk-ant-', storageKey: 'anthropic_api_key' },
@@ -493,9 +586,7 @@ async function checkOllamaStatus() {
 
 function activateOllama() {
   localStorage.setItem('ai_provider', 'ollama')
-  localStorage.removeItem('anthropic_api_key')
-  localStorage.removeItem('openai_api_key')
-  localStorage.removeItem('google_api_key')
+  // Keep API keys in storage as fallback — don't delete them
   localStorage.setItem('api_key_configured', 'true')
   localStorage.setItem('model_preference', 'llama3.1:8b')
   modelPreference.value = 'llama3.1:8b'
@@ -607,11 +698,7 @@ function saveApiKeyFn() {
   const key = apiKey.value.trim()
   if (!key) return
 
-  // Clear ALL vendor keys first, then set only the active one
-  localStorage.removeItem('anthropic_api_key')
-  localStorage.removeItem('openai_api_key')
-  localStorage.removeItem('google_api_key')
-
+  // Save key for the active provider (keep other providers' keys intact for fallback)
   const p = providers.find(p => p.id === apiProvider.value)
   if (p) {
     localStorage.setItem(p.storageKey, key)
@@ -642,6 +729,7 @@ function handleClearHistory() {
 function handleClearAll() {
   confirmDialog.message = 'Are you sure you want to clear ALL data including your profile, preferences, API keys, and consultation history? This cannot be undone.'
   confirmDialog.action = () => {
+    clearAllEncryptedDataIncludingKeys()  // Nuclear: wipe ALL encrypted data including API keys
     clearUserData()
     clearHistoryFn()
     localStorage.removeItem('anthropic_api_key')

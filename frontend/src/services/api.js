@@ -44,24 +44,19 @@ function getAuthHeaders() {
     headers['Authorization'] = `Bearer ${accessToken}`
   }
 
-  const activeProvider = localStorage.getItem('ai_provider') || 'anthropic'
+  // Always send ALL available API keys so the backend can pick the right one
+  // Try encrypted cache first, then plaintext localStorage fallback
+  const anthropicKey = _keyCache.anthropic || localStorage.getItem('anthropic_api_key') || ''
+  const openaiKey = _keyCache.openai || localStorage.getItem('openai_api_key') || ''
+  const googleKey = _keyCache.google || localStorage.getItem('google_api_key') || ''
 
-  // Read API keys from encrypted cache (preferred) or plaintext fallback (migration)
-  const anthropicKey = _keyCache.anthropic || localStorage.getItem('anthropic_api_key')
-  const openaiKey = _keyCache.openai || localStorage.getItem('openai_api_key')
-  const googleKey = _keyCache.google || localStorage.getItem('google_api_key')
+  if (anthropicKey) headers['X-Anthropic-API-Key'] = anthropicKey
+  if (openaiKey) headers['X-OpenAI-API-Key'] = openaiKey
+  if (googleKey) headers['X-Google-API-Key'] = googleKey
 
-  if (activeProvider === 'anthropic' && anthropicKey) {
-    headers['X-Anthropic-API-Key'] = anthropicKey
-  } else if (activeProvider === 'openai' && openaiKey) {
-    headers['X-OpenAI-API-Key'] = openaiKey
-  } else if (activeProvider === 'google' && googleKey) {
-    headers['X-Google-API-Key'] = googleKey
-  } else {
-    // Fallback: send whichever key exists
-    if (anthropicKey) headers['X-Anthropic-API-Key'] = anthropicKey
-    else if (openaiKey) headers['X-OpenAI-API-Key'] = openaiKey
-    else if (googleKey) headers['X-Google-API-Key'] = googleKey
+  // Debug: log when no keys are being sent (helps diagnose routing issues)
+  if (!anthropicKey && !openaiKey && !googleKey) {
+    console.warn('[API] No API keys available in headers — backend will fall back to Ollama or return error')
   }
 
   return headers
@@ -116,12 +111,53 @@ async function fetchWithErrorHandling(url, options = {}, _retried = false) {
   }
 }
 
+// Track which providers have valid keys (persists across page loads)
+let _validProviders = JSON.parse(localStorage.getItem('_valid_providers') || '{}')
+
+export function getValidProviders() {
+  return { ..._validProviders }
+}
+
+export function getBestProvider() {
+  // Return the first provider with a valid key, in priority order
+  for (const p of ['anthropic', 'openai', 'google']) {
+    if (_validProviders[p] === true) return p
+  }
+  return null
+}
+
 export async function validateApiKeys() {
   const result = await fetchWithErrorHandling(`${API_BASE_URL}/api/validate-key`, {
     method: 'POST',
     headers: getAuthHeaders(),
   })
+
+  // Update valid providers cache
+  if (result && result.results) {
+    for (const [provider, status] of Object.entries(result.results)) {
+      _validProviders[provider] = status.valid === true
+    }
+    localStorage.setItem('_valid_providers', JSON.stringify(_validProviders))
+
+    // Auto-set the best provider if current one is invalid
+    const currentProvider = localStorage.getItem('ai_provider') || 'anthropic'
+    if (_validProviders[currentProvider] === false) {
+      const best = getBestProvider()
+      if (best) {
+        localStorage.setItem('ai_provider', best)
+        console.info(`[API] Auto-switched from invalid ${currentProvider} to ${best}`)
+      }
+    }
+  }
+
   return result
+}
+
+/**
+ * Quick check if any valid API key is available (synchronous, from cache).
+ */
+export function hasValidApiKey() {
+  return Object.values(_validProviders).some(v => v === true)
 }
 
 export async function diagnose(data) {
@@ -145,13 +181,15 @@ export async function diagnoseStream(data, onEvent) {
 
   if (!response.ok) {
     let errorMessage = `Request failed with status ${response.status}`
+    let errorDetails = null
     try {
       const errorData = await response.json()
       errorMessage = errorData.message || errorData.detail || errorMessage
+      errorDetails = errorData
     } catch {
       errorMessage = response.statusText || errorMessage
     }
-    throw new ApiError(errorMessage, response.status)
+    throw new ApiError(errorMessage, response.status, errorDetails)
   }
 
   const reader = response.body.getReader()
@@ -182,8 +220,11 @@ export async function diagnoseStream(data, onEvent) {
 
           if (parsed.event === 'complete') {
             finalResult = parsed.result
+          } else if (parsed.event === 'error') {
+            throw new ApiError(parsed.message || 'Diagnosis pipeline error', 0)
           }
         } catch (e) {
+          if (e instanceof ApiError) throw e
           // Incomplete JSON - put it back into buffer
           buffer = lines.slice(i).join('\n')
           break

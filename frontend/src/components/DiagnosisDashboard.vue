@@ -149,6 +149,32 @@
       <!-- Main Content Area -->
       <div class="flex-1 min-w-0 px-4 py-5 space-y-5">
 
+        <!-- Incomplete Analysis Banner -->
+        <div v-if="isIncomplete" class="rounded-xl border px-5 py-4 flex items-start gap-3"
+          :class="isDark ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-200'">
+          <svg class="w-5 h-5 mt-0.5 flex-shrink-0" :class="isDark ? 'text-amber-400' : 'text-amber-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+          </svg>
+          <div class="flex-1">
+            <h3 class="text-sm font-semibold" :class="isDark ? 'text-amber-300' : 'text-amber-800'">Analysis Partially Incomplete</h3>
+            <p class="text-xs mt-1" :class="isDark ? 'text-amber-400/80' : 'text-amber-700'">
+              Some analysis sections could not be fully completed:
+              <span v-for="(section, i) in missingSections" :key="section">
+                <strong>{{ sectionLabel(section) }}</strong><span v-if="i < missingSections.length - 1">, </span>
+              </span>.
+              The available results are shown below.
+            </p>
+            <button @click="$router.push('/consult')"
+              class="mt-2.5 inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+              :class="isDark ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Re-analyze
+            </button>
+          </div>
+        </div>
+
         <!-- ============================================================== -->
         <!-- LAYER 1: EXECUTIVE SUMMARY (Hero Area)                         -->
         <!-- ============================================================== -->
@@ -163,8 +189,18 @@
           :tests-count="recommendedTests.length"
           :flags-count="redFlags.length"
           :exporting="isExporting"
+          :copied-summary="copiedDoctorSummary"
           @download-pdf="downloadReport"
           @email="shareViaEmail"
+          @copy-summary="copyDoctorSummaryToClipboard"
+          @find-specialists="showBooking = true"
+        />
+
+        <!-- Appointment Booking Modal -->
+        <AppointmentBooking
+          :visible="showBooking"
+          :specialty="causes[0]?.specialty || ''"
+          @close="showBooking = false"
         />
 
         <!-- What To Do Next — priority action cards -->
@@ -256,6 +292,15 @@
                 </p>
               </div>
 
+              <!-- Patient uploaded image -->
+              <div v-if="patientImageUrl" class="rounded-lg overflow-hidden border" :class="isDark ? 'border-slate-700' : 'border-slate-200'">
+                <div class="px-3 py-2 text-detail font-bold uppercase tracking-wider" :class="isDark ? 'text-slate-400 bg-slate-800/50' : 'text-slate-500 bg-slate-50'">
+                  Patient Photo
+                </div>
+                <img :src="patientImageUrl" alt="Patient uploaded symptom photo"
+                  class="w-full max-h-64 object-contain" :class="isDark ? 'bg-slate-900' : 'bg-white'" />
+              </div>
+
               <!-- Supporting features from top diagnosis -->
               <div v-if="causes[0].explanation" class="space-y-2">
                 <div class="text-detail font-bold uppercase tracking-wider" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Clinical Reasoning</div>
@@ -331,50 +376,56 @@
                 compact
               />
 
-              <!-- Compact Agent Performance — Neural Glow -->
-              <div class="rounded-2xl overflow-hidden relative" style="background: linear-gradient(145deg, #0a0f1c, #070b16, #05070d); border: 1px solid rgba(255,255,255,0.06)">
-                <!-- Ambient glow -->
-                <div class="absolute inset-0 pointer-events-none overflow-hidden">
-                  <div class="absolute w-[120px] h-[120px] -top-[40px] -right-[30px] rounded-full blur-[60px] opacity-[0.05]"
-                    style="background: radial-gradient(circle, #8b5cf6, transparent)"></div>
-                </div>
+              <!-- Compact Agent Performance — Theme-aware -->
+              <div class="rounded-2xl overflow-hidden relative border"
+                :class="isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'">
 
                 <button @click="expandedSections.agentPerf = !expandedSections.agentPerf"
-                  class="relative z-10 w-full px-3.5 py-2.5 flex items-center justify-between transition-colors hover:bg-white/[0.02]">
+                  class="relative z-10 w-full px-3.5 py-2.5 flex items-center justify-between transition-colors"
+                  :class="isDark ? 'hover:bg-slate-800/60' : 'hover:bg-slate-50'">
                   <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500/50 to-cyan-500/30 flex items-center justify-center border border-white/10">
+                    <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-sm">
                       <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                     </div>
-                    <span class="text-detail font-bold uppercase tracking-wider text-white/70">Agent Performance</span>
+                    <span class="text-detail font-bold uppercase tracking-wider" :class="isDark ? 'text-slate-400' : 'text-slate-600'">Agent Performance</span>
                   </div>
-                  <svg class="w-3.5 h-3.5 transition-transform text-white/20" :class="expandedSections.agentPerf ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                  <svg class="w-3.5 h-3.5 transition-transform" :class="[expandedSections.agentPerf ? 'rotate-180' : '', isDark ? 'text-slate-500' : 'text-slate-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
                 <div v-if="expandedSections.agentPerf" class="relative z-10 px-3.5 pb-3.5 space-y-2">
-                  <div class="h-px w-full mb-1" style="background: linear-gradient(to right, transparent, rgba(255,255,255,0.06), transparent)"></div>
+                  <div class="h-px w-full mb-1" :class="isDark ? 'bg-slate-800' : 'bg-slate-100'"></div>
                   <div v-for="agent in agentList" :key="agent.name" class="flex items-center gap-2 text-detail group">
-                    <span class="w-2 h-2 rounded-full flex-shrink-0" :style="{ backgroundColor: agent.color, boxShadow: `0 0 4px ${agent.color}40` }"></span>
-                    <span class="w-20 truncate text-white/40 group-hover:text-white/60 transition-colors">{{ agent.name }}</span>
-                    <div class="flex-1 h-1.5 rounded-full overflow-hidden bg-white/[0.04]">
-                      <div class="h-full rounded-full transition-all duration-500" :style="{ width: agent.barWidth + '%', background: `linear-gradient(90deg, ${agent.color}90, ${agent.color}60)`, boxShadow: `0 0 6px ${agent.color}30` }"></div>
+                    <span class="w-2 h-2 rounded-full flex-shrink-0" :style="{ backgroundColor: agent.color }"></span>
+                    <div class="w-24 min-w-0 flex-shrink-0">
+                      <span class="block truncate transition-colors" :class="isDark ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-700'">{{ agent.name }}</span>
+                      <span v-if="agent.model" class="text-[9px] font-medium" :class="agent.model.includes('haiku') ? (isDark ? 'text-cyan-600' : 'text-cyan-500') : (isDark ? 'text-violet-500' : 'text-violet-400')">
+                        {{ agent.model.includes('haiku') ? 'Haiku' : agent.model.includes('sonnet') ? 'Sonnet' : agent.model.includes('opus') ? 'Opus' : agent.model }}
+                      </span>
                     </div>
-                    <span class="w-10 text-right tabular-nums font-medium text-white/35">{{ formatTime(agent.time) }}</span>
+                    <div class="flex-1 h-1.5 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
+                      <div class="h-full rounded-full transition-all duration-500" :style="{ width: agent.barWidth + '%', background: agent.color }"></div>
+                    </div>
+                    <span class="w-10 text-right tabular-nums font-medium" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ formatTime(agent.time) }}</span>
                   </div>
-                  <div class="flex items-center justify-between pt-2 mt-1" style="border-top: 1px solid rgba(255,255,255,0.05)">
-                    <span class="text-detail font-semibold text-white/50">Total</span>
-                    <span class="text-detail font-bold tabular-nums" style="color: #60a5fa">{{ totalPipelineTime ? totalPipelineTime.toFixed(1) + 's' : '--' }}</span>
+                  <div class="flex items-center justify-between pt-2 mt-1 border-t" :class="isDark ? 'border-slate-800' : 'border-slate-100'">
+                    <span class="text-detail font-semibold" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Total</span>
+                    <span class="text-detail font-bold tabular-nums text-blue-500">{{ totalPipelineTime ? totalPipelineTime.toFixed(1) + 's' : '--' }}</span>
+                  </div>
+                  <div v-if="providerDisplay" class="flex items-center justify-between text-detail">
+                    <span :class="isDark ? 'text-slate-500' : 'text-slate-400'">Model</span>
+                    <span class="font-semibold text-blue-500">{{ providerDisplay }}</span>
                   </div>
                   <div v-if="estimatedCost !== null" class="flex items-center justify-between text-detail">
-                    <span class="text-white/30">AI Cost</span>
-                    <span class="font-semibold" style="color: #22c55e">${{ estimatedCost }}</span>
+                    <span :class="isDark ? 'text-slate-500' : 'text-slate-400'">AI Cost</span>
+                    <span class="font-semibold text-emerald-500">${{ estimatedCost }}</span>
                   </div>
-                  <div v-if="tokenUsage" class="text-tiny text-right text-white/20">
+                  <div v-if="tokenUsage" class="text-tiny text-right" :class="isDark ? 'text-slate-600' : 'text-slate-400'">
                     {{ tokenUsage.total_input_tokens?.toLocaleString() || 0 }} in / {{ tokenUsage.total_output_tokens?.toLocaleString() || 0 }} out tokens
                   </div>
                 </div>
                 <!-- Collapsed summary -->
                 <div v-else class="relative z-10 px-3.5 pb-2.5 flex items-center justify-between text-detail">
-                  <span class="text-white/30 tabular-nums">{{ totalPipelineTime ? totalPipelineTime.toFixed(1) + 's' : '--' }} total</span>
-                  <span v-if="estimatedCost !== null" class="font-semibold" style="color: #22c55e">${{ estimatedCost }}</span>
+                  <span class="tabular-nums" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ totalPipelineTime ? totalPipelineTime.toFixed(1) + 's' : '--' }} total</span>
+                  <span v-if="estimatedCost !== null" class="font-semibold text-emerald-500">${{ estimatedCost }}</span>
                 </div>
               </div>
             </div>
@@ -824,6 +875,73 @@
 
         </template><!-- end advanced mode -->
 
+        <!-- Post-Diagnosis Action Cards (K Health / Ada-inspired) -->
+        <div class="rounded-xl border p-5 mb-5"
+          :class="isDark ? 'bg-gradient-to-r from-slate-800/60 to-slate-800/40 border-slate-700/40' : 'bg-gradient-to-r from-slate-50 to-blue-50/30 border-slate-200'">
+          <div class="flex items-center gap-2.5 mb-4">
+            <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-sm">
+              <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+            </div>
+            <h3 class="text-sm font-bold" :class="isDark ? 'text-slate-200' : 'text-slate-800'">What Would You Like to Do Next?</h3>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <!-- Set a Reminder -->
+            <button @click="setFollowUpReminder"
+              class="flex items-start gap-3 p-4 rounded-xl border transition-all hover:scale-[1.02] text-left"
+              :class="reminderSet
+                ? (isDark ? 'bg-emerald-500/10 border-emerald-500/25' : 'bg-emerald-50 border-emerald-200')
+                : (isDark ? 'bg-slate-700/30 border-slate-600/30 hover:border-slate-500' : 'bg-white border-slate-200 hover:border-slate-300')">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                :class="reminderSet ? (isDark ? 'bg-emerald-500/20' : 'bg-emerald-100') : (isDark ? 'bg-blue-500/15' : 'bg-blue-50')">
+                <svg v-if="reminderSet" class="w-4.5 h-4.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <svg v-else class="w-4.5 h-4.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold mb-0.5" :class="reminderSet ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : (isDark ? 'text-slate-200' : 'text-slate-700')">
+                  {{ reminderSet ? 'Reminder Set!' : 'Set a Reminder' }}
+                </div>
+                <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+                  {{ reminderSet ? 'Follow-up check in 2 weeks' : 'Follow up on symptoms in 2 weeks' }}
+                </p>
+              </div>
+            </button>
+            <!-- Share with Family -->
+            <button @click="shareWithFamily"
+              class="flex items-start gap-3 p-4 rounded-xl border transition-all hover:scale-[1.02] text-left"
+              :class="isDark ? 'bg-slate-700/30 border-slate-600/30 hover:border-slate-500' : 'bg-white border-slate-200 hover:border-slate-300'">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                :class="isDark ? 'bg-purple-500/15' : 'bg-purple-50'">
+                <svg class="w-4.5 h-4.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold mb-0.5" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Share with Family</div>
+                <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Send a simplified summary to a loved one</p>
+              </div>
+            </button>
+            <!-- New Assessment / Compare -->
+            <router-link to="/consult"
+              class="flex items-start gap-3 p-4 rounded-xl border transition-all hover:scale-[1.02] text-left"
+              :class="isDark ? 'bg-slate-700/30 border-slate-600/30 hover:border-slate-500' : 'bg-white border-slate-200 hover:border-slate-300'">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                :class="isDark ? 'bg-amber-500/15' : 'bg-amber-50'">
+                <svg class="w-4.5 h-4.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold mb-0.5" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Start New Assessment</div>
+                <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Run another consultation to compare results</p>
+              </div>
+            </router-link>
+          </div>
+        </div>
+
         <!-- Bottom Actions -->
         <div class="flex justify-center gap-3 flex-wrap py-4">
           <button
@@ -1032,6 +1150,7 @@ import BodyDiagram from './BodyDiagram.vue'
 import NeuralBodySystems from './NeuralBodySystems.vue'
 import NaturalHealingSection from './NaturalHealingSection.vue'
 import DiagnosisSummaryHeader from './DiagnosisSummaryHeader.vue'
+import AppointmentBooking from './AppointmentBooking.vue'
 import NextStepsCards from './NextStepsCards.vue'
 import ThemeLangControls from './ThemeLangControls.vue'
 import { useTheme } from '@/composables/useTheme.js'
@@ -1052,6 +1171,8 @@ const viewMode = ref('advanced')
 const selectedCause = ref(null)
 const selectedCauseRank = ref(0)
 const selectedCauseTests = ref([])
+
+const showBooking = ref(false)
 
 const expandedSections = ref({
   whyDiagnosis: true,
@@ -1413,6 +1534,28 @@ const causes = computed(() => {
   return _extractCausesFromText(diagnosisData.value)
 })
 
+// Completeness status from backend
+const isIncomplete = computed(() => {
+  const d = diagnosisData.value
+  if (!d) return false
+  // Check backend flag first
+  if (d.completeness_status === 'INCOMPLETE') return true
+  // Fallback: detect locally if causes are empty
+  return causes.value.length === 0
+})
+const missingSections = computed(() => {
+  return diagnosisData.value?.missing_sections || []
+})
+function sectionLabel(key) {
+  const labels = {
+    differential_diagnosis: 'Differential Diagnosis',
+    treatment: 'Treatment Plan',
+    recommended_tests: 'Recommended Tests',
+    specialist: 'Specialist Consultation',
+  }
+  return labels[key] || key
+}
+
 const patientAge = computed(() => diagnosisData.value?.age || diagnosisData.value?.patientAge || '')
 const patientGender = computed(() => diagnosisData.value?.gender || diagnosisData.value?.patientGender || '')
 
@@ -1446,6 +1589,19 @@ const chiefComplaint = computed(() => {
   const d = diagnosisData.value
   if (!d) return ''
   return d.chief_complaint || d.chiefComplaint || d.symptoms || ''
+})
+
+const patientImageUrl = computed(() => {
+  const d = diagnosisData.value
+  if (!d) return null
+  // Direct image URL from stored result
+  if (d.patient_image_url) return d.patient_image_url
+  // Search chat transcript for user messages with images
+  const transcript = d.chat_transcript || []
+  for (const msg of transcript) {
+    if (msg.role === 'user' && msg.imageUrl) return msg.imageUrl
+  }
+  return null
 })
 
 const patientSummary = computed(() => {
@@ -1998,9 +2154,17 @@ const safetyStatusClass = computed(() => {
 
 // Agent timings
 const agentTimingsData = computed(() => diagnosisData.value?.agent_timings || diagnosisData.value?.agentTimings || {})
+const agentModelsData = computed(() => diagnosisData.value?.agent_models || {})
 
 const totalPipelineTime = computed(() => {
   return diagnosisData.value?.total_time || diagnosisData.value?.totalTime || 0
+})
+
+const providerDisplay = computed(() => {
+  return diagnosisData.value?.provider_display || diagnosisData.value?.providerDisplay || ''
+})
+const modelUsed = computed(() => {
+  return diagnosisData.value?.model_used || diagnosisData.value?.modelUsed || ''
 })
 
 const agentColors = {
@@ -2029,12 +2193,14 @@ const agentList = computed(() => {
 
   const maxTime = Math.max(...entries.map(([, t]) => t), 1)
 
+  const models = agentModelsData.value
   return entries.map(([name, time]) => ({
     name,
     time,
     timeStr: formatTime(time),
     barWidth: Math.round((time / maxTime) * 100),
-    color: agentColors[name] || '#64748b'
+    color: agentColors[name] || '#64748b',
+    model: models[name] || ''
   }))
 })
 
@@ -2162,8 +2328,49 @@ const bodySystems = computed(() => {
 const showShareMenu = ref(false)
 const shareDropdownRef = ref(null)
 const copySuccess = ref(false)
+const copiedDoctorSummary = ref(false)
 const isSharePdf = ref(false)
 const canNativeShare = computed(() => !!navigator.share)
+const reminderSet = ref(false)
+
+function setFollowUpReminder() {
+  if (reminderSet.value) return
+  // Calculate a date 2 weeks from now
+  const reminderDate = new Date()
+  reminderDate.setDate(reminderDate.getDate() + 14)
+  const formatted = reminderDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+
+  // Try to use calendar integration if available, otherwise show confirmation
+  if (window.confirm(`Set a reminder to follow up on your symptoms on ${formatted}?\n\nThis will open your calendar app.`)) {
+    // Create a .ics calendar event
+    const dtStart = reminderDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+    const dtEnd = new Date(reminderDate.getTime() + 3600000).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+    const summary = `Health Follow-up: Review ${causes.value[0]?.cause || 'symptoms'}`
+    const desc = `Follow up on your MedDiagnose AI assessment from ${formattedDate.value}.\\nPrimary assessment: ${causes.value[0]?.cause || 'N/A'} (${causes.value[0]?.value || '?'}% confidence).\\nConsider scheduling a doctor visit if symptoms persist.`
+    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${dtStart}\nDTEND:${dtEnd}\nSUMMARY:${summary}\nDESCRIPTION:${desc}\nEND:VEVENT\nEND:VCALENDAR`
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'health-followup.ics'
+    a.click()
+    URL.revokeObjectURL(url)
+    reminderSet.value = true
+  }
+}
+
+function shareWithFamily() {
+  const text = buildReportText()
+  const subject = `Health Assessment Summary - ${formattedDate.value}`
+
+  if (navigator.share) {
+    navigator.share({ title: subject, text }).catch(() => {})
+  } else {
+    // Fallback to email
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`
+    window.open(mailtoUrl, '_blank')
+  }
+}
 
 // Close share dropdown on click outside
 function handleClickOutside(e) {
@@ -2261,10 +2468,43 @@ async function copyReportLink() {
 }
 
 function shareViaEmail() {
-  const subject = encodeURIComponent(`Medical Consultation Report — ${formattedDate.value}`)
-  const body = encodeURIComponent(buildReportText())
-  window.open(`mailto:?subject=${subject}&body=${body}`, '_self')
+  import('@/services/emailExport.js').then(({ openDoctorEmail }) => {
+    openDoctorEmail({
+      causes: causes.value,
+      redFlags: redFlags.value,
+      recommendedTests: recommendedTests.value,
+      medications: medications.value,
+      patientAge: patientAge.value,
+      patientGender: patientGender.value,
+      chiefComplaint: chiefComplaint.value,
+      formattedDate: formattedDate.value,
+      overallUrgency: overallUrgency.value,
+      safetyWarnings: safetyWarnings.value,
+      actionChecklist: actionChecklist.value,
+    })
+  })
   showShareMenu.value = false
+}
+
+async function copyDoctorSummaryToClipboard() {
+  const { copyDoctorSummary } = await import('@/services/emailExport.js')
+  const ok = await copyDoctorSummary({
+    causes: causes.value,
+    redFlags: redFlags.value,
+    recommendedTests: recommendedTests.value,
+    medications: medications.value,
+    patientAge: patientAge.value,
+    patientGender: patientGender.value,
+    chiefComplaint: chiefComplaint.value,
+    formattedDate: formattedDate.value,
+    overallUrgency: overallUrgency.value,
+    safetyWarnings: safetyWarnings.value,
+    actionChecklist: actionChecklist.value,
+  })
+  if (ok) {
+    copiedDoctorSummary.value = true
+    setTimeout(() => { copiedDoctorSummary.value = false }, 2500)
+  }
 }
 
 function printReport() {
@@ -2333,6 +2573,8 @@ function _buildReportData() {
     chatTranscript: chatTranscript.value,
     estimatedCost: estimatedCost.value,
     tokenUsage: tokenUsage.value,
+    providerDisplay: providerDisplay.value,
+    modelUsed: modelUsed.value,
   }
 }
 

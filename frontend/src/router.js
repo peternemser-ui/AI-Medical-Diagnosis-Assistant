@@ -1,16 +1,22 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { isAuthenticated, getCurrentUser } from '@/services/authService'
+import { isAuthenticated, getCurrentUser, refreshToken } from '@/services/authService'
+import { trackEvent, EVENTS } from '@/services/analytics'
 
 // Eagerly loaded core views
 import HomeView from '@/views/HomeView.vue'
 import VoiceDiagnosis from '@/views/VoiceDiagnosis.vue'
 
-// Auth guard for protected routes
-function requireAuth(to, from, next) {
-  if (!isAuthenticated()) {
-    next('/login')
-  } else {
+// Auth guard for protected routes — tries token refresh before redirecting to login
+async function requireAuth(to, from, next) {
+  if (isAuthenticated()) {
     next()
+  } else {
+    const newToken = await refreshToken()
+    if (newToken) {
+      next()
+    } else {
+      next('/login')
+    }
   }
 }
 
@@ -32,34 +38,45 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: HomeView
+    component: HomeView,
+    meta: { title: 'MedDiagnose AI — AI Medical Diagnosis Assistant' }
   },
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/AuthLogin.vue')
+    component: () => import('@/views/AuthLogin.vue'),
+    meta: { title: 'Log In — MedDiagnose AI' }
   },
   {
     path: '/signup',
     name: 'Signup',
-    component: () => import('@/views/AuthSignup.vue')
+    component: () => import('@/views/AuthSignup.vue'),
+    meta: { title: 'Sign Up — MedDiagnose AI' }
   },
   {
     path: '/setup',
     name: 'ApiKeySetup',
-    component: () => import('@/views/ApiKeySetup.vue')
+    component: () => import('@/views/ApiKeySetup.vue'),
+    meta: { title: 'API Key Setup — MedDiagnose AI' }
   },
   {
     path: '/profile',
     name: 'Profile',
-    component: () => import('@/views/ProfileSetup.vue')
+    component: () => import('@/views/ProfileSetup.vue'),
+    meta: { title: 'Profile — MedDiagnose AI' }
   },
   {
     path: '/consult',
     name: 'Consult',
     component: VoiceDiagnosis,
-    beforeEnter: (to, from, next) => {
-      if (!isAuthenticated()) {
+    meta: { title: 'Consultation — MedDiagnose AI' },
+    beforeEnter: async (to, from, next) => {
+      let authed = isAuthenticated()
+      if (!authed) {
+        const newToken = await refreshToken()
+        authed = !!newToken
+      }
+      if (!authed) {
         next('/login')
       } else {
         const apiKeyConfigured = localStorage.getItem('api_key_configured')
@@ -75,28 +92,39 @@ const routes = [
     path: '/settings',
     name: 'Settings',
     component: () => import('@/views/SettingsView.vue'),
+    meta: { title: 'Settings — MedDiagnose AI' },
     beforeEnter: requireAuth
   },
   {
     path: '/reports',
     name: 'Reports',
     component: () => import('@/views/ReportsView.vue'),
+    meta: { title: 'Reports — MedDiagnose AI' },
     beforeEnter: requireAuth
   },
   {
     path: '/reports/:id',
     name: 'SessionDetail',
     component: () => import('@/views/SessionDetail.vue'),
+    meta: { title: 'Report Detail — MedDiagnose AI' },
+  },
+  {
+    path: '/pricing',
+    name: 'Pricing',
+    component: () => import('@/views/PricingView.vue'),
+    meta: { title: 'Pricing — MedDiagnose AI' }
   },
   {
     path: '/compare',
     name: 'Compare',
-    component: () => import('@/views/CompareView.vue')
+    component: () => import('@/views/CompareView.vue'),
+    meta: { title: 'Compare Plans — MedDiagnose AI' }
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/components/DiagnosisDashboard.vue'),
+    meta: { title: 'Dashboard — MedDiagnose AI' },
   },
   // Admin Dashboard (nested layout)
   {
@@ -159,6 +187,21 @@ const routes = [
         name: 'admin-seo',
         component: () => import('@/views/admin/AdminSEO.vue'),
       },
+      {
+        path: 'improve',
+        name: 'admin-improve',
+        component: () => import('@/views/admin/AdminImprove.vue'),
+      },
+      {
+        path: 'developer',
+        name: 'admin-developer',
+        component: () => import('@/views/admin/AdminDeveloperPortal.vue'),
+      },
+      {
+        path: 'referrals',
+        name: 'admin-referrals',
+        component: () => import('@/views/admin/AdminReferrals.vue'),
+      },
     ]
   },
   // Medication Management (nested layout)
@@ -220,6 +263,15 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+// Set document title and track page views
+router.afterEach((to) => {
+  const title = to.meta?.title
+  if (title) {
+    document.title = title
+  }
+  trackEvent(EVENTS.PAGE_VIEW, { path: to.path, name: to.name || '' })
 })
 
 export default router

@@ -1,5 +1,25 @@
 <template>
-  <div class="flex-1 overflow-hidden flex flex-col relative">
+  <div class="flex-1 overflow-hidden flex flex-col relative"
+    @dragover.prevent="onDragOver"
+    @dragenter.prevent="onDragEnter"
+    @dragleave="onDragLeave"
+    @drop.prevent="onDrop"
+  >
+    <!-- Drag-and-drop overlay -->
+    <Transition name="dropzone-fade">
+      <div
+        v-if="isDraggingOver"
+        class="absolute inset-0 z-40 flex flex-col items-center justify-center bg-blue-500/15 backdrop-blur-sm border-2 border-dashed border-blue-400/60 rounded-xl pointer-events-none"
+      >
+        <svg class="w-16 h-16 text-blue-400 mb-3 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <span class="text-lg font-semibold text-blue-300">Drop image to analyze</span>
+        <span class="text-sm text-blue-400/70 mt-1">JPEG, PNG, or WebP</span>
+      </div>
+    </Transition>
+
     <!-- Conversation messages -->
     <div
       ref="chatContainer"
@@ -49,16 +69,27 @@
             </div>
           </div>
 
-          <!-- Example prompt cards -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-2xl mb-8">
-            <button
-              v-for="prompt in examplePrompts"
-              :key="prompt"
-              @click="$emit('followup-selected', prompt)"
-              class="card-interactive rounded-card px-4 py-3.5 text-left text-body-sm group"
-            >
-              <span class="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">{{ prompt }}</span>
-            </button>
+          <!-- Categorized symptom suggestions (competitor-grade) -->
+          <div class="w-full max-w-2xl mb-8 space-y-4">
+            <div v-for="cat in symptomCategories" :key="cat.label">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-[10px] font-bold uppercase tracking-widest"
+                  :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ cat.label }}</span>
+                <div class="flex-1 h-px" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="symptom in cat.items"
+                  :key="symptom"
+                  @click="$emit('followup-selected', 'I have ' + symptom.toLowerCase())"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
+                  :class="cat.colorClass(isDark)"
+                >
+                  <span v-html="cat.icon" class="w-3.5 h-3.5 flex-shrink-0"></span>
+                  {{ symptom }}
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Interactive Body Diagram -->
@@ -173,6 +204,28 @@
             <div class="message-content">
               <!-- Structured diagnosis cards (when multi-agent data present) -->
               <div v-if="message.causes && message.causes.length > 0" class="space-y-3">
+                <!-- Urgency Alert Banner -->
+                <div v-if="message.urgency && isUrgentLevel(message.urgency)"
+                  class="flex items-center gap-3 p-4 rounded-xl mb-3 border-l-4"
+                  :class="getUrgencyBannerClass(message.urgency)">
+                  <div class="flex-shrink-0">
+                    <svg v-if="isEmergency(message.urgency)" class="w-6 h-6 text-red-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <svg v-else class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="font-bold text-sm" :class="isEmergency(message.urgency) ? 'text-red-400' : 'text-amber-400'">
+                      {{ getUrgencyLabel(message.urgency) }}
+                    </div>
+                    <div class="text-xs mt-0.5 opacity-80" :class="isEmergency(message.urgency) ? 'text-red-300' : 'text-amber-300'">
+                      {{ getUrgencyAdvice(message.urgency) }}
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Agent summary banner -->
                 <div v-if="message.totalTime" class="flex items-center gap-2.5 text-detail sm:text-caption rounded-xl px-3 py-2 mb-3 border" style="background: linear-gradient(135deg, rgba(139,92,246,0.06), rgba(6,182,212,0.04)); border-color: rgba(139,92,246,0.1)">
                   <div class="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style="background: rgba(139,92,246,0.15)">
@@ -297,7 +350,25 @@
 
               <!-- Plain text content (non-diagnosis messages) -->
               <div v-else>
-                <div v-if="message.text" class="whitespace-pre-wrap text-base leading-relaxed" v-html="formatMessageText(message.text)"></div>
+                <div v-if="message.text" class="prose prose-sm max-w-none leading-relaxed dark:prose-invert" v-html="formatMessageText(message.text)"></div>
+              </div>
+
+              <!-- Photo suggestion button -->
+              <div v-if="message.photoSuggestion" class="mt-3">
+                <button
+                  @click="$emit('open-camera')"
+                  class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border"
+                  :class="isDark
+                    ? 'bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border-blue-500/30 text-blue-300 hover:from-blue-600/30 hover:to-cyan-600/30 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-500/10'
+                    : 'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200 text-blue-600 hover:from-blue-100 hover:to-cyan-100 hover:border-blue-300 hover:shadow-md'"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                  Take a Photo
+                </button>
+                <p class="text-xs mt-1.5 opacity-60" :class="isDark ? 'text-slate-400' : 'text-gray-500'">A photo helps improve diagnostic accuracy</p>
               </div>
 
               <!-- Audio playback -->
@@ -392,6 +463,7 @@
 <script setup>
 import { ref, computed, nextTick, watch, createApp, h, onMounted } from 'vue'
 import DOMPurify from 'dompurify'
+import { marked } from 'marked'
 import DiagnosisCard from '@/components/DiagnosisCard.vue'
 import DiagnosisReport from '@/components/DiagnosisReport.vue'
 import SkeletonLoader from '@/components/SkeletonLoader.vue'
@@ -460,14 +532,99 @@ const paAvatarName = computed(() => {
   return names[props.paCharacter] || 'Dr. Hopps'
 })
 
-const emit = defineEmits(['followup-selected', 'replay-message', 'toggle-avatar'])
+const emit = defineEmits(['followup-selected', 'replay-message', 'toggle-avatar', 'open-camera', 'image-dropped'])
 
 const chatContainer = ref(null)
+
+// ── Drag-and-drop image support ──
+const isDraggingOver = ref(false)
+let dragCounter = 0
+
+function onDragEnter(e) {
+  dragCounter++
+  if (e.dataTransfer?.types?.includes('Files')) {
+    isDraggingOver.value = true
+  }
+}
+
+function onDragOver(e) {
+  // Keep the overlay visible while dragging
+  if (e.dataTransfer?.types?.includes('Files')) {
+    isDraggingOver.value = true
+  }
+}
+
+function onDragLeave() {
+  dragCounter--
+  if (dragCounter <= 0) {
+    dragCounter = 0
+    isDraggingOver.value = false
+  }
+}
+
+function onDrop(e) {
+  dragCounter = 0
+  isDraggingOver.value = false
+
+  const file = e.dataTransfer?.files?.[0]
+  if (!file || !file.type.startsWith('image/')) return
+
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    const dataUrl = ev.target.result
+    const base64 = dataUrl.split(',')[1]
+    emit('image-dropped', base64)
+  }
+  reader.readAsDataURL(file)
+}
 
 const examplePrompts = [
   'I have a persistent headache',
   'I\'ve been experiencing chest pain',
   'I have a skin rash that won\'t go away'
+]
+
+const symptomCategories = [
+  {
+    label: 'Common',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+    items: ['Headache', 'Fever', 'Fatigue', 'Cough', 'Sore throat', 'Nausea'],
+    colorClass: (dark) => dark
+      ? 'bg-slate-800/60 border-slate-700/50 text-slate-300 hover:bg-slate-700/80 hover:border-slate-600'
+      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300',
+  },
+  {
+    label: 'Pain',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+    items: ['Chest pain', 'Back pain', 'Abdominal pain', 'Joint pain', 'Neck pain'],
+    colorClass: (dark) => dark
+      ? 'bg-amber-500/8 border-amber-500/15 text-amber-300 hover:bg-amber-500/15 hover:border-amber-500/25'
+      : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 hover:border-amber-300',
+  },
+  {
+    label: 'Skin',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/></svg>',
+    items: ['Rash', 'Itching', 'Swelling', 'Discoloration', 'Dry skin'],
+    colorClass: (dark) => dark
+      ? 'bg-pink-500/8 border-pink-500/15 text-pink-300 hover:bg-pink-500/15 hover:border-pink-500/25'
+      : 'bg-pink-50 border-pink-200 text-pink-700 hover:bg-pink-100 hover:border-pink-300',
+  },
+  {
+    label: 'Mental Health',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z"/></svg>',
+    items: ['Anxiety', 'Insomnia', 'Depression', 'Stress', 'Brain fog'],
+    colorClass: (dark) => dark
+      ? 'bg-violet-500/8 border-violet-500/15 text-violet-300 hover:bg-violet-500/15 hover:border-violet-500/25'
+      : 'bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100 hover:border-violet-300',
+  },
+  {
+    label: 'Urgent',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4m0 4h.01"/></svg>',
+    items: ['Difficulty breathing', 'Severe chest pain', 'Sudden weakness', 'High fever'],
+    colorClass: (dark) => dark
+      ? 'bg-red-500/10 border-red-500/20 text-red-300 hover:bg-red-500/20 hover:border-red-500/30'
+      : 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100 hover:border-red-300',
+  },
 ]
 
 // Watch for new messages — always scroll to bottom so user sees latest
@@ -513,23 +670,60 @@ const getUrgencyClass = (urgency) => {
   }
 }
 
+const isUrgentLevel = (urgency) => {
+  if (!urgency) return false
+  const u = urgency.toLowerCase()
+  return u.includes('urgent') || u.includes('emergent') || u.includes('emergency') || u.includes('immediate') || u.includes('soon')
+}
+
+const isEmergency = (urgency) => {
+  if (!urgency) return false
+  const u = urgency.toLowerCase()
+  return u.includes('emergent') || u.includes('emergency') || u.includes('immediate')
+}
+
+const getUrgencyBannerClass = (urgency) => {
+  if (isEmergency(urgency)) return 'bg-red-500/10 border-red-500'
+  return 'bg-amber-500/10 border-amber-500'
+}
+
+const getUrgencyLabel = (urgency) => {
+  if (!urgency) return ''
+  const u = urgency.toLowerCase()
+  if (u.includes('emergent') || u.includes('emergency') || u.includes('immediate')) return 'EMERGENCY \u2014 Seek Immediate Medical Care'
+  if (u.includes('urgent')) return 'URGENT \u2014 See a Doctor Today'
+  if (u.includes('soon')) return 'Schedule an Appointment Soon'
+  return urgency
+}
+
+const getUrgencyAdvice = (urgency) => {
+  if (!urgency) return ''
+  const u = urgency.toLowerCase()
+  if (u.includes('emergent') || u.includes('emergency') || u.includes('immediate')) return 'Call 911 or go to the nearest emergency department immediately.'
+  if (u.includes('urgent')) return 'Contact your healthcare provider today or visit urgent care.'
+  if (u.includes('soon')) return 'Schedule an appointment with your doctor within the next few days.'
+  return ''
+}
+
 const formatMessageText = (text) => {
-  // Convert URLs to clickable links
-  const urlPattern = /(https?:\/\/[^\s]+)/g
-  text = text.replace(urlPattern, '<a href="$1" target="_blank" class="text-blue-400 hover:text-blue-300 underline">$1</a>')
+  // Configure marked for medical chat
+  marked.setOptions({
+    breaks: true,
+    gfm: true,
+  })
 
-  // Convert **bold** to bold
-  text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-
-  // Convert *italic* to italic
-  text = text.replace(/\*(.*?)\*/g, '<em>$1</em>')
-
-  // Collapse excessive blank lines
+  // Collapse excessive blank lines before parsing
   text = text.replace(/(\n\s*){3,}/g, '\n\n')
 
-  // Sanitize to prevent XSS — only allow safe formatting tags
-  return DOMPurify.sanitize(text, {
-    ALLOWED_TAGS: ['a', 'strong', 'em', 'br', 'p', 'ul', 'ol', 'li'],
+  // Parse markdown to HTML
+  let html = marked.parse(text)
+
+  // Add target blank to links
+  html = html.replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ')
+
+  // Sanitize with DOMPurify
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['a', 'strong', 'em', 'br', 'p', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'hr', 'span', 'del', 'sup', 'sub'],
     ALLOWED_ATTR: ['href', 'target', 'class', 'rel'],
   })
 }
@@ -607,6 +801,16 @@ defineExpose({
 </script>
 
 <style scoped>
+/* Drag-and-drop overlay transitions */
+.dropzone-fade-enter-active,
+.dropzone-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.dropzone-fade-enter-from,
+.dropzone-fade-leave-to {
+  opacity: 0;
+}
+
 .auto-scroll {
   scroll-behavior: smooth;
 }
@@ -702,5 +906,65 @@ defineExpose({
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: rgba(75, 85, 99, 0.8);
+}
+
+/* Markdown message styling */
+.message-content :deep(.prose) {
+  color: inherit;
+}
+.message-content :deep(.prose p) {
+  margin-bottom: 0.5em;
+}
+.message-content :deep(.prose p:last-child) {
+  margin-bottom: 0;
+}
+.message-content :deep(.prose ul),
+.message-content :deep(.prose ol) {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+.message-content :deep(.prose li) {
+  margin: 0.25em 0;
+}
+.message-content :deep(.prose strong) {
+  font-weight: 700;
+}
+.message-content :deep(.prose code) {
+  font-size: 0.875em;
+  padding: 0.15em 0.4em;
+  border-radius: 0.25rem;
+  background: rgba(0,0,0,0.1);
+}
+.message-content :deep(.prose blockquote) {
+  border-left: 3px solid rgba(100,116,139,0.3);
+  padding-left: 1em;
+  margin: 0.5em 0;
+  opacity: 0.85;
+}
+.message-content :deep(.prose h1),
+.message-content :deep(.prose h2),
+.message-content :deep(.prose h3) {
+  font-weight: 700;
+  margin: 0.75em 0 0.25em;
+}
+.message-content :deep(.prose hr) {
+  border-color: rgba(100,116,139,0.2);
+  margin: 0.75em 0;
+}
+.message-content :deep(.prose table) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875em;
+  margin: 0.5em 0;
+}
+.message-content :deep(.prose th),
+.message-content :deep(.prose td) {
+  border: 1px solid rgba(100,116,139,0.2);
+  padding: 0.35em 0.6em;
+  text-align: left;
+}
+.message-content :deep(.prose th) {
+  font-weight: 600;
+  background: rgba(100,116,139,0.08);
 }
 </style>

@@ -32,6 +32,15 @@ const PHI_KEYS = [
   'google_api_key',
 ]
 
+// PHI keys that should be cleared on logout (API keys are NOT PHI — keep them)
+const PHI_KEYS_CLEARABLE = [
+  'user_profile',
+  'diagnosis_history',
+  'latest_diagnosis_result',
+  'finalDiagnosis',
+  'chatHistory',
+]
+
 // ── Core encrypted read/write ────────────────────────────────
 
 /**
@@ -191,10 +200,31 @@ export function getOrCreateSalt() {
  * Called from Settings "Clear all local health data".
  */
 export function clearAllEncryptedData() {
+  // Only clear PHI data — preserve API keys so users don't have to re-enter them
+  for (const key of PHI_KEYS_CLEARABLE) {
+    localStorage.removeItem(ENC_PREFIX + key)
+  }
+  // Clear other enc_ keys EXCEPT API keys
+  const apiKeyPatterns = ['api_key', 'anthropic', 'openai', 'google']
+  const toRemove = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i)
+    if (k && k.startsWith(ENC_PREFIX) && !apiKeyPatterns.some(p => k.includes(p))) {
+      toRemove.push(k)
+    }
+  }
+  toRemove.forEach(k => localStorage.removeItem(k))
+  // Don't remove salt/version — needed to decrypt surviving API keys
+}
+
+/**
+ * Nuclear clear — removes EVERYTHING including API keys.
+ * Only called from Settings "Clear ALL data" with explicit user confirmation.
+ */
+export function clearAllEncryptedDataIncludingKeys() {
   for (const key of PHI_KEYS) {
     localStorage.removeItem(ENC_PREFIX + key)
   }
-  // Also clear any other enc_ keys
   const toRemove = []
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i)

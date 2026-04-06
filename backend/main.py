@@ -15,7 +15,7 @@ from typing import Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -71,6 +71,12 @@ app.include_router(auth_router)
 from medication_routes import medication_router
 app.include_router(medication_router)
 
+from revenue_routes import revenue_router
+app.include_router(revenue_router)
+
+from subscription_routes import subscription_router
+app.include_router(subscription_router)
+
 
 # ── Helpers ──────────────────────────────────────────────────────────
 
@@ -107,7 +113,7 @@ def _get_all_api_keys(request: Request) -> dict[str, Optional[str]]:
     }
 
 
-def _resolve_key_with_fallback(model_pref: str, all_keys: dict, fallback_key=None) -> tuple[Optional[str], str]:
+def _resolve_key_with_fallback(model_pref: str, all_keys: dict, fallback_key=None, exclude_providers: list = None) -> tuple[Optional[str], str]:
     """Resolve API key based on model preference with fallback to any available key.
 
     Priority order based on model_pref:
@@ -115,7 +121,11 @@ def _resolve_key_with_fallback(model_pref: str, all_keys: dict, fallback_key=Non
     - gemini-* → google > anthropic > openai > ollama
     - opus/sonnet/haiku → anthropic > openai > google > ollama
     - auto     → anthropic > openai > google > ollama
+
+    exclude_providers: list of providers that already failed (for retry logic)
     """
+    exclude = set(exclude_providers or [])
+
     # Build priority order based on model preference
     if model_pref.startswith('gpt'):
         order = ['openai', 'anthropic', 'google']
@@ -126,22 +136,35 @@ def _resolve_key_with_fallback(model_pref: str, all_keys: dict, fallback_key=Non
     else:
         order = ['anthropic', 'openai', 'google']
 
-    # Try each key in priority order
+    # Try each key in priority order, skipping excluded providers
     for vendor in order:
+        if vendor in exclude:
+            continue
         key = all_keys.get(vendor)
         if key:
             return key, vendor
 
-    # Try Ollama as last resort
-    try:
-        import httpx
-        resp = httpx.get(OLLAMA_VERSION_URL, timeout=OLLAMA_HEALTH_CHECK_TIMEOUT)
-        if resp.status_code == 200:
-            return "ollama", "ollama"
-    except Exception:
-        pass
+    # Try Ollama as last resort (if not excluded)
+    if "ollama" not in exclude:
+        try:
+            import httpx
+            resp = httpx.get(OLLAMA_VERSION_URL, timeout=OLLAMA_HEALTH_CHECK_TIMEOUT)
+            if resp.status_code == 200:
+                return "ollama", "ollama"
+        except Exception:
+            pass
 
     return None, "none"
+
+
+def _is_auth_or_key_error(error: Exception) -> bool:
+    """Check if an error is an authentication/API key issue (worth retrying with different key)."""
+    err_str = str(error).lower()
+    return any(term in err_str for term in [
+        'api_key', 'api key', 'authentication', 'unauthorized', '401',
+        'invalid key', 'invalid_api_key', 'permission', '403', 'forbidden',
+        'rate limit', '429', 'quota', 'billing', 'overloaded', '529', '503',
+    ])
 
 
 def _fallback_diagnosis(req: DiagnosisRequest) -> dict:
@@ -331,7 +354,7 @@ async def health_check():
 @app.post("/api/validate-key")
 @limiter.limit("10/minute")
 async def validate_api_key(
-    http_request: Request,
+    request: Request,
     x_openai_api_key: Optional[str] = Header(None),
     x_anthropic_api_key: Optional[str] = Header(None),
     x_google_api_key: Optional[str] = Header(None),
@@ -454,7 +477,7 @@ async def validate_api_key(
 @limiter.limit("20/hour")
 async def diagnose_symptoms(
     diagnosis_request: DiagnosisRequest,
-    http_request: Request,
+    request: Request,
     x_openai_api_key: Optional[str] = Header(None),
     x_anthropic_api_key: Optional[str] = Header(None),
 ):
@@ -464,80 +487,183 @@ async def diagnose_symptoms(
     Runs the full multi-agent pipeline:
     Triage → Diagnostician → Specialist → Treatment
     """
-    try:
-        # Resolve API key based on model preference with automatic fallback
-        model_pref = diagnosis_request.model_preference or 'auto'
-        all_keys = _get_all_api_keys(http_request)
-        api_key, provider = _resolve_key_with_fallback(model_pref, all_keys)
-        logger.info("Resolved provider=%s for model_pref=%s (keys available: %s)",
-                     provider, model_pref, [k for k, v in all_keys.items() if v])
+    # ── Subscription usage gate ──────────────────────────────────────
+    from agents.subscription_agent import SubscriptionManager
+    from auth import get_optional_user
+    from fastapi.responses import JSONResponse
 
-        if not api_key:
-            logger.warning("No API key — returning fallback diagnosis")
-            return _fallback_diagnosis(diagnosis_request)
+    user = await get_optional_user(request)
+    if user:
+        sub = SubscriptionManager()
+        usage = sub.check_usage(user["id"])
+        if not usage["can_diagnose"]:
+            return JSONResponse(status_code=402, content={
+                "error": "usage_limit",
+                "message": f"You've used all {usage['limit']} diagnoses this month. Upgrade to continue.",
+                "current_tier": usage["tier"],
+                "used": usage["used"],
+                "limit": usage["limit"],
+                "upgrade_url": "/pricing",
+            })
+        # Check model access
+        model_pref_check = diagnosis_request.model_preference or "auto"
+        if model_pref_check != "auto" and not sub.can_use_model(user["id"], model_pref_check):
+            prompt = sub.get_upgrade_prompt(user["id"], model_pref_check)
+            return JSONResponse(status_code=402, content={
+                "error": "model_locked",
+                "message": f"Your {usage['tier']} plan doesn't include {model_pref_check}. {prompt['message']}",
+                "current_tier": usage["tier"],
+                "upgrade_url": "/pricing",
+            })
+        # Track usage after checks pass (increment at end of pipeline would be better,
+        # but doing it here is simpler and prevents abuse)
+        sub.increment_usage(user["id"])
+    # ── End subscription gate ────────────────────────────────────────
 
-        if provider == "openai":
-            logger.info("OpenAI key detected — using OpenAI single-model diagnosis")
-            return await _openai_diagnosis(api_key, diagnosis_request)
+    model_pref = diagnosis_request.model_preference or 'auto'
+    all_keys = _get_all_api_keys(request)
+    failed_providers = []
+    last_error = None
 
-        # Ollama: use local model via multi-agent pipeline
-        if provider == "ollama":
-            logger.info("Ollama detected — using local model for multi-agent diagnosis")
-            if not diagnosis_request.model_preference or diagnosis_request.model_preference == "auto":
-                diagnosis_request.model_preference = "llama3.1:8b"
-
-        logger.info(
-            "Starting multi-agent diagnosis for: %s (age=%d, gender=%s, provider=%s)",
-            diagnosis_request.symptoms[:80],
-            diagnosis_request.age,
-            diagnosis_request.gender,
-            provider,
-        )
-
-        all_keys = _get_all_api_keys(http_request)
-        orchestrator = OrchestratorAgent(
-            api_key=api_key if provider != "ollama" else "ollama",
-            openai_key=all_keys.get("openai"),
-            google_key=all_keys.get("google"),
-        )
-        result = await orchestrator.run_diagnosis(
-            symptoms=diagnosis_request.symptoms,
-            age=diagnosis_request.age,
-            gender=diagnosis_request.gender,
-            duration=diagnosis_request.duration,
-            severity=diagnosis_request.severity,
-            language=diagnosis_request.language,
-            image_base64=diagnosis_request.image_base64,
-            medical_history=diagnosis_request.medical_history,
-            current_medications=diagnosis_request.current_medications,
-            allergies=diagnosis_request.allergies,
-            family_history=diagnosis_request.family_history,
-            social_history=diagnosis_request.social_history,
-            model_preference=diagnosis_request.model_preference,
-            specialist_routing=diagnosis_request.specialist_routing,
-        )
-
-        logger.info(
-            "Multi-agent diagnosis complete in %.1fs (agents: %s, specialist: %s)",
-            result.get("total_time", 0),
-            ", ".join(result.get("agents_used", [])),
-            diagnosis_request.specialist_routing or "generic",
-        )
-
-        # Debug: dump result to file for inspection
+    # Retry loop: try each available provider until one works
+    for attempt in range(3):
         try:
-            import pathlib
-            debug_path = pathlib.Path(__file__).parent / "_debug_last_result.json"
-            debug_path.write_text(json.dumps(result, indent=2, default=str), encoding="utf-8")
-            logger.info("Debug result written to %s", debug_path)
-        except Exception as dbg_err:
-            logger.warning("Failed to write debug result: %s", dbg_err)
+            api_key, provider = _resolve_key_with_fallback(model_pref, all_keys, exclude_providers=failed_providers)
+            logger.info("Attempt %d: resolved provider=%s for model_pref=%s (excluded: %s, keys available: %s)",
+                         attempt + 1, provider, model_pref, failed_providers, [k for k, v in all_keys.items() if v])
 
-        return result
+            if not api_key:
+                logger.warning("No more API keys to try — returning fallback diagnosis")
+                return _fallback_diagnosis(diagnosis_request)
 
-    except Exception as e:
-        logger.error("Diagnosis error: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Diagnosis failed: {str(e)}")
+            if provider == "openai":
+                logger.info("OpenAI key detected — using OpenAI single-model diagnosis")
+                result = await _openai_diagnosis(api_key, diagnosis_request)
+                result["provider"] = "openai"
+                result["model_used"] = diagnosis_request.model_preference or "gpt-4o"
+                result["provider_display"] = "GPT-4o (OpenAI)"
+                return result
+
+            # Ollama: use local model via multi-agent pipeline
+            if provider == "ollama":
+                logger.info("Ollama detected — using local model for multi-agent diagnosis")
+                if not diagnosis_request.model_preference or diagnosis_request.model_preference == "auto":
+                    diagnosis_request.model_preference = "llama3.1:8b"
+
+            logger.info(
+                "Starting multi-agent diagnosis for: %s (age=%d, gender=%s, provider=%s)",
+                diagnosis_request.symptoms[:80],
+                diagnosis_request.age,
+                diagnosis_request.gender,
+                provider,
+            )
+
+            orchestrator = OrchestratorAgent(
+                api_key=api_key if provider != "ollama" else "ollama",
+                openai_key=all_keys.get("openai"),
+                google_key=all_keys.get("google"),
+            )
+            result = await orchestrator.run_diagnosis(
+                symptoms=diagnosis_request.symptoms,
+                age=diagnosis_request.age,
+                gender=diagnosis_request.gender,
+                duration=diagnosis_request.duration,
+                severity=diagnosis_request.severity,
+                language=diagnosis_request.language,
+                image_base64=diagnosis_request.image_base64,
+                medical_history=diagnosis_request.medical_history,
+                current_medications=diagnosis_request.current_medications,
+                allergies=diagnosis_request.allergies,
+                family_history=diagnosis_request.family_history,
+                social_history=diagnosis_request.social_history,
+                model_preference=diagnosis_request.model_preference,
+                specialist_routing=diagnosis_request.specialist_routing,
+                font_size=diagnosis_request.font_size or "medium",
+            )
+
+            logger.info(
+                "Multi-agent diagnosis complete in %.1fs (agents: %s, specialist: %s, provider: %s)",
+                result.get("total_time", 0),
+                ", ".join(result.get("agents_used", [])),
+                diagnosis_request.specialist_routing or "generic",
+                provider,
+            )
+
+            # Inject provider/model metadata into result
+            result["provider"] = provider
+            result["model_used"] = diagnosis_request.model_preference or "auto"
+            if provider == "ollama":
+                result["model_used"] = diagnosis_request.model_preference or "llama3.1:8b"
+            elif provider == "anthropic":
+                result["model_used"] = "claude-sonnet-4-6"
+            result["provider_display"] = {
+                "anthropic": "Claude (Anthropic)",
+                "openai": "GPT-4o (OpenAI)",
+                "google": "Gemini (Google)",
+                "ollama": f"Ollama ({diagnosis_request.model_preference or 'llama3.1:8b'})",
+            }.get(provider, provider)
+
+            # Debug: dump result to file for inspection
+            try:
+                import pathlib
+                debug_path = pathlib.Path(__file__).parent / "_debug_last_result.json"
+                debug_path.write_text(json.dumps(result, indent=2, default=str), encoding="utf-8")
+            except Exception:
+                pass
+
+            # ── Email notifications ─────────────────────────────────────
+            if user:
+                try:
+                    from email_service import EmailService
+                    _email_svc = EmailService()
+
+                    # Send diagnosis-complete email
+                    top_cause = ""
+                    confidence = 0
+                    causes = result.get("causes") or []
+                    if causes and isinstance(causes, list) and len(causes) > 0:
+                        top = causes[0]
+                        top_cause = top.get("name", top.get("condition", "Assessment"))
+                        confidence = top.get("probability", top.get("confidence", 0))
+                    _email_svc.send_diagnosis_complete(
+                        email=user.get("email", ""),
+                        name=user.get("name", ""),
+                        diagnosis=top_cause or "Your Assessment",
+                        confidence=confidence,
+                    )
+
+                    # Check if usage hit 80% and send warning
+                    post_usage = sub.check_usage(user["id"])
+                    used = post_usage.get("used", 0)
+                    limit = post_usage.get("limit", -1)
+                    if limit > 0 and used >= int(limit * 0.8) and used < limit:
+                        _email_svc.send_usage_warning(
+                            email=user.get("email", ""),
+                            name=user.get("name", ""),
+                            used=used,
+                            limit=limit,
+                        )
+                except Exception as email_err:
+                    logger.warning("Email notification failed (non-critical): %s", email_err)
+            # ── End email notifications ─────────────────────────────────
+
+            return result
+
+        except Exception as e:
+            last_error = e
+            logger.warning("Provider %s failed (attempt %d): %s", provider, attempt + 1, e)
+            if _is_auth_or_key_error(e):
+                failed_providers.append(provider)
+                logger.info("Marking provider %s as failed, will try next available key", provider)
+                continue
+            else:
+                # Non-auth error (network, server, etc.) — don't retry with different key
+                logger.error("Diagnosis error (non-retryable): %s", e, exc_info=True)
+                raise HTTPException(status_code=500, detail=f"Diagnosis failed: {str(e)}")
+
+    # All providers exhausted
+    logger.error("All providers failed. Last error: %s", last_error)
+    raise HTTPException(status_code=500, detail=f"All API providers failed. Last error: {str(last_error)}")
 
 
 @app.post("/api/diagnose/stream")
@@ -556,109 +682,166 @@ async def diagnose_symptoms_stream(
     Final event:
       data: {"event": "complete", "result": { ... }}\n\n
     """
-    try:
-        # Resolve API key based on model preference with automatic fallback
-        model_pref = diagnosis_request.model_preference or 'auto'
-        all_keys = _get_all_api_keys(http_request)
-        api_key, provider = _resolve_key_with_fallback(model_pref, all_keys)
-        logger.info("Stream: resolved provider=%s for model_pref=%s (keys available: %s)",
-                     provider, model_pref, [k for k, v in all_keys.items() if v])
+    # ── Subscription usage gate ──────────────────────────────────────
+    from agents.subscription_agent import SubscriptionManager
+    from auth import get_optional_user
 
-        if not api_key:
-            logger.warning("No API key — returning fallback diagnosis via SSE")
-            fallback = _fallback_diagnosis(diagnosis_request)
+    user = await get_optional_user(http_request)
+    if user:
+        sub = SubscriptionManager()
+        usage = sub.check_usage(user["id"])
+        if not usage["can_diagnose"]:
+            return JSONResponse(status_code=402, content={
+                "error": "usage_limit",
+                "message": f"You've used all {usage['limit']} diagnoses this month. Upgrade to continue.",
+                "current_tier": usage["tier"],
+                "used": usage["used"],
+                "limit": usage["limit"],
+                "upgrade_url": "/pricing",
+            })
+        model_pref_check = diagnosis_request.model_preference or "auto"
+        if model_pref_check != "auto" and not sub.can_use_model(user["id"], model_pref_check):
+            prompt = sub.get_upgrade_prompt(user["id"], model_pref_check)
+            return JSONResponse(status_code=402, content={
+                "error": "model_locked",
+                "message": f"Your {usage['tier']} plan doesn't include {model_pref_check}. {prompt['message']}",
+                "current_tier": usage["tier"],
+                "upgrade_url": "/pricing",
+            })
+        sub.increment_usage(user["id"])
+    # ── End subscription gate ────────────────────────────────────────
 
-            async def fallback_generator():
-                yield f"data: {json.dumps({'event': 'complete', 'result': fallback})}\n\n"
+    model_pref = diagnosis_request.model_preference or 'auto'
+    all_keys = _get_all_api_keys(http_request)
+    failed_providers = []
 
-            return StreamingResponse(fallback_generator(), media_type="text/event-stream")
+    # Try providers with automatic fallback on auth/key errors
+    for attempt in range(3):
+        try:
+            api_key, provider = _resolve_key_with_fallback(model_pref, all_keys, exclude_providers=failed_providers)
+            logger.info("Stream attempt %d: resolved provider=%s for model_pref=%s (excluded: %s, keys available: %s)",
+                         attempt + 1, provider, model_pref, failed_providers, [k for k, v in all_keys.items() if v])
 
-        if provider == "openai":
-            logger.info("OpenAI key detected — returning single SSE event")
-            result = await _openai_diagnosis(api_key, diagnosis_request)
+            if not api_key:
+                logger.warning("No API key — returning fallback diagnosis via SSE")
+                fallback = _fallback_diagnosis(diagnosis_request)
 
-            async def openai_generator():
-                yield f"data: {json.dumps({'event': 'complete', 'result': result})}\n\n"
+                async def fallback_generator():
+                    yield f"data: {json.dumps({'event': 'complete', 'result': fallback})}\n\n"
 
-            return StreamingResponse(openai_generator(), media_type="text/event-stream")
+                return StreamingResponse(fallback_generator(), media_type="text/event-stream")
 
-        # Ollama: use local model
-        if provider == "ollama":
-            if not diagnosis_request.model_preference or diagnosis_request.model_preference == "auto":
-                diagnosis_request.model_preference = "llama3.1:8b"
+            if provider == "openai":
+                logger.info("OpenAI key detected — returning single SSE event")
+                result = await _openai_diagnosis(api_key, diagnosis_request)
+                result["provider"] = "openai"
+                result["model_used"] = diagnosis_request.model_preference or "gpt-4o"
+                result["provider_display"] = "GPT-4o (OpenAI)"
 
-        logger.info(
-            "Starting streaming multi-agent diagnosis for: %s (age=%d, gender=%s, provider=%s)",
-            diagnosis_request.symptoms[:80],
-            diagnosis_request.age,
-            diagnosis_request.gender,
-            provider,
-        )
+                async def openai_generator():
+                    yield f"data: {json.dumps({'event': 'complete', 'result': result})}\n\n"
 
-        event_queue: asyncio.Queue = asyncio.Queue()
-        all_keys = _get_all_api_keys(http_request)
-        orchestrator = OrchestratorAgent(
-            api_key=api_key if provider != "ollama" else "ollama",
-            openai_key=all_keys.get("openai"),
-            google_key=all_keys.get("google"),
-        )
+                return StreamingResponse(openai_generator(), media_type="text/event-stream")
 
-        # Spawn the streaming pipeline as a background task with error handling
-        async def _run_streaming_pipeline():
-            try:
-                await orchestrator.run_diagnosis_streaming(
-                    event_queue=event_queue,
-                    symptoms=diagnosis_request.symptoms,
-                    age=diagnosis_request.age,
-                    gender=diagnosis_request.gender,
-                    duration=diagnosis_request.duration,
-                    severity=diagnosis_request.severity,
-                    image_base64=getattr(diagnosis_request, 'image_base64', None),
-                    medical_history=diagnosis_request.medical_history,
-                    current_medications=diagnosis_request.current_medications,
-                    allergies=diagnosis_request.allergies,
-                    family_history=diagnosis_request.family_history,
-                    social_history=diagnosis_request.social_history,
-                    model_preference=diagnosis_request.model_preference,
-                )
-            except Exception as exc:
-                logger.error("Streaming pipeline crashed: %s", exc, exc_info=True)
-                await event_queue.put({
-                    "event": "complete",
-                    "result": {
-                        "answer": f"Diagnosis pipeline error: {exc}",
-                        "causes": [],
-                        "red_flags": [],
-                        "recommended_tests": [],
-                        "agent_timings": {},
-                        "total_time": 0,
-                        "multi_agent": True,
-                        "agents_used": [],
-                        "estimated_cost": 0,
-                        "error": str(exc),
-                    },
-                })
+            # Ollama: use local model
+            if provider == "ollama":
+                if not diagnosis_request.model_preference or diagnosis_request.model_preference == "auto":
+                    diagnosis_request.model_preference = "llama3.1:8b"
 
-        asyncio.create_task(_run_streaming_pipeline())
+            logger.info(
+                "Starting streaming multi-agent diagnosis for: %s (age=%d, gender=%s, provider=%s)",
+                diagnosis_request.symptoms[:80],
+                diagnosis_request.age,
+                diagnosis_request.gender,
+                provider,
+            )
 
-        async def event_generator():
-            # Immediate first event to establish connection in browser
-            yield {"data": json.dumps({"event": "started", "message": "Pipeline started"})}
-            while True:
+            event_queue: asyncio.Queue = asyncio.Queue()
+            orchestrator = OrchestratorAgent(
+                api_key=api_key if provider != "ollama" else "ollama",
+                openai_key=all_keys.get("openai"),
+                google_key=all_keys.get("google"),
+            )
+
+            # Spawn the streaming pipeline as a background task with error handling
+            async def _run_streaming_pipeline():
                 try:
-                    event = await asyncio.wait_for(event_queue.get(), timeout=10.0)
-                    yield {"data": json.dumps(event)}
-                    if event.get("event") == "complete":
-                        break
-                except asyncio.TimeoutError:
-                    yield {"comment": "keepalive"}
+                    await orchestrator.run_diagnosis_streaming(
+                        event_queue=event_queue,
+                        symptoms=diagnosis_request.symptoms,
+                        age=diagnosis_request.age,
+                        gender=diagnosis_request.gender,
+                        duration=diagnosis_request.duration,
+                        severity=diagnosis_request.severity,
+                        image_base64=getattr(diagnosis_request, 'image_base64', None),
+                        medical_history=diagnosis_request.medical_history,
+                        current_medications=diagnosis_request.current_medications,
+                        allergies=diagnosis_request.allergies,
+                        family_history=diagnosis_request.family_history,
+                        social_history=diagnosis_request.social_history,
+                        model_preference=diagnosis_request.model_preference,
+                    )
+                except Exception as exc:
+                    logger.error("Streaming pipeline crashed: %s", exc, exc_info=True)
+                    await event_queue.put({
+                        "event": "complete",
+                        "result": {
+                            "answer": f"Diagnosis pipeline error: {exc}",
+                            "causes": [],
+                            "red_flags": [],
+                            "recommended_tests": [],
+                            "agent_timings": {},
+                            "total_time": 0,
+                            "multi_agent": True,
+                            "agents_used": [],
+                            "estimated_cost": 0,
+                            "error": str(exc),
+                        },
+                    })
 
-        from sse_starlette.sse import EventSourceResponse
-        return EventSourceResponse(event_generator(), ping=5)
+            asyncio.create_task(_run_streaming_pipeline())
 
-    except Exception as e:
-        logger.error("Streaming diagnosis error: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Streaming diagnosis failed: {str(e)}")
+            _stream_provider = provider
+            _stream_model = diagnosis_request.model_preference or "auto"
+            _stream_display = {
+                "anthropic": "Claude (Anthropic)",
+                "openai": "GPT-4o (OpenAI)",
+                "google": "Gemini (Google)",
+                "ollama": f"Ollama ({diagnosis_request.model_preference or 'llama3.1:8b'})",
+            }.get(provider, provider)
+
+            async def event_generator():
+                yield {"data": json.dumps({"event": "started", "message": f"Pipeline started (provider: {_stream_provider})", "provider": _stream_provider, "provider_display": _stream_display})}
+                while True:
+                    try:
+                        event = await asyncio.wait_for(event_queue.get(), timeout=10.0)
+                        # Inject provider/model info into the final result
+                        if event.get("event") == "complete" and "result" in event:
+                            event["result"]["provider"] = _stream_provider
+                            event["result"]["model_used"] = _stream_model
+                            event["result"]["provider_display"] = _stream_display
+                        yield {"data": json.dumps(event)}
+                        if event.get("event") == "complete":
+                            break
+                    except asyncio.TimeoutError:
+                        yield {"comment": "keepalive"}
+
+            from sse_starlette.sse import EventSourceResponse
+            return EventSourceResponse(event_generator(), ping=5)
+
+        except Exception as e:
+            logger.warning("Stream provider %s failed (attempt %d): %s", provider, attempt + 1, e)
+            if _is_auth_or_key_error(e):
+                failed_providers.append(provider)
+                logger.info("Stream: marking provider %s as failed, trying next key", provider)
+                continue
+            else:
+                logger.error("Streaming diagnosis error (non-retryable): %s", e, exc_info=True)
+                raise HTTPException(status_code=500, detail=f"Streaming diagnosis failed: {str(e)}")
+
+    # All providers exhausted
+    logger.error("Stream: all providers failed")
+    raise HTTPException(status_code=500, detail="All API providers failed")
 
 
 @app.post("/api/followup")
@@ -678,14 +861,24 @@ async def followup_question(
                 "estimated_cost": 0.0,
             }
 
+        # Build language instruction for non-English follow-ups
+        fu_lang = getattr(followup_req, 'language', 'en') or 'en'
+        FU_LANG_NAMES = {"en":"English","zh":"Chinese (Simplified)","es":"Spanish","fr":"French","hi":"Hindi","de":"German","pt":"Portuguese","ja":"Japanese","ko":"Korean","ar":"Arabic","ru":"Russian","it":"Italian"}
+        fu_lang_suffix = ""
+        if fu_lang != "en" and fu_lang in FU_LANG_NAMES:
+            fu_lang_suffix = f"\nIMPORTANT: Respond entirely in {FU_LANG_NAMES[fu_lang]}."
+
         if provider == "openai":
             # Quick OpenAI follow-up
             from openai import OpenAI
             client = OpenAI(api_key=api_key)
+            system_msg = "You are a medical AI assistant providing follow-up guidance."
+            if fu_lang_suffix:
+                system_msg += fu_lang_suffix
             resp = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": "You are a medical AI assistant providing follow-up guidance."},
+                    {"role": "system", "content": system_msg},
                     {"role": "user", "content": f"Patient follow-up question: {followup_req.question}\nOriginal symptoms: {followup_req.original_symptoms}"}
                 ],
                 max_tokens=1500,
@@ -698,6 +891,7 @@ async def followup_question(
             question=followup_req.question,
             previous_diagnosis=followup_req.previous_diagnosis,
             original_symptoms=followup_req.original_symptoms,
+            language=fu_lang,
         )
 
         return {
@@ -720,7 +914,9 @@ async def pa_interview(
 ):
     """Run one round of the PA clinical interview."""
     try:
-        api_key, provider = _get_api_key(x_anthropic_api_key or x_openai_api_key)
+        all_keys = _get_all_api_keys(http_request)
+        model_pref = request_data.model_preference or 'auto'
+        api_key, provider = _resolve_key_with_fallback(model_pref, all_keys)
 
         if not api_key:
             # No API key — return scripted follow-up questions
@@ -891,6 +1087,7 @@ async def generate_question(
             previous_questions=request_data.previous_questions,
             questions_asked=request_data.questions_asked,
             total_ai_questions=request_data.total_ai_questions,
+            language=gen_lang,
         )
 
         return {"question": question, "estimated_cost": 0.01}

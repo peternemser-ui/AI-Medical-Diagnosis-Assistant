@@ -31,6 +31,9 @@ from auth import (
     verify_password,
     get_current_user,
 )
+from email_service import EmailService
+
+_email = EmailService()
 
 auth_router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -166,6 +169,9 @@ async def signup(body: SignupRequest, request: Request):
 
     # Audit
     db.log_audit(user["id"], "signup", "user", _client_ip(request))
+
+    # Send welcome email
+    _email.send_welcome(email=user["email"], name=user.get("name", ""))
 
     return {
         "user": _safe_user(user),
