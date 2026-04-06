@@ -77,72 +77,66 @@
             </div>
           </div>
 
-          <!-- Right: Confidence + Illustration + Stats -->
-          <div class="flex flex-row lg:flex-col items-start lg:items-center gap-5 flex-shrink-0">
+          <!-- Right: Stacked vertically — Illustration → Confidence → Name → Stats -->
+          <div class="flex flex-col items-center gap-4 flex-shrink-0 w-full lg:w-auto lg:min-w-[220px]">
 
-            <!-- Confidence ring + Illustration side by side -->
-            <div class="flex flex-row items-start gap-5">
-              <!-- Confidence ring + differential bars -->
-              <div v-if="topCause.value" class="relative flex flex-col items-center">
-                <div class="w-28 h-28 rounded-full flex items-center justify-center relative"
-                  :style="confidenceRingStyle">
-                  <div class="text-center">
-                    <div class="text-3xl font-black tabular-nums" :style="{ color: confidenceColor }">
-                      {{ topCause.value }}%
-                    </div>
-                    <div class="text-tiny font-bold uppercase tracking-widest mt-0.5"
-                      :class="isDark ? 'text-slate-400' : 'text-slate-600'">confidence</div>
+            <!-- Medical Illustration (top, prominent) -->
+            <div v-if="topCause.cause" class="hidden lg:block">
+              <MedicalIllustration
+                :condition="topCause.cause || ''"
+                :specialty="topCause.specialty || ''"
+                :size="160"
+              />
+            </div>
+
+            <!-- Confidence ring -->
+            <div v-if="topCause.value" class="relative flex flex-col items-center">
+              <div class="w-24 h-24 rounded-full flex items-center justify-center relative"
+                :style="confidenceRingStyle">
+                <div class="text-center">
+                  <div class="text-2xl font-black tabular-nums" :style="{ color: confidenceColor }">
+                    {{ topCause.value }}%
                   </div>
-                </div>
-                <!-- Primary diagnosis name + confidence label -->
-                <div class="mt-3 text-center">
-                  <div class="text-xs font-bold truncate max-w-[180px]" :class="isDark ? 'text-white' : 'text-slate-900'">{{ topCause.cause || 'Awaiting Analysis' }}</div>
-                  <span class="text-caption font-semibold"
-                    :style="{ color: confidenceColor }">{{ confidenceLabel }}</span>
-                </div>
-
-                <!-- Separator -->
-                <div class="w-full my-4 border-t" :class="isDark ? 'border-slate-700/60' : 'border-slate-200'"></div>
-
-                <!-- Mini differential chart -->
-                <div v-if="otherCauses.length > 0" class="w-full space-y-1.5">
-                  <div v-for="c in otherCauses" :key="c.cause" class="flex items-center gap-2">
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center justify-between mb-0.5">
-                        <span class="text-tiny font-medium truncate" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ c.cause.length > 22 ? c.cause.slice(0, 22) + '...' : c.cause }}</span>
-                        <span class="text-tiny font-bold tabular-nums ml-1" :style="{ color: miniBarColor(c.value) }">{{ c.value }}%</span>
-                      </div>
-                      <div class="h-1.5 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-700/60' : 'bg-slate-200'">
-                        <div class="h-full rounded-full transition-all duration-700" :style="{ width: c.value + '%', background: miniBarColor(c.value) }"></div>
-                      </div>
-                    </div>
-                  </div>
+                  <div class="text-tiny font-bold uppercase tracking-widest mt-0.5"
+                    :class="isDark ? 'text-slate-400' : 'text-slate-600'">confidence</div>
                 </div>
               </div>
-
-              <!-- Medical Illustration -->
-              <div v-if="topCause.cause" class="hidden lg:block">
-                <MedicalIllustration
-                  :condition="topCause.cause || ''"
-                  :specialty="topCause.specialty || ''"
-                  :size="180"
-                />
+              <!-- Primary diagnosis name + confidence label -->
+              <div class="mt-2 text-center">
+                <div class="text-xs font-bold truncate max-w-[200px]" :class="isDark ? 'text-white' : 'text-slate-900'">{{ topCause.cause || 'Awaiting Analysis' }}</div>
+                <span class="text-caption font-semibold"
+                  :style="{ color: confidenceColor }">{{ confidenceLabel }}</span>
               </div>
             </div>
 
-            <!-- Stat pills -->
-            <div class="flex flex-row lg:flex-col gap-2">
-              <div class="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl border"
+            <!-- Mini differential chart -->
+            <div v-if="otherCauses.length > 0" class="w-full max-w-[220px] space-y-1.5">
+              <div v-for="c in otherCauses" :key="c.cause" class="flex items-center gap-2">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-tiny font-medium truncate" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ c.cause.length > 22 ? c.cause.slice(0, 22) + '...' : c.cause }}</span>
+                    <span class="text-tiny font-bold tabular-nums ml-1" :style="{ color: miniBarColor(c.value) }">{{ c.value }}%</span>
+                  </div>
+                  <div class="h-1.5 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-700/60' : 'bg-slate-200'">
+                    <div class="h-full rounded-full transition-all duration-700" :style="{ width: c.value + '%', background: miniBarColor(c.value) }"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stat pills — horizontal row -->
+            <div class="flex flex-wrap justify-center gap-2">
+              <div class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border"
                 :class="isDark ? 'bg-slate-700/40 border-slate-600/40 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'">
                 <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                 <span class="font-semibold">{{ causesCount }}</span> conditions
               </div>
-              <div v-if="testsCount > 0" class="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl border"
+              <div v-if="testsCount > 0" class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border"
                 :class="isDark ? 'bg-slate-700/40 border-slate-600/40 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'">
                 <svg class="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
                 <span class="font-semibold">{{ testsCount }}</span> tests
               </div>
-              <div v-if="flagsCount > 0" class="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl border"
+              <div v-if="flagsCount > 0" class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border"
                 :class="isDark ? 'bg-red-500/10 border-red-500/20 text-red-300' : 'bg-red-50 border-red-200 text-red-600'">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                 <span class="font-semibold">{{ flagsCount }}</span> {{ flagsCount === 1 ? 'flag' : 'flags' }}
