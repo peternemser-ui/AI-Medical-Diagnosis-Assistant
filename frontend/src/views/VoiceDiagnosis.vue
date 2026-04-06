@@ -655,6 +655,7 @@
               @replay-message="speakMessage"
               @toggle-avatar="avatarMode = true; localStorage.setItem('avatar_mode', 'true')"
               @open-camera="showCameraOverlay = true"
+              @image-dropped="(base64) => handleSendMessage(null, base64)"
             />
             <!-- Retry Diagnosis Button (shown after a retryable failure) -->
             <div v-if="retryAvailable && conversationState === 'diagnosed'" class="flex justify-center py-4">

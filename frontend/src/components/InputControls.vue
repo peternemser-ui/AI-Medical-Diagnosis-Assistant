@@ -95,10 +95,14 @@
       <!-- ══ STANDARD INPUT MODE ══ -->
       <div v-else>
         <!-- Image preview above input -->
-        <div v-if="imagePreview" class="mb-2 relative inline-block">
-          <img :src="imagePreview" alt="Upload preview" class="h-20 rounded-lg border object-cover" :class="isDark ? 'border-slate-600/50' : 'border-gray-300'" />
+        <div v-if="imagePreview" class="mb-2 relative inline-block group cursor-pointer" @click="viewFullImage">
+          <img :src="imagePreview" alt="Upload preview" class="h-28 rounded-lg border object-cover transition-all duration-200 group-hover:brightness-75" :class="isDark ? 'border-slate-600/50' : 'border-gray-300'" />
+          <!-- View full overlay on hover -->
+          <div class="absolute inset-0 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+            <span class="text-white text-xs font-semibold bg-black/50 px-2 py-1 rounded-md backdrop-blur-sm">View full</span>
+          </div>
           <button
-            @click="removeImage"
+            @click.stop="removeImage"
             class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs leading-none transition-colors"
             title="Remove image"
           >&times;</button>
@@ -150,49 +154,59 @@
             </svg>
           </button>
 
-          <!-- Image/Camera button with dropdown -->
-          <div class="relative flex-shrink-0">
+          <!-- Image/Camera split button: primary action + dropdown arrow -->
+          <div class="relative flex-shrink-0 flex items-center">
+            <!-- Primary camera/upload button (larger than other toolbar buttons) -->
             <button
-              @click="toggleImageMenu"
+              @click="handlePrimaryCameraAction"
               :disabled="disabled || isProcessing"
-              class="p-1.5 sm:p-3 rounded-full transition-all duration-200 transform hover:scale-105"
-              :class="imageBase64 ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : (isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-600')"
-              title="Add image for visual diagnosis"
-              aria-label="Add image for visual diagnosis"
+              class="p-2 sm:p-3.5 rounded-l-full transition-all duration-200 transform hover:scale-105"
+              :class="imageBase64
+                ? 'bg-emerald-500 hover:bg-emerald-600 text-white ring-2 ring-emerald-400/30'
+                : (isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-600')"
+              title="Add photo for visual diagnosis"
+              aria-label="Add photo for visual diagnosis"
             >
-              <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </button>
+            <!-- Dropdown arrow for secondary option -->
+            <button
+              @click="toggleImageMenu"
+              :disabled="disabled || isProcessing"
+              class="p-1 sm:p-1.5 rounded-r-full border-l transition-all duration-200"
+              :class="imageBase64
+                ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-400/40'
+                : (isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-300 border-slate-600' : 'bg-gray-200 hover:bg-gray-300 text-gray-600 border-gray-300')"
+              :title="isMobile ? 'Upload image' : 'Take photo'"
+              aria-label="More image options"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
 
-            <!-- Dropdown menu -->
+            <!-- Dropdown menu (secondary option) -->
             <div
               v-if="showImageMenu"
               class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 rounded-xl border shadow-xl overflow-hidden z-50"
               :class="isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'"
             >
               <button
-                @click="openCameraCapture"
+                @click="handleSecondaryImageAction"
                 class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors text-left"
                 :class="isDark ? 'text-white hover:bg-slate-700' : 'text-slate-900 hover:bg-slate-50'"
               >
-                <svg class="w-5 h-5 flex-shrink-0" :class="isDark ? 'text-blue-400' : 'text-blue-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg v-if="isMobile" class="w-5 h-5 flex-shrink-0" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <svg v-else class="w-5 h-5 flex-shrink-0" :class="isDark ? 'text-blue-400' : 'text-blue-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                {{ t('input.takePhoto') }}
-              </button>
-              <div class="h-px" :class="isDark ? 'bg-slate-700' : 'bg-slate-200'"></div>
-              <button
-                @click="triggerImageUpload"
-                class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors text-left"
-                :class="isDark ? 'text-white hover:bg-slate-700' : 'text-slate-900 hover:bg-slate-50'"
-              >
-                <svg class="w-5 h-5 flex-shrink-0" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                {{ t('input.uploadImageBtn') }}
+                {{ isMobile ? t('input.uploadImageBtn') : t('input.takePhoto') }}
               </button>
             </div>
           </div>
@@ -337,6 +351,12 @@ const sendButtonClasses = computed(() => ({
   'bg-gray-200 text-gray-400 cursor-not-allowed': !canSend.value && !isDark.value
 }))
 
+// ── Mobile detection ──
+const isMobile = computed(() => {
+  if (typeof navigator === 'undefined') return false
+  return /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+})
+
 // ── Image menu ──
 const showImageMenu = ref(false)
 
@@ -345,9 +365,34 @@ function toggleImageMenu() {
   showImageMenu.value = !showImageMenu.value
 }
 
-function openCameraCapture() {
+/**
+ * Primary camera button action:
+ * - Mobile: opens native camera (via open-camera emit)
+ * - Desktop: opens file picker for image upload
+ */
+function handlePrimaryCameraAction() {
+  if (props.disabled || props.isProcessing) return
   showImageMenu.value = false
-  emit('open-camera')
+  if (isMobile.value) {
+    emit('open-camera')
+  } else {
+    fileInputRef.value?.click()
+  }
+}
+
+/**
+ * Secondary action from dropdown (the opposite of primary):
+ * - Mobile: file upload
+ * - Desktop: camera capture
+ */
+function handleSecondaryImageAction() {
+  showImageMenu.value = false
+  if (props.disabled || props.isProcessing) return
+  if (isMobile.value) {
+    fileInputRef.value?.click()
+  } else {
+    emit('open-camera')
+  }
 }
 
 // Close image menu when clicking outside
@@ -371,9 +416,9 @@ function handleImageSelected(event) {
   const reader = new FileReader()
   reader.onload = (e) => {
     const dataUrl = e.target.result
-    imagePreview.value = dataUrl
-    // Strip the data:image/...;base64, prefix to get raw base64
-    imageBase64.value = dataUrl.split(',')[1]
+    // Route through the description modal by emitting send-message with base64
+    const base64Data = dataUrl.split(',')[1]
+    emit('send-message', null, base64Data)
   }
   reader.readAsDataURL(file)
 
@@ -384,6 +429,12 @@ function handleImageSelected(event) {
 function removeImage() {
   imageBase64.value = null
   imagePreview.value = null
+}
+
+function viewFullImage() {
+  if (imagePreview.value) {
+    window.open(imagePreview.value, '_blank')
+  }
 }
 
 // ── Standard input ──
