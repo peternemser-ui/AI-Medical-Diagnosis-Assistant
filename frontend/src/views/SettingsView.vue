@@ -59,6 +59,45 @@
           </div>
         </section>
 
+        <!-- Change Password Section -->
+        <section class="backdrop-blur-xl rounded-2xl border shadow-lg overflow-hidden"
+          :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'">
+          <div class="px-6 py-4 border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🔒</span>
+              <h3 class="text-sm font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Change Password</h3>
+            </div>
+          </div>
+          <div class="px-6 py-4 space-y-3">
+            <div>
+              <label class="text-xs font-medium mb-1 block" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Current Password</label>
+              <input v-model="currentPassword" type="password" placeholder="Enter current password"
+                class="w-full px-3 py-2 text-sm rounded-lg border"
+                :class="isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'" />
+            </div>
+            <div>
+              <label class="text-xs font-medium mb-1 block" :class="isDark ? 'text-slate-400' : 'text-slate-500'">New Password</label>
+              <input v-model="newPassword" type="password" placeholder="Min 12 chars, uppercase, lowercase, number, special"
+                class="w-full px-3 py-2 text-sm rounded-lg border"
+                :class="isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'" />
+            </div>
+            <div>
+              <label class="text-xs font-medium mb-1 block" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Confirm New Password</label>
+              <input v-model="confirmPassword" type="password" placeholder="Repeat new password"
+                class="w-full px-3 py-2 text-sm rounded-lg border"
+                :class="isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'" />
+            </div>
+            <div v-if="passwordError" class="text-xs text-red-500 font-medium">{{ passwordError }}</div>
+            <div v-if="passwordSuccess" class="text-xs text-emerald-500 font-medium">{{ passwordSuccess }}</div>
+            <button @click="changePassword"
+              :disabled="!currentPassword || !newPassword || !confirmPassword || changingPassword"
+              class="px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              :class="isDark ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'">
+              {{ changingPassword ? 'Changing...' : 'Update Password' }}
+            </button>
+          </div>
+        </section>
+
         <!-- Appearance Section -->
         <section class="backdrop-blur-xl rounded-2xl border shadow-lg overflow-hidden"
           :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'">
@@ -463,6 +502,59 @@ const apiProvider = ref('anthropic')
 const apiKey = ref('')
 const showApiKey = ref(false)
 const apiKeySaved = ref(false)
+
+// Change password state
+const currentPassword = ref('')
+const newPassword = ref('')
+const confirmPassword = ref('')
+const passwordError = ref('')
+const passwordSuccess = ref('')
+const changingPassword = ref(false)
+
+async function changePassword() {
+  passwordError.value = ''
+  passwordSuccess.value = ''
+
+  if (newPassword.value !== confirmPassword.value) {
+    passwordError.value = 'New passwords do not match.'
+    return
+  }
+  if (newPassword.value.length < 12) {
+    passwordError.value = 'Password must be at least 12 characters.'
+    return
+  }
+
+  changingPassword.value = true
+  try {
+    const { getAccessToken } = await import('@/services/authService.js')
+    const token = getAccessToken()
+    const res = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        old_password: currentPassword.value,
+        new_password: newPassword.value,
+      }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      passwordError.value = err.detail || 'Failed to change password.'
+      return
+    }
+    passwordSuccess.value = 'Password changed successfully!'
+    currentPassword.value = ''
+    newPassword.value = ''
+    confirmPassword.value = ''
+    setTimeout(() => { passwordSuccess.value = '' }, 3000)
+  } catch (e) {
+    passwordError.value = e.message || 'Network error.'
+  } finally {
+    changingPassword.value = false
+  }
+}
 
 const providers = [
   { id: 'anthropic', name: 'Anthropic', keyPrefix: 'sk-ant-', storageKey: 'anthropic_api_key' },
