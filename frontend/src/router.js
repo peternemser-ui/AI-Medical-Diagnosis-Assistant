@@ -1,16 +1,21 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { isAuthenticated, getCurrentUser } from '@/services/authService'
+import { isAuthenticated, getCurrentUser, refreshToken } from '@/services/authService'
 
 // Eagerly loaded core views
 import HomeView from '@/views/HomeView.vue'
 import VoiceDiagnosis from '@/views/VoiceDiagnosis.vue'
 
-// Auth guard for protected routes
-function requireAuth(to, from, next) {
-  if (!isAuthenticated()) {
-    next('/login')
-  } else {
+// Auth guard for protected routes — tries token refresh before redirecting to login
+async function requireAuth(to, from, next) {
+  if (isAuthenticated()) {
     next()
+  } else {
+    const newToken = await refreshToken()
+    if (newToken) {
+      next()
+    } else {
+      next('/login')
+    }
   }
 }
 
@@ -58,8 +63,13 @@ const routes = [
     path: '/consult',
     name: 'Consult',
     component: VoiceDiagnosis,
-    beforeEnter: (to, from, next) => {
-      if (!isAuthenticated()) {
+    beforeEnter: async (to, from, next) => {
+      let authed = isAuthenticated()
+      if (!authed) {
+        const newToken = await refreshToken()
+        authed = !!newToken
+      }
+      if (!authed) {
         next('/login')
       } else {
         const apiKeyConfigured = localStorage.getItem('api_key_configured')
@@ -158,6 +168,11 @@ const routes = [
         path: 'seo',
         name: 'admin-seo',
         component: () => import('@/views/admin/AdminSEO.vue'),
+      },
+      {
+        path: 'improve',
+        name: 'admin-improve',
+        component: () => import('@/views/admin/AdminImprove.vue'),
       },
     ]
   },
