@@ -537,7 +537,7 @@
           </div>
 
           <!-- Identity module — designed nameplate -->
-          <div class="text-center" style="margin-top: clamp(4px, 0.8vh, 12px);">
+          <div class="text-center" style="margin-top: 1rem;">
             <div class="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight" :class="isDark ? 'text-white' : 'text-slate-900'">
               {{ activeSpecialist ? activeSpecialist.name + ', ' + activeSpecialist.credentials : (doctorAvatar.name || 'Dr. Hopps') }}
             </div>
@@ -1788,52 +1788,52 @@ onMounted(async () => {
   
   // Add initial AI greeting — personalized if logged in with profile data
   setTimeout(() => {
-    // Read profile from reactive state + localStorage fallback for completeness
-    const profile = userProfile.value || {}
-    let lsProfile = {}
+    let greeting = t('chat.greeting')  // Safe default
+
     try {
-      const raw = localStorage.getItem('user_profile')
-      if (raw) lsProfile = JSON.parse(raw)
-    } catch { /* ignore */ }
-    const merged = { ...lsProfile, ...profile }
-    const profileName = merged.name ? merged.name.split(' ')[0] : ''
-    const profileAge = (merged.age || merged.dateOfBirth) ? (merged.age || calculateAge(merged.dateOfBirth)) : null
-    const profileGender = merged.gender || ''
+      // Read profile from reactive state + localStorage fallback for completeness
+      const profile = userProfile.value || {}
+      let lsProfile = {}
+      try {
+        const raw = localStorage.getItem('user_profile')
+        if (raw) lsProfile = JSON.parse(raw)
+      } catch { /* ignore */ }
+      const merged = { ...lsProfile, ...profile }
+      const profileName = merged.name ? merged.name.split(' ')[0] : ''
+      const profileAge = (merged.age || merged.dateOfBirth) ? (merged.age || calculateAge(merged.dateOfBirth)) : null
+      const profileGender = merged.gender || ''
 
-    // Pre-fill demographics from profile if available
-    // Question order: [0]=age, [1]=gender, [2]=symptoms...
-    const hasAge = !!profileAge
-    const hasGender = !!profileGender
-    if (hasAge) {
-      questionnaire.value.userResponses['age'] = String(profileAge)
-    }
-    if (hasGender) {
-      questionnaire.value.userResponses['gender'] = profileGender
-    }
-    // Skip past the questions we already have answers for
-    if (hasAge && hasGender) {
-      questionnaire.value.currentQuestionIndex = 2
-    } else if (hasAge) {
-      // Skip age (index 0), but still need gender (index 1)
-      questionnaire.value.currentQuestionIndex = 1
-    }
-    // If only gender but not age, we still need to ask age first (index 0)
+      // Pre-fill demographics from profile if available
+      const hasAge = !!profileAge
+      const hasGender = !!profileGender
+      if (hasAge) {
+        questionnaire.value.userResponses['age'] = String(profileAge)
+      }
+      if (hasGender) {
+        questionnaire.value.userResponses['gender'] = profileGender
+      }
+      if (hasAge && hasGender) {
+        questionnaire.value.currentQuestionIndex = 2
+      } else if (hasAge) {
+        questionnaire.value.currentQuestionIndex = 1
+      }
 
-    // Build personalized greeting using i18n translations
-    let greeting
-    if (profileName && hasAge && hasGender) {
-      greeting = t('chat.greetingWithProfile')
-        .replace('{name}', profileName)
-        .replace('{age}', profileAge)
-        .replace('{gender}', profileGender)
-    } else if (profileName && hasAge) {
-      greeting = t('chat.greetingWithAge')
-        .replace('{name}', profileName)
-        .replace('{age}', profileAge)
-    } else if (profileName) {
-      greeting = t('chat.greetingWithName').replace('{name}', profileName)
-    } else {
-      greeting = t('chat.greeting')
+      // Build personalized greeting
+      if (profileName && hasAge && hasGender) {
+        greeting = t('chat.greetingWithProfile')
+          .replace('{name}', profileName)
+          .replace('{age}', String(profileAge))
+          .replace('{gender}', profileGender)
+      } else if (profileName && hasAge) {
+        greeting = t('chat.greetingWithAge')
+          .replace('{name}', profileName)
+          .replace('{age}', String(profileAge))
+      } else if (profileName) {
+        greeting = t('chat.greetingWithName').replace('{name}', profileName)
+      }
+    } catch (e) {
+      console.error('[Greeting] Error building personalized greeting:', e)
+      // greeting stays as the safe default
     }
 
     chatMessages.value = [{
