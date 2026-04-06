@@ -77,17 +77,8 @@
             </div>
           </div>
 
-          <!-- Right: Stacked vertically — Illustration → Confidence → Name → Stats -->
+          <!-- Right: Stacked vertically — Confidence → Illustration → Name → Stats -->
           <div class="flex flex-col items-center gap-4 flex-shrink-0 w-full lg:w-auto lg:min-w-[220px]">
-
-            <!-- Medical Illustration (top, prominent) -->
-            <div v-if="topCause.cause" class="hidden lg:block">
-              <MedicalIllustration
-                :condition="topCause.cause || ''"
-                :specialty="topCause.specialty || ''"
-                :size="160"
-              />
-            </div>
 
             <!-- Confidence ring -->
             <div v-if="topCause.value" class="relative flex flex-col items-center">
@@ -107,6 +98,15 @@
                 <span class="text-caption font-semibold"
                   :style="{ color: confidenceColor }">{{ confidenceLabel }}</span>
               </div>
+            </div>
+
+            <!-- Medical Illustration -->
+            <div v-if="topCause.cause" class="hidden lg:block">
+              <MedicalIllustration
+                :condition="topCause.cause || ''"
+                :specialty="topCause.specialty || ''"
+                :size="192"
+              />
             </div>
 
             <!-- Mini differential chart -->
