@@ -561,10 +561,14 @@
           </div>
 
           <!-- User's last message (if any) -->
-          <div v-if="lastUserText" class="text-center" style="margin-top: clamp(8px, 1vh, 16px);">
-            <span class="inline-block text-lg sm:text-xl px-5 py-2.5 rounded-2xl border font-medium"
+          <div v-if="lastUserText || lastUserImageUrl" class="flex flex-col items-center gap-2" style="margin-top: clamp(8px, 1vh, 16px);">
+            <!-- Uploaded image thumbnail -->
+            <img v-if="lastUserImageUrl" :src="lastUserImageUrl" alt="Uploaded symptom photo"
+              class="max-h-32 sm:max-h-40 rounded-xl border-2 shadow-lg object-cover"
+              :class="isDark ? 'border-blue-500/30' : 'border-blue-400/40'" />
+            <span v-if="lastUserText" class="inline-block text-lg sm:text-xl px-5 py-2.5 rounded-2xl border font-medium"
               :class="isDark ? 'bg-blue-600/15 text-blue-200 border-blue-500/15' : 'bg-blue-600 text-white border-blue-700'">
-              {{ lastUserText }}
+              {{ lastUserText.startsWith('[Image attached]') ? lastUserText.replace('[Image attached] ', '') : lastUserText }}
             </span>
           </div>
 
@@ -1465,6 +1469,11 @@ const lastUserText = computed(() => {
   const msgs = chatMessages.value.filter(m => m.sender === 'user')
   if (msgs.length === 0) return ''
   return (msgs[msgs.length - 1].text || '').substring(0, 100)
+})
+const lastUserImageUrl = computed(() => {
+  const msgs = chatMessages.value.filter(m => m.sender === 'user')
+  if (msgs.length === 0) return null
+  return msgs[msgs.length - 1].imageUrl || null
 })
 const isMobile = ref(window.innerWidth < 640)
 const avatarSize = computed(() => isMobile.value ? 'xxl' : 'xxxl')
