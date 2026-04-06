@@ -114,6 +114,7 @@ class OrchestratorAgent:
         social_history: str | None = None,
         model_preference: str = "auto",
         specialist_routing: list[str] | None = None,
+        font_size: str = "medium",
     ) -> dict[str, Any]:
         """
         Execute the full multi-agent diagnostic pipeline.
@@ -198,7 +199,16 @@ class OrchestratorAgent:
                 f"Keep JSON keys in English but all values/text in {lang_name}."
             )
 
-        logger.info(f"Patient summary length: {len(patient_summary)} chars (model: {model_preference})")
+        # Add formatting instruction based on font size preference
+        FORMAT_INSTRUCTIONS = {
+            "small": "The patient prefers detailed, comprehensive responses. Include thorough clinical reasoning, complete evidence, and detailed explanations.",
+            "large": "The patient prefers CONCISE, easy-to-read responses. Use short sentences, bullet points, and larger logical sections. Avoid dense paragraphs. Prioritize clarity over completeness.",
+            "xlarge": "The patient needs VERY SIMPLE, SHORT responses. Use the simplest possible language. Maximum 2-3 sentences per point. Use bullet points extensively. Avoid medical jargon — explain everything in plain words.",
+        }
+        if font_size in FORMAT_INSTRUCTIONS:
+            patient_summary += f"\n\n=== FORMATTING PREFERENCE ===\n{FORMAT_INSTRUCTIONS[font_size]}"
+
+        logger.info(f"Patient summary length: {len(patient_summary)} chars (model: {model_preference}, font: {font_size})")
 
         # ── Step 1: Triage ──────────────────────────────────────────
         logger.info("Step 1/7: Running Triage Agent")

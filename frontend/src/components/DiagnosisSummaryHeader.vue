@@ -82,23 +82,26 @@
 
             <!-- Confidence ring -->
             <div v-if="topCause.value" class="relative flex flex-col items-center">
-              <div class="w-24 h-24 rounded-full flex items-center justify-center relative"
+              <div class="w-30 h-30 rounded-full flex items-center justify-center relative" style="width:7.5rem;height:7.5rem;"
                 :style="confidenceRingStyle">
                 <div class="text-center">
-                  <div class="text-2xl font-black tabular-nums" :style="{ color: confidenceColor }">
+                  <div class="text-3xl font-black tabular-nums" :style="{ color: confidenceColor }">
                     {{ topCause.value }}%
                   </div>
-                  <div class="text-tiny font-bold uppercase tracking-widest mt-0.5"
+                  <div class="text-xs font-bold uppercase tracking-widest mt-0.5"
                     :class="isDark ? 'text-slate-400' : 'text-slate-600'">confidence</div>
                 </div>
               </div>
               <!-- Primary diagnosis name + confidence label -->
-              <div class="mt-2 text-center">
-                <div class="text-xs font-bold truncate max-w-[200px]" :class="isDark ? 'text-white' : 'text-slate-900'">{{ topCause.cause || 'Awaiting Analysis' }}</div>
-                <span class="text-caption font-semibold"
+              <div class="mt-3 text-center">
+                <div class="text-sm font-bold text-center max-w-[250px] leading-snug" :class="isDark ? 'text-white' : 'text-slate-900'">{{ topCause.cause || 'Awaiting Analysis' }}</div>
+                <span class="text-xs font-semibold mt-1 inline-block"
                   :style="{ color: confidenceColor }">{{ confidenceLabel }}</span>
               </div>
             </div>
+
+            <!-- Divider -->
+            <hr class="w-full max-w-[200px] border-t" style="margin:0.5em 0;" :class="isDark ? 'border-slate-700/50' : 'border-slate-200'" />
 
             <!-- Medical Illustration -->
             <div v-if="topCause.cause" class="hidden lg:block">
@@ -108,6 +111,9 @@
                 :size="192"
               />
             </div>
+
+            <!-- Divider -->
+            <hr class="w-full max-w-[200px] border-t" style="margin:0.5em 0;" :class="isDark ? 'border-slate-700/50' : 'border-slate-200'" />
 
             <!-- Mini differential chart -->
             <div v-if="otherCauses.length > 0" class="w-full max-w-[220px] space-y-1.5">

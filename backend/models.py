@@ -18,6 +18,7 @@ class DiagnosisRequest(BaseModel):
     social_history: Optional[str] = None
     model_preference: str = "auto"  # "auto", "opus", "sonnet", "haiku"
     specialist_routing: Optional[list[str]] = None  # e.g. ["cardiology", "neurology"]
+    font_size: str = "medium"  # "small", "medium", "large", "xlarge" — affects response formatting
 
     @field_validator("age")
     @classmethod

@@ -539,6 +539,7 @@ async def diagnose_symptoms(
                 social_history=diagnosis_request.social_history,
                 model_preference=diagnosis_request.model_preference,
                 specialist_routing=diagnosis_request.specialist_routing,
+                font_size=diagnosis_request.font_size or "medium",
             )
 
             logger.info(

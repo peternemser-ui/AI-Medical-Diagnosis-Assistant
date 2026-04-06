@@ -22,8 +22,10 @@
          v-html="illustrationSvg" />
     </svg>
     <div v-if="label" class="mt-2 text-center">
-      <span class="text-detail font-semibold uppercase tracking-widest"
-        :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ label }}</span>
+      <div class="text-detail font-semibold uppercase tracking-widest"
+        :class="isDark ? 'text-slate-300' : 'text-slate-900'">{{ labelTitle }}</div>
+      <div v-if="labelDescription" class="text-detail mt-0.5"
+        :class="isDark ? 'text-slate-500' : 'text-slate-500'">{{ labelDescription }}</div>
     </div>
   </div>
 </template>
@@ -85,30 +87,42 @@ const illustrationKey = computed(() => {
 
 const label = computed(() => {
   const labels = {
-    esophagus: 'Esophagus & Stomach',
-    stomach: 'Stomach',
-    heart: 'Cardiovascular',
-    ribcage: 'Chest Wall',
-    lungs: 'Respiratory System',
-    brain: 'Neurological',
-    head: 'Cranial',
-    liver: 'Hepatic System',
-    kidney: 'Renal System',
-    skin: 'Integumentary',
-    thyroid: 'Endocrine',
-    spine: 'Spinal Column',
-    joint: 'Musculoskeletal',
-    bone: 'Skeletal System',
-    eye: 'Ophthalmic',
-    ear: 'Auditory',
-    bladder: 'Urinary System',
-    intestine: 'Gastrointestinal',
-    throat: 'Upper Airway',
-    pancreas: 'Pancreatic',
-    immune: 'Immune System',
-    body: 'Anatomical Reference',
+    esophagus: 'Esophagus & Stomach (Digestive Tract)',
+    stomach: 'Stomach (Digestive Organ)',
+    heart: 'Cardiovascular (Heart & Blood Vessels)',
+    ribcage: 'Chest Wall (Ribs & Sternum)',
+    lungs: 'Respiratory (Lungs & Airways)',
+    brain: 'Neurological (Brain & Nerves)',
+    head: 'Cranial (Head & Skull)',
+    liver: 'Hepatic (Liver & Bile System)',
+    kidney: 'Renal (Kidneys & Urinary)',
+    skin: 'Integumentary (Skin, Hair & Nails)',
+    thyroid: 'Endocrine (Hormonal Glands)',
+    spine: 'Spinal Column (Vertebrae & Discs)',
+    joint: 'Musculoskeletal (Muscles & Joints)',
+    bone: 'Skeletal (Bones & Cartilage)',
+    eye: 'Ophthalmic (Eyes & Vision)',
+    ear: 'Auditory (Ears & Hearing)',
+    bladder: 'Urinary (Bladder & Urethra)',
+    intestine: 'Gastrointestinal (Intestines & Bowel)',
+    throat: 'Upper Airway (Throat & Larynx)',
+    pancreas: 'Pancreatic (Pancreas & Insulin)',
+    immune: 'Immune (Defense & Antibodies)',
+    body: 'Anatomical Reference (Full Body)',
   }
   return labels[illustrationKey.value] || 'Anatomical Reference'
+})
+
+const labelTitle = computed(() => {
+  const full = label.value
+  const parenIdx = full.indexOf('(')
+  return parenIdx > 0 ? full.slice(0, parenIdx).trim() : full
+})
+
+const labelDescription = computed(() => {
+  const full = label.value
+  const match = full.match(/\((.+)\)/)
+  return match ? `(${match[1]})` : ''
 })
 
 // Detailed medical SVG illustrations (200x200 viewBox) — colored anatomical fills

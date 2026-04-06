@@ -2988,6 +2988,8 @@ async function handleProceedToDiagnosis() {
       model_preference: localStorage.getItem('model_preference') || 'auto',
       // Specialist routing from PA agent (if available)
       specialist_routing: paRouting.value?.specialties || responses.specialist_routing || null,
+      // Font size preference — affects response formatting
+      font_size: localStorage.getItem('font_size') || 'medium',
     }
 
     // Clear the pending image after building the request

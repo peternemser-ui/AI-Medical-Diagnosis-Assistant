@@ -1,5 +1,21 @@
 <template>
   <div class="flex items-center gap-1.5">
+    <!-- Font size toggle -->
+    <button
+      @click="cycleFontSize"
+      class="p-2 rounded-lg transition-all duration-200 relative"
+      :class="isDark
+        ? 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'"
+      :title="'Font size: ' + sizeDisplay[fontSize]"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"/>
+      </svg>
+      <span class="absolute -bottom-0.5 -right-0.5 text-[8px] font-black leading-none"
+        :class="isDark ? 'text-blue-400' : 'text-blue-600'">{{ sizeLabels[fontSize] }}</span>
+    </button>
+
     <!-- Theme toggle -->
     <button
       @click="toggleTheme"
@@ -84,8 +100,10 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { useI18n } from '@/composables/useI18n.js'
+import { useFontSize } from '@/composables/useFontSize.js'
 
 const { isDark, toggleTheme } = useTheme()
+const { fontSize, cycleFontSize, sizeLabels, sizeDisplay } = useFontSize()
 const { t, currentLang, currentLanguage, setLang, languages } = useI18n()
 
 const showLangMenu = ref(false)
