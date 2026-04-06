@@ -292,6 +292,15 @@
                 </p>
               </div>
 
+              <!-- Patient uploaded image -->
+              <div v-if="patientImageUrl" class="rounded-lg overflow-hidden border" :class="isDark ? 'border-slate-700' : 'border-slate-200'">
+                <div class="px-3 py-2 text-detail font-bold uppercase tracking-wider" :class="isDark ? 'text-slate-400 bg-slate-800/50' : 'text-slate-500 bg-slate-50'">
+                  Patient Photo
+                </div>
+                <img :src="patientImageUrl" alt="Patient uploaded symptom photo"
+                  class="w-full max-h-64 object-contain" :class="isDark ? 'bg-slate-900' : 'bg-white'" />
+              </div>
+
               <!-- Supporting features from top diagnosis -->
               <div v-if="causes[0].explanation" class="space-y-2">
                 <div class="text-detail font-bold uppercase tracking-wider" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Clinical Reasoning</div>
@@ -1511,6 +1520,19 @@ const chiefComplaint = computed(() => {
   const d = diagnosisData.value
   if (!d) return ''
   return d.chief_complaint || d.chiefComplaint || d.symptoms || ''
+})
+
+const patientImageUrl = computed(() => {
+  const d = diagnosisData.value
+  if (!d) return null
+  // Direct image URL from stored result
+  if (d.patient_image_url) return d.patient_image_url
+  // Search chat transcript for user messages with images
+  const transcript = d.chat_transcript || []
+  for (const msg of transcript) {
+    if (msg.role === 'user' && msg.imageUrl) return msg.imageUrl
+  }
+  return null
 })
 
 const patientSummary = computed(() => {

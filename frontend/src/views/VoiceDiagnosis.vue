@@ -3190,6 +3190,8 @@ async function handleProceedToDiagnosis() {
     // (before storeDiagnosisForDashboard which handles legacy format)
     try {
       const symptoms = questionnaire.value.userResponses.symptoms || ''
+      // Find uploaded patient image from chat messages
+      const imageMsg = chatMessages.value.find(m => m.sender === 'user' && m.imageUrl)
       const fullResult = {
         ...result,
         age: questionnaire.value.userResponses.age || '',
@@ -3197,11 +3199,14 @@ async function handleProceedToDiagnosis() {
         symptoms: symptoms,
         chief_complaint: symptoms,
         date: new Date().toISOString(),
+        // Patient uploaded image
+        patient_image_url: imageMsg?.imageUrl || null,
         // Include chat transcript for dashboard
         chat_transcript: chatMessages.value.map(m => ({
           role: m.sender === 'user' ? 'user' : 'assistant',
           content: m.text,
-          timestamp: m.timestamp
+          timestamp: m.timestamp,
+          imageUrl: m.imageUrl || null,
         }))
       }
       localStorage.setItem('latest_diagnosis_result', JSON.stringify(fullResult))
