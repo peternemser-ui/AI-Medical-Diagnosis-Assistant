@@ -228,7 +228,7 @@ onMounted(async () => {
   try {
     const data = await getLatestAudit()
     if (data && data.overall_score != null) audit.value = data
-  } catch {
+  } catch (e) {
     // No previous audit — that's fine
   }
 })
@@ -308,6 +308,6 @@ function formatTime(ts) {
   if (!ts) return '--'
   try {
     return new Date(ts).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-  } catch { return ts }
+  } catch (e) { return ts }
 }
 </script>

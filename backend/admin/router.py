@@ -1571,3 +1571,39 @@ async def get_latest_audit():
     from agents.quality_auditor import QualityAuditor
     auditor = QualityAuditor()
     return auditor.get_latest_audit()
+
+
+# ── Stripe Configuration ────────────────────────────────────────────
+
+@admin_router.post("/stripe/config")
+async def save_stripe_config(request: Request):
+    """Save Stripe API keys to environment and .env file."""
+    body = await request.json()
+    secret_key = body.get("secret_key", "")
+    webhook_secret = body.get("webhook_secret", "")
+
+    os.environ["STRIPE_SECRET_KEY"] = secret_key
+    os.environ["STRIPE_WEBHOOK_SECRET"] = webhook_secret
+
+    # Also save to .env for persistence
+    from pathlib import Path
+    env_path = Path(__file__).parent.parent / ".env"
+    lines = env_path.read_text().splitlines() if env_path.exists() else []
+    new_lines = [l for l in lines if not l.startswith("STRIPE_SECRET_KEY=") and not l.startswith("STRIPE_WEBHOOK_SECRET=")]
+    if secret_key:
+        new_lines.append(f"STRIPE_SECRET_KEY={secret_key}")
+    if webhook_secret:
+        new_lines.append(f"STRIPE_WEBHOOK_SECRET={webhook_secret}")
+    env_path.write_text("\n".join(new_lines) + "\n")
+
+    return {"status": "saved", "stripe_configured": bool(secret_key)}
+
+
+@admin_router.get("/stripe/status")
+async def get_stripe_status():
+    """Check if Stripe is configured and return mode."""
+    key = os.getenv("STRIPE_SECRET_KEY", "")
+    return {
+        "configured": bool(key and key.startswith("sk_")),
+        "mode": "live" if key.startswith("sk_live") else "test" if key.startswith("sk_test") else "demo",
+    }

@@ -227,7 +227,7 @@ async function fetchHealth() {
     health.version = data.architecture || ''
     health.model = data.api_key_configured ? 'Configured' : 'No API key'
     health.ollama = data.ollama_available ? `Available (${(data.ollama_models || []).join(', ')})` : 'Not available'
-  } catch {
+  } catch (e) {
     health.ok = false
   }
 }
@@ -270,50 +270,12 @@ async function fetchMetrics() {
 
     // Skip the old parsing — the data structure is different
     return
-  } catch {
+  } catch (e) {
     return
   }
 }
 
-// Legacy parsing placeholder — kept for compatibility
-function _legacyParsing() {
-    const items = []
-    if (!items.length) return
-    const failures = items.filter(i => i.error || i.status === 'error')
-    if (failures.length) {
-      const agents = failures.map(f => f.failed_agent || f.agent || 'unknown')
-      const counts = {}
-      agents.forEach(a => { counts[a] = (counts[a] || 0) + 1 })
-      metrics.commonFailure = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'None'
-    }
-
-    // Model distribution
-    const modelCounts = {}
-    items.forEach(i => {
-      const m = i.model || i.provider || 'unknown'
-      modelCounts[m] = (modelCounts[m] || 0) + 1
-    })
-    metrics.modelDist = Object.entries(modelCounts).map(([model, count]) => ({ model, count }))
-
-    // Update pipeline agent timings from latest entry
-    const latest = items[0]
-    if (latest?.agent_timings) {
-      const nameMap = {
-        triage: 'Triage', diagnostician: 'Diagnostician', research: 'Research',
-        specialist: 'Specialist', treatment: 'Treatment', safety: 'Safety', empathy: 'Empathy'
-      }
-      for (const [key, ms] of Object.entries(latest.agent_timings)) {
-        const agent = pipelineAgents.value.find(a => a.name === nameMap[key])
-        if (agent) {
-          agent.lastTime = typeof ms === 'number' ? Math.round(ms) : ms
-          agent.status = 'complete'
-        }
-      }
-    }
-  } catch {
-    // audit endpoint may not exist yet — that's fine
-  }
-}
+// Legacy parsing removed — fetchMetrics handles the new audit format
 
 // ── Feature Flags ──
 const flags = ref(getAllFlags())

@@ -122,7 +122,7 @@ async function fetchBadgeCount() {
   try {
     const data = await getReviews({ status: 'pending', limit: 1 })
     pendingReviewCount.value = data.total || data.items?.length || 0
-  } catch { pendingReviewCount.value = null }
+  } catch (e) { pendingReviewCount.value = null }
 }
 onMounted(() => { fetchBadgeCount(); badgeInterval = setInterval(fetchBadgeCount, 30000) })
 onUnmounted(() => { if (badgeInterval) clearInterval(badgeInterval) })

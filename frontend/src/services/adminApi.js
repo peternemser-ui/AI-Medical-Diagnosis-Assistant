@@ -81,3 +81,8 @@ export const getComparison = (id) => adminFetch(`/api/admin/comparisons/${id}`)
 // Quality Audit / Improve
 export const runQualityAudit = () => adminFetch('/api/admin/audit', { method: 'POST' })
 export const getLatestAudit = () => adminFetch('/api/admin/audit/latest')
+
+// Stripe Configuration
+export const getStripeStatus = () => adminFetch('/api/admin/stripe/status')
+export const saveStripeConfig = (secretKey, webhookSecret) => adminFetch('/api/admin/stripe/config', { method: 'POST', body: JSON.stringify({ secret_key: secretKey, webhook_secret: webhookSecret }) })
+export const testStripeConnection = (secretKey) => adminFetch('/api/admin/stripe/config', { method: 'POST', body: JSON.stringify({ secret_key: secretKey, webhook_secret: '' }) })
