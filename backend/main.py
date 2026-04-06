@@ -611,6 +611,42 @@ async def diagnose_symptoms(
             except Exception:
                 pass
 
+            # ── Email notifications ─────────────────────────────────────
+            if user:
+                try:
+                    from email_service import EmailService
+                    _email_svc = EmailService()
+
+                    # Send diagnosis-complete email
+                    top_cause = ""
+                    confidence = 0
+                    causes = result.get("causes") or []
+                    if causes and isinstance(causes, list) and len(causes) > 0:
+                        top = causes[0]
+                        top_cause = top.get("name", top.get("condition", "Assessment"))
+                        confidence = top.get("probability", top.get("confidence", 0))
+                    _email_svc.send_diagnosis_complete(
+                        email=user.get("email", ""),
+                        name=user.get("name", ""),
+                        diagnosis=top_cause or "Your Assessment",
+                        confidence=confidence,
+                    )
+
+                    # Check if usage hit 80% and send warning
+                    post_usage = sub.check_usage(user["id"])
+                    used = post_usage.get("used", 0)
+                    limit = post_usage.get("limit", -1)
+                    if limit > 0 and used >= int(limit * 0.8) and used < limit:
+                        _email_svc.send_usage_warning(
+                            email=user.get("email", ""),
+                            name=user.get("name", ""),
+                            used=used,
+                            limit=limit,
+                        )
+                except Exception as email_err:
+                    logger.warning("Email notification failed (non-critical): %s", email_err)
+            # ── End email notifications ─────────────────────────────────
+
             return result
 
         except Exception as e:

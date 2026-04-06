@@ -25,6 +25,16 @@
 
     <!-- Main content -->
     <div class="relative z-10 px-4 py-10 sm:py-16">
+      <!-- Demo mode badge -->
+      <div v-if="demoMode" class="flex justify-center mb-6">
+        <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Demo Mode — Stripe not configured. Upgrades are instant.
+        </span>
+      </div>
+
       <!-- Header -->
       <div class="text-center max-w-2xl mx-auto mb-12">
         <h2 class="text-3xl sm:text-4xl font-extrabold mb-4" :class="isDark ? 'text-white' : 'text-slate-900'">
@@ -203,6 +213,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme.js'
 import ThemeLangControls from '@/components/ThemeLangControls.vue'
+import { trackEvent, EVENTS } from '@/services/analytics'
 
 const router = useRouter()
 const { isDark } = useTheme()
@@ -210,6 +221,7 @@ const { isDark } = useTheme()
 const annual = ref(false)
 const currentTier = ref('free')
 const loading = ref(false)
+const demoMode = ref(false)
 
 const tiers = ref([
   {
@@ -345,8 +357,6 @@ async function handleUpgrade(tierKey) {
     return
   }
 
-  // Placeholder: in production, create a Stripe Checkout session
-  // For now, call the upgrade endpoint directly
   loading.value = true
   try {
     const { getAccessToken } = await import('@/services/authService.js')
@@ -363,10 +373,22 @@ async function handleUpgrade(tierKey) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ tier: tierKey }),
+      body: JSON.stringify({
+        tier: tierKey,
+        billing: annual.value ? 'annual' : 'monthly',
+        success_url: `${window.location.origin}/settings?upgraded=true`,
+        cancel_url: `${window.location.origin}/pricing`,
+      }),
     })
     if (res.ok) {
       const data = await res.json()
+      if (data.url && !data.demo) {
+        // Stripe checkout — redirect to Stripe
+        window.location.href = data.url
+        return
+      }
+      // Demo mode — instant upgrade
+      demoMode.value = true
       currentTier.value = data.tier?.tier_key || tierKey
     }
   } catch (e) {
@@ -378,6 +400,7 @@ async function handleUpgrade(tierKey) {
 
 // Load current tier on mount
 onMounted(async () => {
+  trackEvent(EVENTS.PRICING_VIEWED)
   try {
     const { getAccessToken } = await import('@/services/authService.js')
     const token = getAccessToken()

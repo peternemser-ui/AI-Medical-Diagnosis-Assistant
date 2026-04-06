@@ -796,6 +796,136 @@
       </div>
     </div>
 
+    <div class="section-divider"></div>
+
+    <!-- ═══════ PRICING PREVIEW ═══════ -->
+    <section class="relative z-10 py-16 px-6">
+      <div class="max-w-5xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-detail font-semibold mb-4"
+          :class="isDark ? 'bg-amber-500/8 text-amber-300 border border-amber-500/15' : 'bg-amber-50 text-amber-600 border border-amber-200'">
+          Simple Pricing
+        </div>
+        <h2 class="font-headline text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-3">Choose Your Plan</h2>
+        <p class="text-body max-w-lg mx-auto mb-10" :class="isDark ? 'text-slate-400' : 'text-slate-500'">From free basic assessments to full clinical-grade reports</p>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          <div v-for="tier in pricingPreview" :key="tier.key"
+            class="rounded-xl border p-5 text-center transition-all duration-200 hover:-translate-y-1"
+            :class="[
+              isDark ? 'bg-slate-800/50 border-slate-700/40' : 'bg-white/70 border-slate-200/80 shadow-sm hover:shadow-md',
+              tier.highlight ? (isDark ? 'ring-2 ring-blue-500/40' : 'ring-2 ring-blue-400/50') : ''
+            ]">
+            <div v-if="tier.highlight" class="text-detail font-bold uppercase tracking-wider text-blue-400 mb-2">Most Popular</div>
+            <div class="text-sm font-bold mb-1" :class="isDark ? 'text-white' : 'text-slate-900'">{{ tier.name }}</div>
+            <div class="text-2xl font-bold mb-1" :class="isDark ? 'text-white' : 'text-slate-900'">
+              {{ tier.price === 0 ? 'Free' : `$${tier.price}` }}
+            </div>
+            <div class="text-detail mb-3" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ tier.price === 0 ? 'forever' : '/month' }}</div>
+            <div class="text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ tier.desc }}</div>
+          </div>
+        </div>
+
+        <div class="mt-8">
+          <router-link to="/pricing"
+            class="inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-lg border transition-all duration-200 hover:-translate-y-0.5"
+            :class="isDark
+              ? 'text-blue-300 border-blue-500/30 hover:border-blue-400 bg-blue-500/8 hover:bg-blue-500/15'
+              : 'text-blue-600 border-blue-300 hover:border-blue-400 bg-blue-50 hover:bg-blue-100'">
+            View Full Pricing
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </router-link>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════ SOCIAL PROOF / STATS ═══════ -->
+    <section class="relative z-10 py-16 px-6">
+      <div class="max-w-4xl mx-auto">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <div v-for="stat in socialStats" :key="stat.label"
+            class="text-center p-5 rounded-xl border transition-all duration-200 hover:-translate-y-0.5"
+            :class="isDark ? 'bg-slate-800/40 border-slate-700/30' : 'bg-white/60 border-slate-200/60 shadow-sm'">
+            <div class="text-3xl font-bold mb-1" :class="stat.color">{{ stat.value }}</div>
+            <div class="text-xs font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ stat.label }}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════ TESTIMONIAL CARDS ═══════ -->
+    <section class="relative z-10 py-16 px-6">
+      <div class="max-w-5xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-detail font-semibold mb-4"
+          :class="isDark ? 'bg-pink-500/8 text-pink-300 border border-pink-500/15' : 'bg-pink-50 text-pink-600 border border-pink-200'">
+          What Users Say
+        </div>
+        <h2 class="font-headline text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-10">Trusted by Patients Worldwide</h2>
+
+        <div class="grid sm:grid-cols-3 gap-5">
+          <div v-for="testimonial in testimonials" :key="testimonial.name"
+            class="rounded-xl border p-6 text-left transition-all duration-200 hover:-translate-y-1"
+            :class="isDark
+              ? 'bg-slate-800/50 border-slate-700/40'
+              : 'bg-white/70 border-slate-200/80 shadow-sm hover:shadow-md'">
+            <div class="flex items-center gap-1 mb-3">
+              <svg v-for="n in 5" :key="n" class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+              </svg>
+            </div>
+            <p class="text-sm leading-relaxed mb-4" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+              "{{ testimonial.quote }}"
+            </p>
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                :style="{ background: testimonial.color }">
+                {{ testimonial.initials }}
+              </div>
+              <div>
+                <div class="text-xs font-semibold" :class="isDark ? 'text-white' : 'text-slate-800'">{{ testimonial.name }}</div>
+                <div class="text-detail" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Age {{ testimonial.age }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════ CTA BANNER ═══════ -->
+    <section class="relative z-10 py-20 px-6">
+      <div class="max-w-3xl mx-auto text-center">
+        <div class="rounded-2xl p-10 sm:p-14 backdrop-blur-lg border"
+          :class="isDark
+            ? 'bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-blue-500/20'
+            : 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200/60 shadow-xl shadow-blue-100/50'">
+          <h2 class="font-headline text-2xl sm:text-3xl font-bold mb-3" :class="isDark ? 'text-white' : 'text-slate-900'">
+            Ready to get started?
+          </h2>
+          <p class="text-body mb-8 max-w-md mx-auto" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+            Start your free consultation — no credit card required
+          </p>
+          <button @click="startConsultation"
+            class="group btn-blue btn-lg px-12 py-5 text-lg shadow-lg shadow-blue-600/25 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            Start Free Consultation
+            <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+          </button>
+          <p class="text-detail mt-4" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+            2 free diagnoses per month on the Free plan
+          </p>
+        </div>
+      </div>
+    </section>
+
     <!-- Footer -->
     <div class="relative border-t py-6 px-6 text-center" style="z-index:10"
       :class="isDark ? 'border-slate-800/50' : 'border-slate-200'">
@@ -820,6 +950,47 @@ const router = useRouter()
 const { isDark } = useTheme()
 const { t } = useI18n()
 const { profile, isLoggedIn, logout: doLogout } = useUser()
+
+// Pricing preview tiers for landing page
+const pricingPreview = [
+  { key: 'free', name: 'Free', price: 0, desc: '2 diagnoses/month', highlight: false },
+  { key: 'plus', name: 'Plus', price: 9.99, desc: '20 diagnoses + PDF export', highlight: true },
+  { key: 'pro', name: 'Pro', price: 29.99, desc: 'Unlimited + all AI models', highlight: false },
+  { key: 'family', name: 'Family', price: 49.99, desc: 'Up to 5 family members', highlight: false },
+]
+
+// Social proof stats
+const socialStats = [
+  { value: '1,000+', label: 'Trusted Users', color: 'text-blue-400' },
+  { value: '8,500+', label: 'Diagnoses Performed', color: 'text-emerald-400' },
+  { value: '97%', label: 'User Satisfaction', color: 'text-amber-400' },
+  { value: '7', label: 'AI Agents Per Diagnosis', color: 'text-purple-400' },
+]
+
+// Testimonials
+const testimonials = [
+  {
+    quote: 'The 7-agent analysis caught something my regular doctor missed.',
+    name: 'Sarah M.',
+    age: 42,
+    initials: 'SM',
+    color: '#6366f1',
+  },
+  {
+    quote: 'I love that I can upload photos and get specialist-level analysis.',
+    name: 'James K.',
+    age: 35,
+    initials: 'JK',
+    color: '#0ea5e9',
+  },
+  {
+    quote: 'The PDF report was so detailed my doctor was impressed.',
+    name: 'Maria L.',
+    age: 58,
+    initials: 'ML',
+    color: '#f43f5e',
+  },
+]
 
 // Specialist team preview for landing page
 const specialistPreview = Object.entries(SPECIALIST_DOCTORS).map(([key, doc]) => ({

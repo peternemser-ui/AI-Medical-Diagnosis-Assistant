@@ -67,10 +67,14 @@
 
           <!-- CTAs -->
           <div class="px-6 pb-6 space-y-3">
-            <button @click="goToPricing"
-              class="w-full py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 shadow-lg shadow-blue-500/20 transition-all">
-              Upgrade to {{ suggestedTierName }}
-              <span v-if="suggestedPrice" class="opacity-80 ml-1">- ${{ suggestedPrice }}/mo</span>
+            <button @click="handleUpgradeClick"
+              :disabled="upgrading"
+              class="w-full py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 shadow-lg shadow-blue-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+              <span v-if="upgrading">Processing...</span>
+              <span v-else>
+                Upgrade to {{ suggestedTierName }}
+                <span v-if="suggestedPrice" class="opacity-80 ml-1">- ${{ suggestedPrice }}/mo</span>
+              </span>
             </button>
 
             <button @click="continueWithOllama"
@@ -88,9 +92,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme.js'
+import { trackEvent, EVENTS } from '@/services/analytics'
 
 const router = useRouter()
 const { isDark } = useTheme()
@@ -106,6 +111,65 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'continue-ollama'])
+
+// Track when the upgrade prompt is shown
+watch(() => props.visible, (val) => {
+  if (val) trackEvent(EVENTS.UPGRADE_PROMPT_SHOWN, { currentTier: props.currentTier })
+})
+
+const upgrading = ref(false)
+
+async function handleUpgradeClick() {
+  trackEvent(EVENTS.UPGRADE_CLICKED, { currentTier: props.currentTier })
+  upgrading.value = true
+  try {
+    const { getAccessToken } = await import('@/services/authService.js')
+    const token = getAccessToken()
+    if (!token) {
+      // Not logged in — fall back to pricing page
+      emit('close')
+      router.push('/pricing')
+      return
+    }
+
+    const suggestedTier = props.currentTier === 'free' ? 'plus' : props.currentTier === 'plus' ? 'pro' : 'family'
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+    const res = await fetch(`${API_BASE_URL}/api/subscription/upgrade`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        tier: suggestedTier,
+        billing: 'monthly',
+        success_url: `${window.location.origin}/settings?upgraded=true`,
+        cancel_url: `${window.location.origin}/pricing`,
+      }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      if (data.url && !data.demo) {
+        // Stripe checkout redirect
+        window.location.href = data.url
+        return
+      }
+      // Demo mode — instant upgrade, close modal
+      emit('close')
+      router.push('/settings?upgraded=true')
+    } else {
+      // API error — fall back to pricing page
+      emit('close')
+      router.push('/pricing')
+    }
+  } catch (e) {
+    console.error('Upgrade failed:', e)
+    emit('close')
+    router.push('/pricing')
+  } finally {
+    upgrading.value = false
+  }
+}
 
 const title = computed(() => {
   if (props.used !== null && props.limit !== null) {

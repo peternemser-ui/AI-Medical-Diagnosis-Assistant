@@ -901,6 +901,7 @@ import { useRouter } from 'vue-router'
 import DOMPurify from 'dompurify'
 import { diagnose, diagnoseStream, followup, generateQuestion, interview, healthCheck, ApiError } from '@/services/api.js'
 import { getProfile } from '@/services/userService.js'
+import { trackEvent, EVENTS } from '@/services/analytics'
 
 // Import core components
 import ChatArea from '@/components/ChatArea.vue'
@@ -3252,6 +3253,17 @@ async function handleProceedToDiagnosis() {
     })
 
     conversationState.value = 'diagnosed'
+
+    // Track diagnosis completion
+    const diagnosisCount = JSON.parse(localStorage.getItem('analytics_events') || '[]')
+      .filter(e => e.name === EVENTS.DIAGNOSIS_COMPLETE).length
+    if (diagnosisCount === 0) {
+      trackEvent(EVENTS.FIRST_DIAGNOSIS, { provider: result.provider || '' })
+    }
+    trackEvent(EVENTS.DIAGNOSIS_COMPLETE, {
+      provider: result.provider || '',
+      totalTime: result.total_time || 0,
+    })
 
     // Save full structured result to localStorage for the dashboard FIRST
     // (before storeDiagnosisForDashboard which handles legacy format)

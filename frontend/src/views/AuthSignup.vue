@@ -227,6 +227,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { signup as authSignup } from '@/services/authService'
 import { saveProfile } from '@/services/userService'
+import { trackEvent, EVENTS } from '@/services/analytics'
 
 const router = useRouter()
 
@@ -294,6 +295,7 @@ async function handleSignup() {
       ...(data.user?.profile_data || {}),
     })
     localStorage.setItem('api_key_configured', 'true')
+    trackEvent(EVENTS.SIGNUP, { method: 'email' })
     router.push('/setup')
   } catch (e) {
     error.value = e.message || 'Signup failed. Please try again.'

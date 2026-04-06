@@ -161,6 +161,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login as authLogin } from '@/services/authService'
 import { saveProfile } from '@/services/userService'
+import { trackEvent, EVENTS } from '@/services/analytics'
 
 const router = useRouter()
 
@@ -195,6 +196,7 @@ async function handleLogin() {
     }
     // Mark API key as configured so the consult guard passes
     localStorage.setItem('api_key_configured', 'true')
+    trackEvent(EVENTS.LOGIN, { method: 'email' })
     router.push('/consult')
   } catch (e) {
     error.value = e.message || 'Login failed. Please try again.'
