@@ -2519,6 +2519,15 @@ class OrchestratorAgent:
                 "triage", "diagnostician", "research",
                 "specialist", "treatment", "safety", "empathy",
             ],
+            "agent_models": {
+                "triage": getattr(self.triage, 'model', 'claude-haiku-4-5'),
+                "diagnostician": getattr(self.diagnostician, 'model', 'claude-sonnet-4-6'),
+                "research": getattr(self.research, 'model', 'claude-haiku-4-5'),
+                "specialist": getattr(self.specialist, 'model', 'claude-sonnet-4-6'),
+                "treatment": getattr(self.treatment, 'model', 'claude-sonnet-4-6'),
+                "safety": getattr(self.safety, 'model', 'claude-sonnet-4-6'),
+                "empathy": getattr(self.empathy, 'model', 'claude-haiku-4-5'),
+            },
         }
 
     def _build_text_answer(

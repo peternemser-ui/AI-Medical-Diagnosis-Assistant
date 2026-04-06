@@ -395,7 +395,12 @@
                   <div class="h-px w-full mb-1" :class="isDark ? 'bg-slate-800' : 'bg-slate-100'"></div>
                   <div v-for="agent in agentList" :key="agent.name" class="flex items-center gap-2 text-detail group">
                     <span class="w-2 h-2 rounded-full flex-shrink-0" :style="{ backgroundColor: agent.color }"></span>
-                    <span class="w-20 truncate transition-colors" :class="isDark ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-700'">{{ agent.name }}</span>
+                    <div class="w-24 min-w-0 flex-shrink-0">
+                      <span class="block truncate transition-colors" :class="isDark ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-700'">{{ agent.name }}</span>
+                      <span v-if="agent.model" class="text-[9px] font-medium" :class="agent.model.includes('haiku') ? (isDark ? 'text-cyan-600' : 'text-cyan-500') : (isDark ? 'text-violet-500' : 'text-violet-400')">
+                        {{ agent.model.includes('haiku') ? 'Haiku' : agent.model.includes('sonnet') ? 'Sonnet' : agent.model.includes('opus') ? 'Opus' : agent.model }}
+                      </span>
+                    </div>
                     <div class="flex-1 h-1.5 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
                       <div class="h-full rounded-full transition-all duration-500" :style="{ width: agent.barWidth + '%', background: agent.color }"></div>
                     </div>
@@ -2082,6 +2087,7 @@ const safetyStatusClass = computed(() => {
 
 // Agent timings
 const agentTimingsData = computed(() => diagnosisData.value?.agent_timings || diagnosisData.value?.agentTimings || {})
+const agentModelsData = computed(() => diagnosisData.value?.agent_models || {})
 
 const totalPipelineTime = computed(() => {
   return diagnosisData.value?.total_time || diagnosisData.value?.totalTime || 0
@@ -2120,12 +2126,14 @@ const agentList = computed(() => {
 
   const maxTime = Math.max(...entries.map(([, t]) => t), 1)
 
+  const models = agentModelsData.value
   return entries.map(([name, time]) => ({
     name,
     time,
     timeStr: formatTime(time),
     barWidth: Math.round((time / maxTime) * 100),
-    color: agentColors[name] || '#64748b'
+    color: agentColors[name] || '#64748b',
+    model: models[name] || ''
   }))
 })
 
