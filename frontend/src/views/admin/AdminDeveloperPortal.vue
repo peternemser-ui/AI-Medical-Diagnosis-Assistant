@@ -1,49 +1,22 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Developer Portal</h1>
-        <p class="text-sm mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-          Manage API keys for external developers using the 7-agent pipeline
-        </p>
-      </div>
-      <button @click="showCreateModal = true"
-        class="px-4 py-2.5 text-sm font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all">
-        + Create New Key
-      </button>
-    </div>
+    <APageHeader title="Developer Portal" subtitle="Manage API keys for external developers using the 7-agent pipeline" :showRefresh="false">
+      <template #actions>
+        <button @click="showCreateModal = true"
+          class="px-4 py-2.5 text-sm font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all">
+          + Create New Key
+        </button>
+      </template>
+    </APageHeader>
 
-    <!-- Stats cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div v-for="stat in statsCards" :key="stat.label"
-        class="rounded-xl border p-4"
-        :class="isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200'">
-        <p class="text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-          {{ stat.label }}
-        </p>
-        <p class="text-2xl font-bold mt-1" :class="isDark ? 'text-white' : 'text-slate-900'">
-          {{ stat.value }}
-        </p>
-      </div>
-    </div>
+    <AKpiStrip :items="statsCards" :cols="4" />
 
-    <!-- Usage chart (simple bar chart) -->
+    <!-- Usage chart -->
     <div class="rounded-xl border p-6"
       :class="isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200'">
       <h2 class="text-lg font-bold mb-4" :class="isDark ? 'text-white' : 'text-slate-900'">Calls Per Day (Last 14 Days)</h2>
-      <div class="flex items-end gap-1 h-40">
-        <div v-for="(bar, idx) in chartBars" :key="idx"
-          class="flex-1 rounded-t-md transition-all"
-          :class="isDark ? 'bg-blue-500/60' : 'bg-blue-400'"
-          :style="{ height: bar.height + '%' }"
-          :title="bar.date + ': ' + bar.count + ' calls'">
-        </div>
-      </div>
-      <div class="flex justify-between mt-2 text-[10px]" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-        <span>{{ chartBars[0]?.date || '' }}</span>
-        <span>{{ chartBars[chartBars.length - 1]?.date || '' }}</span>
-      </div>
+      <ABarChart v-if="usageChartData.length > 0" :data="usageChartData" />
+      <AEmptyState v-else title="No usage data" description="No API call data yet. Usage appears once developers start making requests." />
     </div>
 
     <!-- Pricing tiers -->
@@ -78,10 +51,12 @@
         <div class="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
       </div>
 
-      <div v-else-if="keys.length === 0" class="p-8 text-center text-sm"
-        :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-        No API keys created yet. Click "Create New Key" to get started.
-      </div>
+      <AEmptyState v-else-if="keys.length === 0"
+        title="No API keys created yet"
+        description="No API keys created yet. Create your first API key to let external applications use the MedDiagnose AI diagnosis pipeline."
+        actionLabel="Create New Key"
+        @action="showCreateModal = true"
+      />
 
       <table v-else class="w-full text-sm">
         <thead>
@@ -199,6 +174,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
+import APageHeader from '@/components/admin/APageHeader.vue'
+import AKpiStrip from '@/components/admin/AKpiStrip.vue'
+import ABarChart from '@/components/admin/ABarChart.vue'
+import AEmptyState from '@/components/admin/AEmptyState.vue'
 
 const { isDark } = useTheme()
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
@@ -242,6 +221,14 @@ const chartBars = computed(() => {
   const max = Math.max(...days.map(d => d.count), 1)
   return days.map(d => ({ ...d, height: Math.max((d.count / max) * 100, 2) }))
 })
+
+const usageChartData = computed(() =>
+  chartBars.value.filter(b => b.count > 0).map(b => ({
+    label: b.date,
+    value: b.count,
+    color: 'bg-blue-500',
+  }))
+)
 
 function planBadgeClass(plan) {
   const map = {

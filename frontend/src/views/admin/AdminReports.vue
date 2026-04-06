@@ -1,21 +1,6 @@
 <template>
   <div class="space-y-6">
-    <!-- Page header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Reports</h1>
-        <p class="text-sm mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Generated diagnosis reports and PDFs</p>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-xs tabular-nums" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-          Auto-refreshes every 15s
-        </span>
-        <button @click="refresh" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-          :class="isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
-          Refresh
-        </button>
-      </div>
-    </div>
+    <APageHeader title="Reports" subtitle="Generated diagnosis reports and PDFs" lastUpdated="Auto-refreshes every 15s" @refresh="refresh" />
 
     <!-- Summary stats -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -30,20 +15,7 @@
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="flex items-center gap-1 border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
-      <button v-for="tab in tabs" :key="tab.key"
-        @click="switchTab(tab.key)"
-        class="px-4 py-2.5 text-sm font-medium transition-colors relative"
-        :class="activeTab === tab.key
-          ? (isDark ? 'text-white' : 'text-slate-900')
-          : (isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')">
-        {{ tab.label }}
-        <span v-if="tab.count != null" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full"
-          :class="isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'">{{ tab.count }}</span>
-        <div v-if="activeTab === tab.key" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full"></div>
-      </button>
-    </div>
+    <ATabBar :tabs="tabs" v-model="activeTab" @update:modelValue="switchTab" />
 
     <!-- Reports table -->
     <div class="rounded-2xl border overflow-hidden" :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'">
@@ -109,8 +81,8 @@
             </td>
           </tr>
           <tr v-if="reports.length === 0">
-            <td colspan="9" class="px-5 py-12 text-center text-sm" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-              No reports found. Reports are generated after a diagnosis is completed.
+            <td colspan="9">
+              <AEmptyState title="No reports found" description="No reports found. Reports are generated after each completed diagnosis." />
             </td>
           </tr>
         </tbody>
@@ -143,6 +115,10 @@ import { ref, reactive, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { usePolling } from '@/composables/usePolling.js'
 import { getReports, regenerateReport } from '@/services/adminApi.js'
+import APageHeader from '@/components/admin/APageHeader.vue'
+import ATabBar from '@/components/admin/ATabBar.vue'
+import AEmptyState from '@/components/admin/AEmptyState.vue'
+import { relativeTime as sharedRelativeTime, formatBytes } from '@/components/admin/formatters.js'
 
 const { isDark } = useTheme()
 
@@ -264,29 +240,10 @@ function truncate(text, max) {
 }
 
 function relativeTime(ts) {
-  if (!ts) return '--'
-  try {
-    const now = Date.now()
-    const then = new Date(ts).getTime()
-    const diffMs = now - then
-    const diffSec = Math.floor(diffMs / 1000)
-    if (diffSec < 60) return 'just now'
-    const diffMin = Math.floor(diffSec / 60)
-    if (diffMin < 60) return `${diffMin}m ago`
-    const diffHr = Math.floor(diffMin / 60)
-    if (diffHr < 24) return `${diffHr}h ago`
-    const diffDay = Math.floor(diffHr / 24)
-    if (diffDay < 30) return `${diffDay}d ago`
-    return new Date(ts).toLocaleDateString()
-  } catch (e) {
-    return ts
-  }
+  return sharedRelativeTime(ts) || '--'
 }
 
 function formatSize(bytes) {
-  if (!bytes && bytes !== 0) return '--'
-  if (bytes < 1024) return bytes + ' B'
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+  return formatBytes(bytes)
 }
 </script>

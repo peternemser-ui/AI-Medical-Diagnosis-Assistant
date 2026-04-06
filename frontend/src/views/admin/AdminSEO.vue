@@ -1,21 +1,6 @@
 <template>
   <div class="space-y-6">
-    <!-- Page header -->
-    <div class="flex items-center justify-between flex-wrap gap-4">
-      <div>
-        <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">SEO & Marketing</h1>
-        <p class="text-sm mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">SEO health, content ideas, and marketing insights</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="text-xs tabular-nums" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-          Last updated: {{ lastUpdated }}
-        </span>
-        <button @click="refresh" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-          :class="isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
-          Refresh
-        </button>
-      </div>
-    </div>
+    <APageHeader title="SEO & Marketing" subtitle="SEO health, content ideas, and marketing insights" :lastUpdated="'Last updated: ' + lastUpdated" @refresh="refresh" />
 
     <!-- SEO Score + Quick Stats -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -215,6 +200,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { usePolling } from '@/composables/usePolling.js'
 import { getSeoAudit, getBlogIdeas } from '@/services/adminApi.js'
+import APageHeader from '@/components/admin/APageHeader.vue'
+import AEmptyState from '@/components/admin/AEmptyState.vue'
+import { getPriorityColor } from '@/components/admin/statusClasses.js'
 
 const { isDark } = useTheme()
 const audit = ref(null)
@@ -267,12 +255,8 @@ function pageScoreColor(score) {
 }
 
 function priorityBadge(priority) {
-  const map = {
-    high: isDark.value ? 'bg-red-500/15 text-red-400' : 'bg-red-50 text-red-600',
-    medium: isDark.value ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-50 text-amber-600',
-    low: isDark.value ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-50 text-blue-600',
-  }
-  return map[priority] || map.low
+  const c = getPriorityColor(priority)
+  return `${c.bg} ${c.text}`
 }
 
 function difficultyBadge(difficulty) {

@@ -1,48 +1,27 @@
 <template>
   <div class="space-y-6">
-    <!-- Page header -->
-    <div class="flex items-center justify-between flex-wrap gap-4">
-      <div>
-        <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Analytics</h1>
-        <p class="text-sm mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Pipeline performance metrics and trends</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <!-- Period selector -->
-        <div class="flex rounded-lg overflow-hidden border"
-          :class="isDark ? 'border-slate-700' : 'border-slate-200'">
-          <button v-for="p in periods" :key="p.value"
-            @click="setPeriod(p.value)"
-            class="px-3 py-1.5 text-xs font-medium transition-colors"
-            :class="period === p.value
-              ? (isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-50 text-blue-700')
-              : (isDark ? 'bg-slate-900 text-slate-400 hover:text-slate-200' : 'bg-white text-slate-500 hover:text-slate-700')">
-            {{ p.label }}
+    <APageHeader title="Analytics" subtitle="Pipeline performance metrics and trends" :lastUpdated="'Last updated: ' + lastUpdated" @refresh="refresh">
+      <template #actions>
+        <div class="flex items-center gap-3">
+          <div class="flex rounded-lg overflow-hidden border"
+            :class="isDark ? 'border-slate-700' : 'border-slate-200'">
+            <button v-for="p in periods" :key="p.value"
+              @click="setPeriod(p.value)"
+              class="px-3 py-1.5 text-xs font-medium transition-colors"
+              :class="period === p.value
+                ? (isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-50 text-blue-700')
+                : (isDark ? 'bg-slate-900 text-slate-400 hover:text-slate-200' : 'bg-white text-slate-500 hover:text-slate-700')">
+              {{ p.label }}
+            </button>
+          </div>
+          <button @click="refresh" class="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors" :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'">
+            Refresh
           </button>
         </div>
-        <span class="text-xs tabular-nums" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-          Last updated: {{ lastUpdated }}
-        </span>
-        <button @click="refresh" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-          :class="isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
-          Refresh
-        </button>
-      </div>
-    </div>
+      </template>
+    </APageHeader>
 
-    <!-- Summary metrics row -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div v-for="metric in summaryMetrics" :key="metric.label"
-        class="rounded-2xl border p-5 transition-colors"
-        :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'">
-        <div class="flex items-center justify-between mb-3">
-          <div class="w-9 h-9 rounded-xl flex items-center justify-center" :class="metric.iconBg">
-            <span v-html="metric.icon" class="w-4 h-4"></span>
-          </div>
-        </div>
-        <div class="text-2xl font-semibold tabular-nums" :class="isDark ? 'text-white' : 'text-slate-900'">{{ metric.value }}</div>
-        <div class="text-xs mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ metric.label }}</div>
-      </div>
-    </div>
+    <AKpiStrip :items="kpiItems" :cols="4" />
 
     <!-- Charts grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -55,22 +34,8 @@
           <p class="text-[11px] mt-0.5" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Cases processed per time bucket</p>
         </div>
         <div class="p-5">
-          <div v-if="throughput.length > 0" class="space-y-2">
-            <div v-for="(bucket, i) in throughput" :key="i" class="flex items-center gap-3">
-              <span class="text-[10px] tabular-nums w-14 text-right flex-shrink-0"
-                :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ bucket.label }}</span>
-              <div class="flex-1 h-5 rounded-md overflow-hidden"
-                :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
-                <div class="h-full rounded-md bg-blue-500 transition-all duration-500"
-                  :style="{ width: throughputBarWidth(bucket.count) }"></div>
-              </div>
-              <span class="text-[10px] tabular-nums w-8 flex-shrink-0"
-                :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ bucket.count }}</span>
-            </div>
-          </div>
-          <div v-else class="text-center py-8 text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-            No throughput data available
-          </div>
+          <ABarChart v-if="throughputChartData.length > 0" :data="throughputChartData" />
+          <AEmptyState v-else title="No throughput data" description="No throughput data yet. Run a diagnosis to see agent metrics." />
         </div>
       </div>
 
@@ -82,23 +47,8 @@
           <p class="text-[11px] mt-0.5" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Average processing time per agent</p>
         </div>
         <div class="p-5">
-          <div v-if="agentLatency.length > 0" class="space-y-2.5">
-            <div v-for="agent in agentLatency" :key="agent.name" class="flex items-center gap-3">
-              <span class="text-[10px] font-medium capitalize w-20 text-right flex-shrink-0"
-                :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ agent.name }}</span>
-              <div class="flex-1 h-5 rounded-md overflow-hidden"
-                :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
-                <div class="h-full rounded-md transition-all duration-500"
-                  :class="latencyBarColor(agent.avg_ms)"
-                  :style="{ width: latencyBarWidth(agent.avg_ms) }"></div>
-              </div>
-              <span class="text-[10px] tabular-nums w-12 flex-shrink-0"
-                :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ (agent.avg_ms / 1000).toFixed(1) }}s</span>
-            </div>
-          </div>
-          <div v-else class="text-center py-8 text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-            No latency data available
-          </div>
+          <ABarChart v-if="latencyChartData.length > 0" :data="latencyChartData" />
+          <AEmptyState v-else title="No latency data" description="No latency data available. Run a diagnosis to see agent timing." />
         </div>
       </div>
 
@@ -110,24 +60,8 @@
           <p class="text-[11px] mt-0.5" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Percentage of failed executions per agent</p>
         </div>
         <div class="p-5">
-          <div v-if="errorRates.length > 0" class="space-y-2.5">
-            <div v-for="agent in errorRates" :key="agent.name" class="flex items-center gap-3">
-              <span class="text-[10px] font-medium capitalize w-20 text-right flex-shrink-0"
-                :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ agent.name }}</span>
-              <div class="flex-1 h-5 rounded-md overflow-hidden"
-                :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
-                <div class="h-full rounded-md bg-red-500 transition-all duration-500"
-                  :style="{ width: agent.rate + '%' }"></div>
-              </div>
-              <span class="text-[10px] tabular-nums w-10 flex-shrink-0"
-                :class="agent.rate > 5 ? 'text-red-400 font-medium' : (isDark ? 'text-slate-300' : 'text-slate-600')">
-                {{ agent.rate.toFixed(1) }}%
-              </span>
-            </div>
-          </div>
-          <div v-else class="text-center py-8 text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-            No error data available
-          </div>
+          <ABarChart v-if="errorChartData.length > 0" :data="errorChartData" :maxValue="100" />
+          <AEmptyState v-else title="No error data" description="No error data available yet." />
         </div>
       </div>
 
@@ -161,9 +95,7 @@
               </div>
             </div>
           </div>
-          <div v-else class="text-center py-8 text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-            No urgency data available
-          </div>
+          <AEmptyState v-else title="No urgency data" description="No urgency data available yet." />
         </div>
       </div>
 
@@ -192,9 +124,7 @@
               </div>
             </div>
           </div>
-          <div v-else class="text-center py-8 text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-            No confidence data available
-          </div>
+          <AEmptyState v-else title="No confidence data" description="No confidence data available yet." />
         </div>
       </div>
 
@@ -206,23 +136,8 @@
           <p class="text-[11px] mt-0.5" :class="isDark ? 'text-slate-500' : 'text-slate-400'">How many cases reach each pipeline stage</p>
         </div>
         <div class="p-5">
-          <div v-if="completionFunnel.length > 0" class="space-y-2">
-            <div v-for="(stage, i) in completionFunnel" :key="stage.name" class="flex items-center gap-3">
-              <span class="text-[10px] font-medium capitalize w-20 text-right flex-shrink-0"
-                :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ stage.name }}</span>
-              <div class="flex-1 h-5 rounded-md overflow-hidden"
-                :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
-                <div class="h-full rounded-md transition-all duration-500"
-                  :class="funnelBarColor(i)"
-                  :style="{ width: funnelBarWidth(stage.count) }"></div>
-              </div>
-              <span class="text-[10px] tabular-nums w-10 flex-shrink-0"
-                :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ stage.count }}</span>
-            </div>
-          </div>
-          <div v-else class="text-center py-8 text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-            No funnel data available
-          </div>
+          <ABarChart v-if="funnelChartData.length > 0" :data="funnelChartData" />
+          <AEmptyState v-else title="No funnel data" description="No funnel data available yet." />
         </div>
       </div>
 
@@ -234,25 +149,8 @@
           <p class="text-[11px] mt-0.5" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Most common failure reasons ranked by occurrence</p>
         </div>
         <div class="p-5">
-          <div v-if="failureCategories.length > 0" class="space-y-2">
-            <div v-for="(cat, i) in failureCategories" :key="cat.category"
-              class="flex items-center gap-3">
-              <span class="text-[10px] font-bold w-5 text-right flex-shrink-0"
-                :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ i + 1 }}</span>
-              <span class="text-xs w-48 truncate flex-shrink-0"
-                :class="isDark ? 'text-slate-200' : 'text-slate-700'">{{ cat.category }}</span>
-              <div class="flex-1 h-4 rounded-md overflow-hidden"
-                :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
-                <div class="h-full rounded-md bg-red-500/80 transition-all duration-500"
-                  :style="{ width: failureBarWidth(cat.count) }"></div>
-              </div>
-              <span class="text-[10px] tabular-nums w-8 flex-shrink-0"
-                :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ cat.count }}</span>
-            </div>
-          </div>
-          <div v-else class="text-center py-8 text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-            No failure data available
-          </div>
+          <ABarChart v-if="failureChartData.length > 0" :data="failureChartData" />
+          <AEmptyState v-else title="No failure data" description="No failure data available yet." />
         </div>
       </div>
     </div>
@@ -264,6 +162,10 @@ import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { usePolling } from '@/composables/usePolling.js'
 import { getAnalytics } from '@/services/adminApi.js'
+import APageHeader from '@/components/admin/APageHeader.vue'
+import AKpiStrip from '@/components/admin/AKpiStrip.vue'
+import ABarChart from '@/components/admin/ABarChart.vue'
+import AEmptyState from '@/components/admin/AEmptyState.vue'
 
 const { isDark } = useTheme()
 
@@ -332,6 +234,50 @@ const summaryMetrics = computed(() => {
     },
   ]
 })
+
+// KPI items for AKpiStrip
+const kpiItems = computed(() => {
+  const m = summaryMetrics.value
+  return m.map(metric => ({ label: metric.label, value: metric.value }))
+})
+
+// Chart data for ABarChart components
+const throughputChartData = computed(() =>
+  throughput.value.map(b => ({ label: b.label, value: b.count, color: 'bg-blue-500' }))
+)
+
+const latencyChartData = computed(() =>
+  agentLatency.value.map(a => ({
+    label: a.name,
+    value: (a.avg_ms / 1000).toFixed(1) + 's',
+    color: a.avg_ms < 3000 ? 'bg-emerald-500' : a.avg_ms < 8000 ? 'bg-amber-500' : 'bg-red-500',
+  }))
+)
+
+const errorChartData = computed(() =>
+  errorRates.value.map(a => ({
+    label: a.name,
+    value: parseFloat(a.rate.toFixed(1)),
+    color: 'bg-red-500',
+  }))
+)
+
+const funnelChartData = computed(() => {
+  const colors = ['bg-blue-500', 'bg-blue-400', 'bg-cyan-500', 'bg-teal-500', 'bg-emerald-500', 'bg-green-500', 'bg-lime-500']
+  return completionFunnel.value.map((s, i) => ({
+    label: s.name,
+    value: s.count,
+    color: colors[i % colors.length],
+  }))
+})
+
+const failureChartData = computed(() =>
+  failureCategories.value.map(c => ({
+    label: c.category,
+    value: c.count,
+    color: 'bg-red-500',
+  }))
+)
 
 // Throughput bar scaling
 function throughputBarWidth(count) {

@@ -1,27 +1,25 @@
 <template>
   <div class="space-y-0">
     <!-- Page header -->
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Logs</h1>
-        <p class="text-sm mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Structured system and agent logs</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <!-- Live indicator -->
-        <div v-if="autoRefreshActive" class="flex items-center gap-1.5">
-          <span class="relative flex h-2 w-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span class="text-[10px] font-medium" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'">Live</span>
+    <APageHeader title="Logs" subtitle="Structured system and agent logs" :show-refresh="false">
+      <template #actions>
+        <div class="flex items-center gap-3">
+          <!-- Live indicator -->
+          <div v-if="autoRefreshActive" class="flex items-center gap-1.5">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span class="text-[10px] font-medium" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'">Live</span>
+          </div>
+          <!-- Download -->
+          <button @click="copyLogsToClipboard" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+            :class="isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
+            {{ copyLabel }}
+          </button>
         </div>
-        <!-- Download -->
-        <button @click="copyLogsToClipboard" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-          :class="isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
-          {{ copyLabel }}
-        </button>
-      </div>
-    </div>
+      </template>
+    </APageHeader>
 
     <!-- Sticky filter bar -->
     <div class="sticky top-0 z-10 -mx-1 px-1 py-3 backdrop-blur-sm"
@@ -115,7 +113,7 @@
                 {{ formatTimestamp(log.timestamp) }}
               </td>
               <td class="px-3 py-1.5">
-                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase" :class="levelBadgeClass(log.level)">
+                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase" :class="sharedLevelClass(log.level)">
                   {{ log.level }}
                 </span>
               </td>
@@ -180,8 +178,12 @@
           </template>
           <!-- Empty state -->
           <tr v-if="logs.length === 0 && !loading">
-            <td colspan="6" class="px-5 py-12 text-center text-sm" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-              No log entries found{{ hasActiveFilters ? ' matching filters' : '' }}.
+            <td colspan="6">
+              <AEmptyState
+                :title="hasActiveFilters ? 'No logs match your filters' : 'No log entries yet'"
+                :description="hasActiveFilters ? 'Try broadening your search or clearing filters to see all entries.' : 'Log entries are recorded as agents process diagnoses. Run a diagnosis to generate log data.'"
+                :action-label="hasActiveFilters ? 'Clear Filters' : ''"
+                @action="clearFilters" />
             </td>
           </tr>
           <!-- Loading skeleton -->
@@ -212,6 +214,10 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { usePolling } from '@/composables/usePolling.js'
 import { getLogs } from '@/services/adminApi.js'
+import APageHeader from '@/components/admin/APageHeader.vue'
+import AEmptyState from '@/components/admin/AEmptyState.vue'
+import { getLogLevelColor } from '@/components/admin/statusClasses.js'
+import { relativeTime as sharedRelativeTime } from '@/components/admin/formatters.js'
 
 const { isDark } = useTheme()
 
@@ -327,13 +333,11 @@ function formatTimestamp(ts) {
   }
 }
 
-function levelBadgeClass(level) {
+function sharedLevelClass(level) {
   const l = (level || '').toLowerCase()
-  if (l === 'error') return isDark.value ? 'bg-red-500/15 text-red-400' : 'bg-red-100 text-red-700'
-  if (l === 'warning' || l === 'warn') return isDark.value ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-100 text-amber-700'
-  if (l === 'info') return isDark.value ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-100 text-blue-700'
-  // debug + default
-  return isDark.value ? 'bg-slate-500/15 text-slate-400' : 'bg-slate-100 text-slate-500'
+  const mapped = l === 'warn' ? 'warning' : l
+  const c = getLogLevelColor(mapped)
+  return `${c.bg} ${c.text}`
 }
 
 function truncate(str, max) {

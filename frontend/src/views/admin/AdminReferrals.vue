@@ -1,12 +1,6 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div>
-      <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Referral Analytics</h1>
-      <p class="text-sm mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-        Track specialist referral clicks and revenue from "Call Office" and "Get Directions" actions
-      </p>
-    </div>
+    <APageHeader title="Referral Analytics" subtitle="Track specialist referral clicks and revenue from 'Call Office' and 'Get Directions' actions" :showRefresh="false" />
 
     <!-- Period selector -->
     <div class="flex gap-2">
@@ -28,22 +22,7 @@
     </div>
 
     <template v-else>
-      <!-- Stats cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div v-for="stat in statsCards" :key="stat.label"
-          class="rounded-xl border p-4"
-          :class="isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200'">
-          <p class="text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-            {{ stat.label }}
-          </p>
-          <p class="text-2xl font-bold mt-1" :class="stat.color || (isDark ? 'text-white' : 'text-slate-900')">
-            {{ stat.value }}
-          </p>
-          <p v-if="stat.sub" class="text-xs mt-1" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-            {{ stat.sub }}
-          </p>
-        </div>
-      </div>
+      <AKpiStrip :items="referralKpiItems" :cols="4" />
 
       <!-- Breakdown grids -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -51,10 +30,10 @@
         <div class="rounded-xl border p-6"
           :class="isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200'">
           <h2 class="text-lg font-bold mb-4" :class="isDark ? 'text-white' : 'text-slate-900'">By Specialty</h2>
-          <div v-if="Object.keys(stats.by_specialty || {}).length === 0"
-            class="text-sm text-center py-8" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-            No data yet
-          </div>
+          <AEmptyState v-if="Object.keys(stats.by_specialty || {}).length === 0"
+            title="No specialty data"
+            description="No referral data yet. Referrals are tracked when patients click 'Call Office' or 'Get Directions' on specialist recommendations."
+          />
           <div v-else class="space-y-3">
             <div v-for="(count, specialty) in sortedSpecialties" :key="specialty" class="flex items-center gap-3">
               <div class="flex-1 min-w-0">
@@ -75,10 +54,10 @@
         <div class="rounded-xl border p-6"
           :class="isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200'">
           <h2 class="text-lg font-bold mb-4" :class="isDark ? 'text-white' : 'text-slate-900'">By Action Type</h2>
-          <div v-if="Object.keys(stats.by_action || {}).length === 0"
-            class="text-sm text-center py-8" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-            No data yet
-          </div>
+          <AEmptyState v-if="Object.keys(stats.by_action || {}).length === 0"
+            title="No action data"
+            description="No referral actions tracked yet."
+          />
           <div v-else class="space-y-4">
             <div v-for="(count, action) in stats.by_action" :key="action"
               class="flex items-center gap-4">
@@ -112,10 +91,10 @@
         <div class="px-6 py-4 border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
           <h2 class="text-lg font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Top Referred Doctors</h2>
         </div>
-        <div v-if="!stats.top_doctors || stats.top_doctors.length === 0"
-          class="p-8 text-center text-sm" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-          No referral data yet.
-        </div>
+        <AEmptyState v-if="!stats.top_doctors || stats.top_doctors.length === 0"
+          title="No referral data yet"
+          description="No referral data yet. Referrals are tracked when patients click 'Call Office' or 'Get Directions' on specialist recommendations."
+        />
         <table v-else class="w-full text-sm">
           <thead>
             <tr :class="isDark ? 'bg-slate-800/50' : 'bg-slate-50'">
@@ -143,6 +122,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
+import APageHeader from '@/components/admin/APageHeader.vue'
+import AKpiStrip from '@/components/admin/AKpiStrip.vue'
+import AEmptyState from '@/components/admin/AEmptyState.vue'
 
 const { isDark } = useTheme()
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
@@ -178,6 +160,14 @@ const statsCards = computed(() => [
     sub: '$5-$25 range by specialty',
   },
 ])
+
+const referralKpiItems = computed(() =>
+  statsCards.value.map(s => ({
+    label: s.label,
+    value: s.value,
+    sublabel: s.sub || undefined,
+  }))
+)
 
 const sortedSpecialties = computed(() => {
   const entries = Object.entries(stats.value.by_specialty || {})

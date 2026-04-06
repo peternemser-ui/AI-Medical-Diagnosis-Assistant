@@ -1,21 +1,6 @@
 <template>
   <div class="space-y-6">
-    <!-- Page header -->
-    <div class="flex items-center justify-between flex-wrap gap-4">
-      <div>
-        <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Billing & Revenue</h1>
-        <p class="text-sm mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Subscription metrics, usage tracking, and revenue analytics</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="text-xs tabular-nums" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-          Last updated: {{ lastUpdated }}
-        </span>
-        <button @click="refresh" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-          :class="isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
-          Refresh
-        </button>
-      </div>
-    </div>
+    <APageHeader title="Billing & Revenue" subtitle="Subscription metrics, usage tracking, and revenue analytics" :lastUpdated="'Last updated: ' + lastUpdated" @refresh="refresh" />
 
     <!-- Stripe Configuration Section -->
     <div class="rounded-2xl border overflow-hidden"
@@ -128,26 +113,7 @@
       </div>
     </div>
 
-    <!-- Revenue metric cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div v-for="metric in revenueMetrics" :key="metric.label"
-        class="rounded-2xl border p-5 transition-colors"
-        :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'">
-        <div class="flex items-center justify-between mb-3">
-          <div class="w-9 h-9 rounded-xl flex items-center justify-center" :class="metric.iconBg">
-            <span v-html="metric.icon" class="w-4 h-4"></span>
-          </div>
-          <span v-if="metric.trend != null" class="text-xs font-medium px-2 py-0.5 rounded-full"
-            :class="metric.trend >= 0
-              ? (isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600')
-              : (isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600')">
-            {{ metric.trend >= 0 ? '+' : '' }}{{ metric.trend }}%
-          </span>
-        </div>
-        <div class="text-2xl font-semibold tabular-nums" :class="isDark ? 'text-white' : 'text-slate-900'">{{ metric.value }}</div>
-        <div class="text-xs mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ metric.label }}</div>
-      </div>
-    </div>
+    <AKpiStrip :items="billingKpiItems" :cols="4" />
 
     <!-- Middle row: Usage chart + Tier distribution -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -159,22 +125,8 @@
           <p class="text-[11px] mt-0.5" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Diagnoses processed per day (last 15 days)</p>
         </div>
         <div class="p-5">
-          <div v-if="dailyUsage.length > 0" class="space-y-2">
-            <div v-for="(day, i) in dailyUsage" :key="i" class="flex items-center gap-3">
-              <span class="text-[10px] tabular-nums w-16 text-right flex-shrink-0"
-                :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ formatDay(day.date) }}</span>
-              <div class="flex-1 h-5 rounded-md overflow-hidden"
-                :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
-                <div class="h-full rounded-md bg-emerald-500 transition-all duration-500"
-                  :style="{ width: barWidth(day.diagnoses) }"></div>
-              </div>
-              <span class="text-[10px] tabular-nums w-8 flex-shrink-0"
-                :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ day.diagnoses }}</span>
-            </div>
-          </div>
-          <div v-else class="text-center py-8 text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-            No usage data available
-          </div>
+          <ABarChart v-if="dailyUsageChartData.length > 0" :data="dailyUsageChartData" />
+          <AEmptyState v-else title="No usage data" description="No usage data available yet." />
         </div>
       </div>
 
@@ -265,6 +217,10 @@ import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { usePolling } from '@/composables/usePolling.js'
 import { getBillingSummary, getStripeStatus, saveStripeConfig } from '@/services/adminApi.js'
+import APageHeader from '@/components/admin/APageHeader.vue'
+import AKpiStrip from '@/components/admin/AKpiStrip.vue'
+import ABarChart from '@/components/admin/ABarChart.vue'
+import AEmptyState from '@/components/admin/AEmptyState.vue'
 
 const { isDark } = useTheme()
 const data = ref(null)
@@ -413,6 +369,24 @@ const revenueMetrics = computed(() => {
     },
   ]
 })
+
+// Billing KPI items for AKpiStrip
+const billingKpiItems = computed(() => {
+  return revenueMetrics.value.map(m => ({
+    label: m.label,
+    value: m.value,
+    trend: m.trend,
+  }))
+})
+
+// Daily usage chart data for ABarChart
+const dailyUsageChartData = computed(() =>
+  dailyUsage.value.map(day => ({
+    label: formatDay(day.date),
+    value: day.diagnoses,
+    color: 'bg-emerald-500',
+  }))
+)
 
 // Daily usage chart
 const dailyUsage = computed(() => data.value?.daily_usage || [])

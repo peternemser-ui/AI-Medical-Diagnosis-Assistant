@@ -1,12 +1,7 @@
 <template>
   <div class="space-y-6">
     <!-- Page header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Configuration</h1>
-        <p class="text-sm mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Manage system settings and parameters</p>
-      </div>
-    </div>
+    <APageHeader title="Configuration" subtitle="Manage system settings and parameters" :show-refresh="false" />
 
     <!-- Search bar -->
     <div class="relative">
@@ -21,24 +16,12 @@
     </div>
 
     <!-- Category tabs -->
-    <div class="flex items-center gap-1 border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
-      <button v-for="tab in categoryTabs" :key="tab.key"
-        @click="activeCategory = tab.key"
-        class="px-4 py-2.5 text-sm font-medium transition-colors relative"
-        :class="activeCategory === tab.key
-          ? (isDark ? 'text-white' : 'text-slate-900')
-          : (isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')">
-        {{ tab.label }}
-        <span v-if="tab.count > 0" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full"
-          :class="isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'">{{ tab.count }}</span>
-        <div v-if="activeCategory === tab.key" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full"></div>
-      </button>
-    </div>
+    <ATabBar :tabs="categoryTabs" v-model="activeCategory" />
 
     <!-- Config cards -->
     <div class="space-y-3">
       <div v-for="cfg in filteredConfigs" :key="cfg.key"
-        class="rounded-2xl border p-5 transition-all"
+        class="rounded-xl border p-4 transition-all"
         :class="[
           editingKey === cfg.key
             ? (isDark ? 'bg-slate-800/60 border-blue-500/40 ring-1 ring-blue-500/20' : 'bg-blue-50/30 border-blue-300 ring-1 ring-blue-200')
@@ -157,11 +140,13 @@
 
     <!-- Empty state -->
     <div v-if="filteredConfigs.length === 0 && !loading"
-      class="rounded-2xl border p-12 text-center"
+      class="rounded-2xl border overflow-hidden"
       :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'">
-      <p class="text-sm" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-        No configuration entries match your filter.
-      </p>
+      <AEmptyState
+        :title="searchQuery ? 'No matching settings' : 'No configuration entries'"
+        :description="searchQuery ? 'No settings match your search query. Try different keywords or clear the search.' : 'Configuration entries will be loaded from the backend. Check that the config API is available.'"
+        :action-label="searchQuery ? 'Clear Search' : ''"
+        @action="searchQuery = ''" />
     </div>
 
     <!-- Loading state -->
@@ -240,6 +225,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { getConfig, updateConfig } from '@/services/adminApi.js'
+import APageHeader from '@/components/admin/APageHeader.vue'
+import ATabBar from '@/components/admin/ATabBar.vue'
+import AEmptyState from '@/components/admin/AEmptyState.vue'
+import { relativeTime as sharedRelativeTime } from '@/components/admin/formatters.js'
 
 const { isDark } = useTheme()
 
@@ -374,12 +363,8 @@ function categoryBadgeClass(category) {
 
 function formatTime(ts) {
   if (!ts) return ''
-  try {
-    const d = new Date(ts)
-    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString()
-  } catch (e) {
-    return ts
-  }
+  const rel = sharedRelativeTime(ts)
+  return rel || ts
 }
 
 onMounted(() => fetchConfig())

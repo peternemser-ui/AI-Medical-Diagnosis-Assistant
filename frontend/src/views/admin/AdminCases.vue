@@ -1,26 +1,9 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Cases</h1>
-        <p class="text-sm mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Track diagnostic pipeline progress</p>
-      </div>
-    </div>
+    <APageHeader title="Cases" subtitle="Track diagnostic pipeline progress" :show-refresh="false" />
 
     <!-- Tabs -->
-    <div class="flex items-center gap-1 border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
-      <button v-for="tab in tabs" :key="tab.key"
-        @click="activeTab = tab.key"
-        class="px-4 py-2.5 text-sm font-medium transition-colors relative"
-        :class="activeTab === tab.key
-          ? (isDark ? 'text-white' : 'text-slate-900')
-          : (isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')">
-        {{ tab.label }}
-        <span v-if="tab.count != null" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full"
-          :class="isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'">{{ tab.count }}</span>
-        <div v-if="activeTab === tab.key" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full"></div>
-      </button>
-    </div>
+    <ATabBar :tabs="tabs" v-model="activeTab" />
 
     <!-- Cases table -->
     <div class="rounded-2xl border overflow-hidden" :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'">
@@ -56,8 +39,11 @@
             </td>
           </tr>
           <tr v-if="cases.length === 0">
-            <td colspan="7" class="px-5 py-12 text-center text-sm" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-              No cases found. Run a diagnosis to see cases here.
+            <td colspan="7">
+              <AEmptyState
+                title="No cases yet"
+                description="Cases are created when patients submit symptoms through the diagnosis interface. Run a diagnosis to see pipeline activity here."
+                variant="info" />
             </td>
           </tr>
         </tbody>
@@ -160,6 +146,11 @@ import { useTheme } from '@/composables/useTheme.js'
 import { usePolling } from '@/composables/usePolling.js'
 import { getCases, getCaseCounts, getCase, getCaseTimeline } from '@/services/adminApi.js'
 import ASheet from '@/components/admin/ASheet.vue'
+import APageHeader from '@/components/admin/APageHeader.vue'
+import ATabBar from '@/components/admin/ATabBar.vue'
+import AEmptyState from '@/components/admin/AEmptyState.vue'
+import { getStatusColor } from '@/components/admin/statusClasses.js'
+import { relativeTime as sharedRelativeTime } from '@/components/admin/formatters.js'
 
 const { isDark } = useTheme()
 const activeTab = ref('all')
@@ -222,10 +213,9 @@ function urgencyClass(u) {
 }
 
 function statusClass(s) {
-  if (s === 'completed') return isDark.value ? 'bg-emerald-500/15 text-emerald-400' : 'bg-emerald-100 text-emerald-700'
-  if (s === 'active' || s === 'running') return isDark.value ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-100 text-blue-700'
-  if (s === 'error' || s === 'failed') return isDark.value ? 'bg-red-500/15 text-red-400' : 'bg-red-100 text-red-700'
-  return isDark.value ? 'bg-slate-500/15 text-slate-400' : 'bg-slate-100 text-slate-500'
+  const mapped = s === 'completed' ? 'healthy' : s === 'active' ? 'running' : s === 'failed' ? 'error' : (s || 'idle')
+  const c = getStatusColor(mapped)
+  return `${c.bg} ${c.text}`
 }
 
 function timelineDotClass(type) {
@@ -242,7 +232,9 @@ function formatTimestamp(ts) {
   if (!ts) return '—'
   try {
     const d = new Date(ts)
-    return d.toLocaleString()
+    const full = d.toLocaleString()
+    const rel = sharedRelativeTime(ts)
+    return rel ? `${full} (${rel})` : full
   } catch (e) {
     return ts
   }

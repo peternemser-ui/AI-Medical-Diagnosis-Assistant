@@ -4,11 +4,7 @@
   </div>
 
   <div v-else class="space-y-8">
-    <!-- Page header -->
-    <div>
-      <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">System Insight Dashboard</h1>
-      <p class="mt-1 text-sm" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Agent pipeline, system health, processing metrics, and feature flag management.</p>
-    </div>
+    <APageHeader title="System Insight Dashboard" subtitle="Agent pipeline, system health, processing metrics, and feature flag management." :showRefresh="false" />
 
     <!-- ===== Section 1: Agent Pipeline Visualization ===== -->
     <section>
@@ -112,7 +108,7 @@
               <span :class="isDark ? 'text-slate-300' : 'text-slate-700'">{{ m.model }}</span>
               <span class="font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">{{ m.count }}</span>
             </div>
-            <div v-if="!metrics.modelDist.length" class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">No data</div>
+            <AEmptyState v-if="!metrics.modelDist.length" title="No data" description="No model distribution data available yet." />
           </div>
         </div>
       </div>
@@ -166,6 +162,8 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { getFlag, getAllFlags, setFlag, resetFlags, FLAG_DEFAULTS } from '@/services/featureFlags.js'
+import APageHeader from '@/components/admin/APageHeader.vue'
+import AEmptyState from '@/components/admin/AEmptyState.vue'
 
 const { isDark } = useTheme()
 

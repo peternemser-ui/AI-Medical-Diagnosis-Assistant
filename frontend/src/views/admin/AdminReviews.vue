@@ -1,36 +1,10 @@
 <template>
   <div class="space-y-6">
     <!-- Page header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Review Queue</h1>
-        <p class="text-sm mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Triage and resolve flagged cases</p>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-xs tabular-nums" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-          Last updated: {{ lastUpdated }}
-        </span>
-        <button @click="refresh" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-          :class="isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
-          Refresh
-        </button>
-      </div>
-    </div>
+    <APageHeader title="Review Queue" subtitle="Triage and resolve flagged cases" :last-updated="lastUpdated" @refresh="refresh" />
 
     <!-- Tabs -->
-    <div class="flex items-center gap-1 border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
-      <button v-for="tab in tabs" :key="tab.key"
-        @click="switchTab(tab.key)"
-        class="px-4 py-2.5 text-sm font-medium transition-colors relative"
-        :class="activeTab === tab.key
-          ? (isDark ? 'text-white' : 'text-slate-900')
-          : (isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')">
-        {{ tab.label }}
-        <span v-if="tab.count != null" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full"
-          :class="isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'">{{ tab.count }}</span>
-        <div v-if="activeTab === tab.key" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full"></div>
-      </button>
-    </div>
+    <ATabBar :tabs="tabs" :model-value="activeTab" @update:model-value="switchTab" />
 
     <!-- Reviews table -->
     <div class="rounded-2xl border overflow-hidden" :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'">
@@ -52,7 +26,7 @@
             :class="isDark ? 'border-slate-800/50 hover:bg-slate-800/40' : 'border-slate-50 hover:bg-slate-50'">
             <!-- Priority -->
             <td class="px-5 py-3">
-              <span class="text-xs font-medium px-2 py-0.5 rounded-full" :class="priorityClass(item.priority)">{{ item.priority }}</span>
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full capitalize" :class="sharedPriorityClass(item.priority)">{{ item.priority }}</span>
             </td>
             <!-- Type -->
             <td class="px-5 py-3">
@@ -80,7 +54,7 @@
             </td>
             <!-- Created -->
             <td class="px-5 py-3 tabular-nums text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-              {{ relativeTime(item.created_at) }}
+              {{ sharedRelativeTime(item.created_at) }}
             </td>
             <!-- Actions -->
             <td class="px-5 py-3 text-right">
@@ -154,14 +128,11 @@
 
           <!-- Empty state -->
           <tr v-if="reviews.length === 0">
-            <td colspan="7" class="px-5 py-16 text-center">
-              <div class="flex flex-col items-center gap-2">
-                <svg class="w-10 h-10" :class="isDark ? 'text-slate-700' : 'text-slate-300'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <p class="text-sm font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">No reviews in queue</p>
-                <p class="text-xs" :class="isDark ? 'text-slate-600' : 'text-slate-400'">Flagged cases will appear here for triage</p>
-              </div>
+            <td colspan="7">
+              <AEmptyState
+                title="No reviews in queue — all caught up!"
+                description="Flagged cases from the safety agent or manual escalations will appear here for triage and resolution."
+                variant="info" />
             </td>
           </tr>
         </tbody>
@@ -175,6 +146,11 @@ import { ref, onMounted, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { usePolling } from '@/composables/usePolling.js'
 import { getReviews, reviewAction } from '@/services/adminApi.js'
+import APageHeader from '@/components/admin/APageHeader.vue'
+import ATabBar from '@/components/admin/ATabBar.vue'
+import AEmptyState from '@/components/admin/AEmptyState.vue'
+import { getPriorityColor, getStatusColor } from '@/components/admin/statusClasses.js'
+import { relativeTime as sharedRelativeTime } from '@/components/admin/formatters.js'
 
 const { isDark } = useTheme()
 
@@ -273,11 +249,9 @@ async function submitNoteAction() {
 
 // --- Formatting helpers ---
 
-function priorityClass(priority) {
-  if (priority === 'critical') return isDark.value ? 'bg-red-500/15 text-red-400' : 'bg-red-100 text-red-700'
-  if (priority === 'high') return isDark.value ? 'bg-orange-500/15 text-orange-400' : 'bg-orange-100 text-orange-700'
-  if (priority === 'medium') return isDark.value ? 'bg-yellow-500/15 text-yellow-400' : 'bg-yellow-100 text-yellow-700'
-  return isDark.value ? 'bg-slate-500/15 text-slate-400' : 'bg-slate-100 text-slate-500'
+function sharedPriorityClass(priority) {
+  const c = getPriorityColor(priority || 'low')
+  return `${c.bg} ${c.text}`
 }
 
 function statusDotClass(status) {
@@ -293,23 +267,5 @@ function formatType(type) {
   return type.replace(/_/g, ' ')
 }
 
-function relativeTime(timestamp) {
-  if (!timestamp) return '--'
-  try {
-    const now = Date.now()
-    const then = new Date(timestamp).getTime()
-    const diff = now - then
-    const seconds = Math.floor(diff / 1000)
-    if (seconds < 60) return 'just now'
-    const minutes = Math.floor(seconds / 60)
-    if (minutes < 60) return `${minutes}m ago`
-    const hours = Math.floor(minutes / 60)
-    if (hours < 24) return `${hours}h ago`
-    const days = Math.floor(hours / 24)
-    if (days < 7) return `${days}d ago`
-    return new Date(timestamp).toLocaleDateString()
-  } catch (e) {
-    return timestamp
-  }
-}
+// relativeTime replaced by sharedRelativeTime from formatters.js
 </script>

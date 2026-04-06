@@ -1,19 +1,17 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Agents</h1>
-        <p class="text-sm mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Monitor and control all AI agents</p>
-      </div>
-      <div class="flex items-center gap-2">
-        <button @click="viewMode = 'grid'" class="p-2 rounded-lg transition-colors" :class="viewMode === 'grid' ? (isDark ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-900') : (isDark ? 'text-slate-500' : 'text-slate-400')">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
-        </button>
-        <button @click="viewMode = 'table'" class="p-2 rounded-lg transition-colors" :class="viewMode === 'table' ? (isDark ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-900') : (isDark ? 'text-slate-500' : 'text-slate-400')">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
-        </button>
-      </div>
-    </div>
+    <APageHeader title="Agents" subtitle="Monitor and control all AI agents">
+      <template #actions>
+        <div class="flex items-center gap-2">
+          <button @click="viewMode = 'grid'" class="p-2 rounded-lg transition-colors" :class="viewMode === 'grid' ? (isDark ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-900') : (isDark ? 'text-slate-500' : 'text-slate-400')">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+          </button>
+          <button @click="viewMode = 'table'" class="p-2 rounded-lg transition-colors" :class="viewMode === 'table' ? (isDark ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-900') : (isDark ? 'text-slate-500' : 'text-slate-400')">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
+          </button>
+        </div>
+      </template>
+    </APageHeader>
 
     <!-- Error toast -->
     <Transition name="toast">
@@ -35,11 +33,7 @@
         @click="openDetail(agent.name)">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-sm font-bold capitalize" :class="isDark ? 'text-white' : 'text-slate-900'">{{ agent.name }}</h3>
-          <span class="flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full"
-            :class="statusClass(agent.status)">
-            <span class="w-1.5 h-1.5 rounded-full" :class="statusDotClass(agent.status)"></span>
-            {{ agent.status }}
-          </span>
+          <AStatusBadge :status="agentHealth(agent)" size="sm" />
         </div>
 
         <div class="grid grid-cols-2 gap-3 mb-4">
@@ -79,6 +73,10 @@
           </button>
         </div>
       </div>
+      <AEmptyState v-if="agents.length === 0"
+        title="No agents registered"
+        description="Agents will appear here once the backend pipeline is running. Start a diagnosis to initialize the agent pool."
+        variant="info" />
     </div>
 
     <!-- Table view -->
@@ -101,7 +99,7 @@
             @click="openDetail(agent.name)">
             <td class="px-5 py-3 font-semibold capitalize" :class="isDark ? 'text-white' : 'text-slate-900'">{{ agent.name }}</td>
             <td class="px-5 py-3">
-              <span class="flex items-center gap-1.5 text-xs font-medium"><span class="w-1.5 h-1.5 rounded-full" :class="statusDotClass(agent.status)"></span>{{ agent.status }}</span>
+              <AStatusBadge :status="agentHealth(agent)" size="sm" />
             </td>
             <td class="px-5 py-3 tabular-nums" :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ agent.latency_p50 }}s</td>
             <td class="px-5 py-3 tabular-nums" :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ agent.cases_24h }}</td>
@@ -130,6 +128,14 @@
               </div>
             </td>
           </tr>
+          <tr v-if="agents.length === 0">
+            <td colspan="6">
+              <AEmptyState
+                title="No agents registered"
+                description="Agents will appear here once the backend pipeline is running. Start a diagnosis to initialize the agent pool."
+                variant="info" />
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -144,11 +150,7 @@
         <!-- Status & description -->
         <div>
           <div class="flex items-center gap-3 mb-2">
-            <span class="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full"
-              :class="statusClass(detailData.status)">
-              <span class="w-1.5 h-1.5 rounded-full" :class="statusDotClass(detailData.status)"></span>
-              {{ detailData.status }}
-            </span>
+            <AStatusBadge :status="detailData.status === 'healthy' || detailData.status === 'running' ? detailData.status : (detailData.status || 'idle')" :pulse="detailData.status === 'running'" />
             <span v-if="detailData.model" class="text-xs font-mono px-2 py-1 rounded-lg"
               :class="isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'">
               {{ detailData.model }}
@@ -346,6 +348,11 @@ import { usePolling } from '@/composables/usePolling.js'
 import { getAgents, controlAgent, getAgentDetail } from '@/services/adminApi.js'
 import ASheet from '@/components/admin/ASheet.vue'
 import AConfirmDialog from '@/components/admin/AConfirmDialog.vue'
+import APageHeader from '@/components/admin/APageHeader.vue'
+import AStatusBadge from '@/components/admin/AStatusBadge.vue'
+import AEmptyState from '@/components/admin/AEmptyState.vue'
+import { deriveAgentHealth } from '@/components/admin/statusClasses.js'
+import { formatDuration, relativeTime } from '@/components/admin/formatters.js'
 
 const { isDark } = useTheme()
 const viewMode = ref('grid')
@@ -439,12 +446,18 @@ async function loadDetail(agentName) {
   }
 }
 
+// --- Agent health derivation ---
+
+function agentHealth(agent) {
+  if (agent.status === 'paused') return 'paused'
+  if (agent.status === 'error') return 'error'
+  return deriveAgentHealth(agent.errors_24h || 0)
+}
+
 // --- Formatting helpers ---
 
 function formatMs(ms) {
-  if (ms == null) return '---'
-  if (ms < 1000) return ms.toFixed(0) + 'ms'
-  return (ms / 1000).toFixed(1) + 's'
+  return formatDuration(ms) || '---'
 }
 
 function formatTimestamp(ts) {
@@ -457,29 +470,7 @@ function formatTimestamp(ts) {
   }
 }
 
-// --- Status classes (extended) ---
-
-function statusClass(s) {
-  if (s === 'healthy') return isDark.value ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'
-  if (s === 'running') return isDark.value ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'
-  if (s === 'degraded') return isDark.value ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600'
-  if (s === 'error') return isDark.value ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'
-  if (s === 'paused') return isDark.value ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-50 text-purple-600'
-  if (s === 'retrying') return isDark.value ? 'bg-yellow-500/10 text-yellow-400' : 'bg-yellow-50 text-yellow-600'
-  if (s === 'idle') return isDark.value ? 'bg-slate-500/10 text-slate-400' : 'bg-slate-100 text-slate-500'
-  return isDark.value ? 'bg-slate-500/10 text-slate-400' : 'bg-slate-100 text-slate-500'
-}
-
-function statusDotClass(s) {
-  if (s === 'healthy') return 'bg-emerald-500'
-  if (s === 'running') return 'bg-blue-500'
-  if (s === 'degraded') return 'bg-amber-500'
-  if (s === 'error') return 'bg-red-500'
-  if (s === 'paused') return 'bg-purple-500'
-  if (s === 'retrying') return 'bg-yellow-500 animate-pulse'
-  if (s === 'idle') return isDark.value ? 'bg-slate-500' : 'bg-slate-400'
-  return 'bg-slate-500'
-}
+// statusClass and statusDotClass replaced by AStatusBadge + deriveAgentHealth
 </script>
 
 <style scoped>
