@@ -875,6 +875,73 @@
 
         </template><!-- end advanced mode -->
 
+        <!-- Post-Diagnosis Action Cards (K Health / Ada-inspired) -->
+        <div class="rounded-xl border p-5 mb-5"
+          :class="isDark ? 'bg-gradient-to-r from-slate-800/60 to-slate-800/40 border-slate-700/40' : 'bg-gradient-to-r from-slate-50 to-blue-50/30 border-slate-200'">
+          <div class="flex items-center gap-2.5 mb-4">
+            <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-sm">
+              <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+            </div>
+            <h3 class="text-sm font-bold" :class="isDark ? 'text-slate-200' : 'text-slate-800'">What Would You Like to Do Next?</h3>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <!-- Set a Reminder -->
+            <button @click="setFollowUpReminder"
+              class="flex items-start gap-3 p-4 rounded-xl border transition-all hover:scale-[1.02] text-left"
+              :class="reminderSet
+                ? (isDark ? 'bg-emerald-500/10 border-emerald-500/25' : 'bg-emerald-50 border-emerald-200')
+                : (isDark ? 'bg-slate-700/30 border-slate-600/30 hover:border-slate-500' : 'bg-white border-slate-200 hover:border-slate-300')">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                :class="reminderSet ? (isDark ? 'bg-emerald-500/20' : 'bg-emerald-100') : (isDark ? 'bg-blue-500/15' : 'bg-blue-50')">
+                <svg v-if="reminderSet" class="w-4.5 h-4.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <svg v-else class="w-4.5 h-4.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold mb-0.5" :class="reminderSet ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : (isDark ? 'text-slate-200' : 'text-slate-700')">
+                  {{ reminderSet ? 'Reminder Set!' : 'Set a Reminder' }}
+                </div>
+                <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+                  {{ reminderSet ? 'Follow-up check in 2 weeks' : 'Follow up on symptoms in 2 weeks' }}
+                </p>
+              </div>
+            </button>
+            <!-- Share with Family -->
+            <button @click="shareWithFamily"
+              class="flex items-start gap-3 p-4 rounded-xl border transition-all hover:scale-[1.02] text-left"
+              :class="isDark ? 'bg-slate-700/30 border-slate-600/30 hover:border-slate-500' : 'bg-white border-slate-200 hover:border-slate-300'">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                :class="isDark ? 'bg-purple-500/15' : 'bg-purple-50'">
+                <svg class="w-4.5 h-4.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold mb-0.5" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Share with Family</div>
+                <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Send a simplified summary to a loved one</p>
+              </div>
+            </button>
+            <!-- New Assessment / Compare -->
+            <router-link to="/consult"
+              class="flex items-start gap-3 p-4 rounded-xl border transition-all hover:scale-[1.02] text-left"
+              :class="isDark ? 'bg-slate-700/30 border-slate-600/30 hover:border-slate-500' : 'bg-white border-slate-200 hover:border-slate-300'">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                :class="isDark ? 'bg-amber-500/15' : 'bg-amber-50'">
+                <svg class="w-4.5 h-4.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold mb-0.5" :class="isDark ? 'text-slate-200' : 'text-slate-700'">Start New Assessment</div>
+                <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Run another consultation to compare results</p>
+              </div>
+            </router-link>
+          </div>
+        </div>
+
         <!-- Bottom Actions -->
         <div class="flex justify-center gap-3 flex-wrap py-4">
           <button
@@ -2264,6 +2331,46 @@ const copySuccess = ref(false)
 const copiedDoctorSummary = ref(false)
 const isSharePdf = ref(false)
 const canNativeShare = computed(() => !!navigator.share)
+const reminderSet = ref(false)
+
+function setFollowUpReminder() {
+  if (reminderSet.value) return
+  // Calculate a date 2 weeks from now
+  const reminderDate = new Date()
+  reminderDate.setDate(reminderDate.getDate() + 14)
+  const formatted = reminderDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+
+  // Try to use calendar integration if available, otherwise show confirmation
+  if (window.confirm(`Set a reminder to follow up on your symptoms on ${formatted}?\n\nThis will open your calendar app.`)) {
+    // Create a .ics calendar event
+    const dtStart = reminderDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+    const dtEnd = new Date(reminderDate.getTime() + 3600000).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+    const summary = `Health Follow-up: Review ${causes.value[0]?.cause || 'symptoms'}`
+    const desc = `Follow up on your MedDiagnose AI assessment from ${formattedDate.value}.\\nPrimary assessment: ${causes.value[0]?.cause || 'N/A'} (${causes.value[0]?.value || '?'}% confidence).\\nConsider scheduling a doctor visit if symptoms persist.`
+    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${dtStart}\nDTEND:${dtEnd}\nSUMMARY:${summary}\nDESCRIPTION:${desc}\nEND:VEVENT\nEND:VCALENDAR`
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'health-followup.ics'
+    a.click()
+    URL.revokeObjectURL(url)
+    reminderSet.value = true
+  }
+}
+
+function shareWithFamily() {
+  const text = buildReportText()
+  const subject = `Health Assessment Summary - ${formattedDate.value}`
+
+  if (navigator.share) {
+    navigator.share({ title: subject, text }).catch(() => {})
+  } else {
+    // Fallback to email
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`
+    window.open(mailtoUrl, '_blank')
+  }
+}
 
 // Close share dropdown on click outside
 function handleClickOutside(e) {

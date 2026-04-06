@@ -251,6 +251,53 @@
           </button>
         </div>
 
+        <!-- What to Tell Your Doctor (Ada Health / K Health-inspired) -->
+        <div v-if="topCause.cause" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Tell Your Doctor Card -->
+          <div class="rounded-xl border p-5"
+            :class="isDark ? 'bg-blue-500/5 border-blue-500/15' : 'bg-blue-50/60 border-blue-200'">
+            <div class="flex items-center gap-2.5 mb-3">
+              <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                :class="isDark ? 'bg-blue-500/20' : 'bg-blue-100'">
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                </svg>
+              </div>
+              <h4 class="text-sm font-bold" :class="isDark ? 'text-blue-300' : 'text-blue-800'">What to Tell Your Doctor</h4>
+            </div>
+            <ul class="space-y-2">
+              <li v-for="(point, i) in doctorTalkingPoints" :key="'dtp-' + i"
+                class="flex items-start gap-2 text-xs leading-relaxed"
+                :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                <span class="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" :class="isDark ? 'bg-blue-400' : 'bg-blue-500'"></span>
+                <span>{{ point }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Questions to Ask Card -->
+          <div class="rounded-xl border p-5"
+            :class="isDark ? 'bg-violet-500/5 border-violet-500/15' : 'bg-violet-50/60 border-violet-200'">
+            <div class="flex items-center gap-2.5 mb-3">
+              <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                :class="isDark ? 'bg-violet-500/20' : 'bg-violet-100'">
+                <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h4 class="text-sm font-bold" :class="isDark ? 'text-violet-300' : 'text-violet-800'">Questions to Ask Your Doctor</h4>
+            </div>
+            <ul class="space-y-2">
+              <li v-for="(q, i) in doctorQuestions" :key="'dq-' + i"
+                class="flex items-start gap-2 text-xs leading-relaxed"
+                :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                <span class="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" :class="isDark ? 'bg-violet-400' : 'bg-violet-500'"></span>
+                <span>{{ q }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
         <!-- Disclaimer -->
         <p class="text-caption mt-5 pt-4 border-t leading-relaxed"
           :class="isDark ? 'text-slate-500 border-slate-700/30' : 'text-[#64748B] border-slate-200'"
@@ -288,6 +335,46 @@ defineEmits(['download-pdf', 'email', 'copy-summary', 'find-specialists'])
 
 const topCause = computed(() => props.causes[0] || {})
 const otherCauses = computed(() => props.causes.slice(1, 5))
+
+// "What to tell your doctor" - generated from diagnosis data
+const doctorTalkingPoints = computed(() => {
+  const points = []
+  const cause = topCause.value
+  if (props.chiefComplaint) {
+    points.push(`My main concern is: "${props.chiefComplaint}"`)
+  }
+  if (cause.cause) {
+    points.push(`An AI assessment suggested ${cause.cause} (${cause.value || '?'}% confidence) as a possible cause.`)
+  }
+  if (props.flagsCount > 0) {
+    points.push(`The assessment identified ${props.flagsCount} potential red flag${props.flagsCount > 1 ? 's' : ''} that may need attention.`)
+  }
+  if (props.testsCount > 0) {
+    points.push(`${props.testsCount} diagnostic test${props.testsCount > 1 ? 's were' : ' was'} recommended to confirm or rule out conditions.`)
+  }
+  if (props.causes.length > 1) {
+    points.push(`Other possibilities considered: ${props.causes.slice(1, 3).map(c => c.cause).join(', ')}.`)
+  }
+  return points.length > 0 ? points : ['Share your symptoms and this report with your doctor for a professional evaluation.']
+})
+
+// "Questions to ask your doctor" - generated contextually
+const doctorQuestions = computed(() => {
+  const qs = []
+  const cause = topCause.value
+  if (cause.cause) {
+    qs.push(`Could my symptoms be caused by ${cause.cause}? What tests would confirm this?`)
+  }
+  if (cause.specialty) {
+    qs.push(`Should I see a ${cause.specialty} specialist for further evaluation?`)
+  }
+  qs.push('Are there any lifestyle changes that could help manage these symptoms?')
+  if (props.flagsCount > 0) {
+    qs.push('What warning signs should prompt me to seek emergency care?')
+  }
+  qs.push('What is the expected timeline for improvement with treatment?')
+  return qs.slice(0, 4)
+})
 
 const barColors = ['#8b5cf6', '#3b82f6', '#06b6d4', '#f59e0b', '#ef4444']
 function miniBarColor(value) {

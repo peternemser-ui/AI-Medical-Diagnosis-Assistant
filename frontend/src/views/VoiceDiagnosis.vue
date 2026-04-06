@@ -244,6 +244,38 @@
       :total-time="diagnosisElapsed"
     />
 
+    <!-- Educational Health Tips During Analysis -->
+    <div v-if="conversationState === 'diagnosing'" class="px-4 sm:px-6 py-3">
+      <div class="max-w-2xl mx-auto rounded-xl border p-4 transition-all"
+        :class="isDark ? 'bg-gradient-to-r from-blue-500/5 to-violet-500/5 border-blue-500/10' : 'bg-gradient-to-r from-blue-50/80 to-violet-50/80 border-blue-200/60'">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            :class="isDark ? 'bg-blue-500/15' : 'bg-blue-100'">
+            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <transition name="fade" mode="out-in">
+              <div :key="currentHealthTipIndex">
+                <div class="text-[10px] font-bold uppercase tracking-widest mb-1" :class="isDark ? 'text-blue-400/70' : 'text-blue-500'">Did you know?</div>
+                <p class="text-xs leading-relaxed" :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ healthTips[currentHealthTipIndex] }}</p>
+              </div>
+            </transition>
+            <div class="flex items-center gap-3 mt-3">
+              <div class="flex-1 h-1 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-700' : 'bg-slate-200'">
+                <div class="h-full rounded-full bg-gradient-to-r from-blue-500 to-violet-500 transition-all duration-1000"
+                  :style="{ width: estimatedProgress + '%' }"></div>
+              </div>
+              <span class="text-[10px] font-semibold tabular-nums" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+                ~{{ estimatedTimeRemaining }}s left
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Agent Status Board -->
     <AgentStatusBoard
       v-if="conversationState === 'diagnosing'"
@@ -1671,6 +1703,44 @@ const agentTimings = ref({})
 const agentFindings = ref({})
 const agentErrors = ref({})
 const diagnosisElapsed = ref(0)
+
+// Health tips shown during analysis (Buoy Health / Symptomate-inspired)
+const healthTips = [
+  'The average adult gets 2-3 colds per year, each lasting about 7-10 days.',
+  'Drinking water helps your body flush out toxins and can speed recovery from many illnesses.',
+  'Regular hand washing reduces respiratory infections by up to 21%.',
+  'Stress can manifest as physical symptoms including headaches, stomach pain, and fatigue.',
+  'Most headaches are tension-type and can be managed with rest, hydration, and OTC pain relief.',
+  'Getting 7-9 hours of sleep strengthens your immune system and aids recovery.',
+  'Walking for just 30 minutes a day can reduce the risk of many chronic diseases by up to 40%.',
+  'Deep breathing exercises can lower blood pressure and reduce anxiety within minutes.',
+  'Vitamin D deficiency affects an estimated 1 billion people worldwide and can cause fatigue.',
+  'Keeping a symptom diary helps doctors make faster, more accurate diagnoses.',
+]
+const currentHealthTipIndex = ref(0)
+let healthTipInterval = null
+
+const AVERAGE_PIPELINE_SECONDS = 25
+const estimatedProgress = computed(() => {
+  return Math.min(95, (diagnosisElapsed.value / AVERAGE_PIPELINE_SECONDS) * 100)
+})
+const estimatedTimeRemaining = computed(() => {
+  const remaining = Math.max(2, Math.round(AVERAGE_PIPELINE_SECONDS - diagnosisElapsed.value))
+  return remaining
+})
+
+// Rotate health tips every 5 seconds during diagnosis
+watch(() => conversationState.value, (state) => {
+  if (state === 'diagnosing') {
+    currentHealthTipIndex.value = Math.floor(Math.random() * healthTips.length)
+    healthTipInterval = setInterval(() => {
+      currentHealthTipIndex.value = (currentHealthTipIndex.value + 1) % healthTips.length
+    }, 5000)
+  } else {
+    if (healthTipInterval) { clearInterval(healthTipInterval); healthTipInterval = null }
+  }
+})
+
 const liveAgentResults = ref([])  // Live streaming results for LiveDiagnosisView
 const agentSimTimer = ref(null)
 const elapsedTimer = ref(null)
@@ -4471,6 +4541,12 @@ if (import.meta.env.DEV) {
 </script>
 
 <style scoped>
+/* Health tip fade transition */
+.fade-enter-active { transition: opacity 0.4s ease, transform 0.4s ease; }
+.fade-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+.fade-enter-from { opacity: 0; transform: translateY(4px); }
+.fade-leave-to { opacity: 0; transform: translateY(-4px); }
+
 /* Slide-up transition for body diagram */
 .slide-up-enter-active { transition: all 0.3s ease-out; }
 .slide-up-enter-from { opacity: 0; transform: translateY(8px); }

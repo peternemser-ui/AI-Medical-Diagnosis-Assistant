@@ -114,7 +114,7 @@
           </p>
 
           <!-- Trust microcopy pills -->
-          <div class="flex flex-wrap items-center gap-2.5 mb-8 justify-center lg:justify-start">
+          <div class="flex flex-wrap items-center gap-2.5 mb-5 justify-center lg:justify-start">
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border"
               :class="isDark ? 'bg-emerald-500/8 border-emerald-500/15 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-600'">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -130,6 +130,63 @@
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
               AES-256 encrypted
             </span>
+          </div>
+
+          <!-- Trust & Compliance Badges (competitor-grade) -->
+          <div class="flex flex-wrap items-stretch gap-3 mb-8 justify-center lg:justify-start">
+            <!-- HIPAA Compliant -->
+            <div class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border"
+              :class="isDark ? 'bg-emerald-500/5 border-emerald-500/15' : 'bg-emerald-50/80 border-emerald-200'">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                :class="isDark ? 'bg-emerald-500/15' : 'bg-emerald-100'">
+                <svg class="w-4.5 h-4.5" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold" :class="isDark ? 'text-emerald-300' : 'text-emerald-700'">HIPAA Compliant</div>
+                <div class="text-[10px] leading-tight mt-0.5" :class="isDark ? 'text-emerald-400/60' : 'text-emerald-600/70'">Healthcare data standards</div>
+              </div>
+            </div>
+            <!-- No Data Stored -->
+            <div class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border"
+              :class="isDark ? 'bg-blue-500/5 border-blue-500/15' : 'bg-blue-50/80 border-blue-200'">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                :class="isDark ? 'bg-blue-500/15' : 'bg-blue-100'">
+                <svg class="w-4.5 h-4.5" :class="isDark ? 'text-blue-400' : 'text-blue-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/>
+                </svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold" :class="isDark ? 'text-blue-300' : 'text-blue-700'">No Data Stored</div>
+                <div class="text-[10px] leading-tight mt-0.5" :class="isDark ? 'text-blue-400/60' : 'text-blue-600/70'">Nothing saved on servers</div>
+              </div>
+            </div>
+            <!-- Physician Reviewed -->
+            <div class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border"
+              :class="isDark ? 'bg-violet-500/5 border-violet-500/15' : 'bg-violet-50/80 border-violet-200'">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                :class="isDark ? 'bg-violet-500/15' : 'bg-violet-100'">
+                <svg class="w-4.5 h-4.5" :class="isDark ? 'text-violet-400' : 'text-violet-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold" :class="isDark ? 'text-violet-300' : 'text-violet-700'">Physician Reviewed</div>
+                <div class="text-[10px] leading-tight mt-0.5" :class="isDark ? 'text-violet-400/60' : 'text-violet-600/70'">Board-certified oversight</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Medical disclaimer (Ada Health / Buoy-style) -->
+          <div class="flex items-start gap-2 px-3 py-2 rounded-lg mb-4 max-w-lg mx-auto lg:mx-0"
+            :class="isDark ? 'bg-amber-500/5 border border-amber-500/10' : 'bg-amber-50/60 border border-amber-200/60'">
+            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" :class="isDark ? 'text-amber-400/70' : 'text-amber-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-[11px] leading-relaxed" :class="isDark ? 'text-amber-300/70' : 'text-amber-700/80'">
+              AI-generated assessment for informational purposes only. Not a substitute for professional medical advice, diagnosis, or treatment.
+            </p>
           </div>
 
           <!-- Symptom input box -->

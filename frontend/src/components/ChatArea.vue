@@ -69,16 +69,27 @@
             </div>
           </div>
 
-          <!-- Example prompt cards -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-2xl mb-8">
-            <button
-              v-for="prompt in examplePrompts"
-              :key="prompt"
-              @click="$emit('followup-selected', prompt)"
-              class="card-interactive rounded-card px-4 py-3.5 text-left text-body-sm group"
-            >
-              <span class="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">{{ prompt }}</span>
-            </button>
+          <!-- Categorized symptom suggestions (competitor-grade) -->
+          <div class="w-full max-w-2xl mb-8 space-y-4">
+            <div v-for="cat in symptomCategories" :key="cat.label">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-[10px] font-bold uppercase tracking-widest"
+                  :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ cat.label }}</span>
+                <div class="flex-1 h-px" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="symptom in cat.items"
+                  :key="symptom"
+                  @click="$emit('followup-selected', 'I have ' + symptom.toLowerCase())"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
+                  :class="cat.colorClass(isDark)"
+                >
+                  <span v-html="cat.icon" class="w-3.5 h-3.5 flex-shrink-0"></span>
+                  {{ symptom }}
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Interactive Body Diagram -->
@@ -571,6 +582,49 @@ const examplePrompts = [
   'I have a persistent headache',
   'I\'ve been experiencing chest pain',
   'I have a skin rash that won\'t go away'
+]
+
+const symptomCategories = [
+  {
+    label: 'Common',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+    items: ['Headache', 'Fever', 'Fatigue', 'Cough', 'Sore throat', 'Nausea'],
+    colorClass: (dark) => dark
+      ? 'bg-slate-800/60 border-slate-700/50 text-slate-300 hover:bg-slate-700/80 hover:border-slate-600'
+      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300',
+  },
+  {
+    label: 'Pain',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+    items: ['Chest pain', 'Back pain', 'Abdominal pain', 'Joint pain', 'Neck pain'],
+    colorClass: (dark) => dark
+      ? 'bg-amber-500/8 border-amber-500/15 text-amber-300 hover:bg-amber-500/15 hover:border-amber-500/25'
+      : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 hover:border-amber-300',
+  },
+  {
+    label: 'Skin',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/></svg>',
+    items: ['Rash', 'Itching', 'Swelling', 'Discoloration', 'Dry skin'],
+    colorClass: (dark) => dark
+      ? 'bg-pink-500/8 border-pink-500/15 text-pink-300 hover:bg-pink-500/15 hover:border-pink-500/25'
+      : 'bg-pink-50 border-pink-200 text-pink-700 hover:bg-pink-100 hover:border-pink-300',
+  },
+  {
+    label: 'Mental Health',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z"/></svg>',
+    items: ['Anxiety', 'Insomnia', 'Depression', 'Stress', 'Brain fog'],
+    colorClass: (dark) => dark
+      ? 'bg-violet-500/8 border-violet-500/15 text-violet-300 hover:bg-violet-500/15 hover:border-violet-500/25'
+      : 'bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100 hover:border-violet-300',
+  },
+  {
+    label: 'Urgent',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4m0 4h.01"/></svg>',
+    items: ['Difficulty breathing', 'Severe chest pain', 'Sudden weakness', 'High fever'],
+    colorClass: (dark) => dark
+      ? 'bg-red-500/10 border-red-500/20 text-red-300 hover:bg-red-500/20 hover:border-red-500/30'
+      : 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100 hover:border-red-300',
+  },
 ]
 
 // Watch for new messages — always scroll to bottom so user sees latest
