@@ -2200,6 +2200,55 @@ class OrchestratorAgent:
                             "must_not_miss": True,
                         })
 
+            # Build additional differentials from research evidence and safety data
+            # Scan all text sources for medical condition names
+            all_text = " ".join([
+                summary,
+                problem_rep,
+                str(research.get("evidence_summary", "")),
+                str(research.get("clinical_guidelines", "")),
+                str(safety.get("warnings", "")),
+                str(safety.get("recommendations", "")),
+                str(empathy.get("when_to_seek_care", "")),
+            ])
+
+            # Common condition patterns to extract from text
+            condition_patterns = re.findall(
+                r'(?:actinic\s+\w+|angular\s+cheilitis|squamous\s+cell\s+\w+|basal\s+cell\s+\w+|'
+                r'contact\s+dermatitis|eczema|psoriasis|herpes\s+simplex|candidiasis|oral\s+\w+\s+cancer|'
+                r'lupus|lichen\s+planus|pemphigus|melanoma|carcinoma|keratosis|dermatitis|'
+                r'fungal\s+infection|bacterial\s+infection|nutritional\s+deficiency|vitamin\s+\w+\s+deficiency|'
+                r'iron\s+deficiency|anemia|diabetes|hypothyroidism|hyperthyroidism|'
+                r'allergic\s+\w+|autoimmune\s+\w+|inflammatory\s+\w+)',
+                all_text, re.IGNORECASE
+            )
+            # Deduplicate and filter
+            seen = {condition_name.lower()}
+            extra_conditions = []
+            for cond in condition_patterns:
+                cond_clean = cond.strip().title()
+                if cond_clean.lower() not in seen and len(cond_clean) > 4:
+                    seen.add(cond_clean.lower())
+                    extra_conditions.append(cond_clean)
+
+            # Add top 4 as differential diagnoses with decreasing confidence
+            for i, extra in enumerate(extra_conditions[:4]):
+                conf = max(10, 45 - i * 10)
+                is_must_not_miss = any(w in extra.lower() for w in ['carcinoma', 'cancer', 'melanoma', 'squamous'])
+                causes.append({
+                    "cause": extra,
+                    "value": conf,
+                    "explanation": f"Differential consideration extracted from clinical analysis. {'Must be ruled out — cancer screening is critical.' if is_must_not_miss else 'Further evaluation may be needed to confirm or exclude.'}",
+                    "urgency": "urgent" if is_must_not_miss else "routine",
+                    "specialty": specialty,
+                    "supporting_features": [],
+                    "opposing_features": [],
+                    "must_not_miss": is_must_not_miss,
+                })
+
+            if extra_conditions:
+                logger.info("[SYNTH] Added %d differential diagnoses from text mining: %s", len(extra_conditions[:4]), extra_conditions[:4])
+
             # Add recommended tests from safety recommendations if available
             safety_recs = safety.get("recommendations", [])
             fallback_tests = []
