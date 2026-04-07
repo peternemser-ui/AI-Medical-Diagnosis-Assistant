@@ -197,9 +197,15 @@
             </div>
             <div class="p-6">
               <div class="flex gap-2 mb-5 overflow-x-auto pb-2 scrollbar-hide">
-                <button v-for="c in menuCategories" :key="c.id" @click="selectedMenuCat=c.id"
+                <button v-for="c in menuCategories" :key="c.id" @click="selectedMenuCat=c.id; selectedTags=[]"
                   class="flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200"
                   :class="selectedMenuCat===c.id ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md' : dc('text-slate-400 bg-slate-800 hover:bg-slate-700','text-slate-500 bg-slate-100 hover:bg-slate-200')">{{ c.icon }} {{ c.label }}</button>
+              </div>
+              <div v-if="availableTags.length" class="flex gap-2 mb-5 overflow-x-auto pb-2 scrollbar-hide flex-wrap">
+                <button v-for="tag in availableTags" :key="tag.id" @click="toggleTag(tag.id)"
+                  class="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-all duration-200"
+                  :class="selectedTags.includes(tag.id) ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-emerald-500/50 shadow-sm' : dc('text-slate-400 bg-slate-800/60 border-slate-700 hover:border-slate-500','text-slate-500 bg-slate-50 border-slate-200 hover:border-slate-400')">{{ tag.label }}</button>
+                <button v-if="selectedTags.length" @click="selectedTags=[]" class="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-200" :class="dc('text-red-400 bg-red-500/10 hover:bg-red-500/20','text-red-500 bg-red-50 hover:bg-red-100')">Clear filters</button>
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div v-for="item in filteredMenuItems" :key="item.name" class="rounded-xl border overflow-hidden transition-all duration-200 hover:shadow-lg cursor-pointer" :class="dc('bg-slate-800/40 border-slate-700 hover:border-amber-500/30','bg-white border-slate-200 hover:border-amber-300')">
@@ -207,10 +213,14 @@
                   <div class="p-4">
                     <div class="text-sm font-bold text-[var(--text-primary)] mb-1">{{ item.name }}</div>
                     <div class="flex items-center gap-3 text-xs text-[var(--text-secondary)] mb-2"><span class="font-semibold text-emerald-500">{{ item.calories }} kcal</span><span>{{ item.prepTime }}</span></div>
-                    <div class="flex gap-1.5">
+                    <div class="flex gap-1.5 mb-2">
                       <span class="macro-pill" :class="dc('bg-red-500/10 text-red-400','bg-red-50 text-red-500')">P:{{ item.protein }}g</span>
                       <span class="macro-pill" :class="dc('bg-amber-500/10 text-amber-400','bg-amber-50 text-amber-600')">C:{{ item.carbs }}g</span>
                       <span class="macro-pill" :class="dc('bg-blue-500/10 text-blue-400','bg-blue-50 text-blue-500')">F:{{ item.fats }}g</span>
+                    </div>
+                    <div v-if="item.tags && item.tags.length" class="flex gap-1 flex-wrap">
+                      <span v-for="t in item.tags.slice(0,3)" :key="t" class="px-1.5 py-0.5 rounded text-[9px] font-medium" :class="dc('bg-slate-700/60 text-slate-400','bg-slate-100 text-slate-500')">{{ t }}</span>
+                      <span v-if="item.tags.length > 3" class="px-1.5 py-0.5 rounded text-[9px] font-medium" :class="dc('bg-slate-700/60 text-slate-400','bg-slate-100 text-slate-500')">+{{ item.tags.length - 3 }}</span>
                     </div>
                   </div>
                 </div>
@@ -337,6 +347,7 @@
 import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import ThemeLangControls from '@/components/ThemeLangControls.vue'
+import { RECIPE_CATEGORIES, RECIPE_DATABASE, RECIPE_TAGS } from '@/data/recipeDatabase.js'
 
 const { isDark } = useTheme()
 const dc = (dark, light) => isDark.value ? dark : light
@@ -464,92 +475,28 @@ async function generateMealPlan() {
 }
 
 // ── Visual Menu (Tab 2) ──
-const menuCategories = [
-  { id: 'all', label: 'All', icon: '\u{1F30D}' },
-  { id: 'breakfast', label: 'Breakfast', icon: '\u{1F95E}' },
-  { id: 'asian', label: 'Asian', icon: '\u{1F363}' },
-  { id: 'mediterranean', label: 'Mediterranean', icon: '\u{1F957}' },
-  { id: 'latin', label: 'Latin American', icon: '\u{1F32E}' },
-  { id: 'indian', label: 'Indian', icon: '\u{1F35B}' },
-  { id: 'african', label: 'African', icon: '\u{1F372}' },
-  { id: 'european', label: 'European', icon: '\u{1F956}' },
-  { id: 'proteins', label: 'Proteins', icon: '\u{1F357}' },
-  { id: 'bowls', label: 'Bowls & Grains', icon: '\u{1F35C}' },
-  { id: 'vegan', label: 'Plant-Based', icon: '\u{1F331}' },
-  { id: 'snacks', label: 'Snacks', icon: '\u{1F34E}' },
-]
+const menuCategories = RECIPE_CATEGORIES
 const selectedMenuCat = ref('all')
-const menuItems = [
-  // Breakfast — Global
-  { name: 'Greek Yogurt Parfait', emoji: '\u{1F95B}', calories: 280, protein: 18, carbs: 35, fats: 8, prepTime: '5 min', category: 'breakfast' },
-  { name: 'Avocado Toast', emoji: '\u{1F951}', calories: 320, protein: 10, carbs: 30, fats: 18, prepTime: '10 min', category: 'breakfast' },
-  { name: 'Overnight Oats', emoji: '\u{1F35A}', calories: 350, protein: 12, carbs: 52, fats: 10, prepTime: '5 min', category: 'breakfast' },
-  { name: 'Japanese Tamago & Rice', emoji: '\u{1F373}', calories: 340, protein: 16, carbs: 45, fats: 10, prepTime: '15 min', category: 'breakfast' },
-  { name: 'Turkish Menemen', emoji: '\u{1F345}', calories: 280, protein: 14, carbs: 18, fats: 16, prepTime: '15 min', category: 'breakfast' },
-  { name: 'Indian Poha', emoji: '\u{1F33E}', calories: 250, protein: 6, carbs: 42, fats: 8, prepTime: '10 min', category: 'breakfast' },
-  // Asian
-  { name: 'Salmon Sashimi', emoji: '\u{1F363}', calories: 180, protein: 26, carbs: 0, fats: 8, prepTime: '5 min', category: 'asian' },
-  { name: 'Chicken Pho', emoji: '\u{1F35C}', calories: 350, protein: 28, carbs: 40, fats: 6, prepTime: '20 min', category: 'asian' },
-  { name: 'Bibimbap', emoji: '\u{1F35A}', calories: 490, protein: 22, carbs: 65, fats: 14, prepTime: '25 min', category: 'asian' },
-  { name: 'Thai Green Curry', emoji: '\u{1F35B}', calories: 420, protein: 24, carbs: 30, fats: 22, prepTime: '30 min', category: 'asian' },
-  { name: 'Steamed Dim Sum (6 pcs)', emoji: '\u{1F95F}', calories: 280, protein: 14, carbs: 32, fats: 10, prepTime: '15 min', category: 'asian' },
-  { name: 'Miso Ramen', emoji: '\u{1F35C}', calories: 450, protein: 20, carbs: 55, fats: 16, prepTime: '20 min', category: 'asian' },
-  { name: 'Teriyaki Tofu Bowl', emoji: '\u{1F961}', calories: 380, protein: 18, carbs: 48, fats: 12, prepTime: '20 min', category: 'asian' },
-  // Mediterranean
-  { name: 'Mediterranean Salad', emoji: '\u{1F957}', calories: 240, protein: 8, carbs: 18, fats: 16, prepTime: '10 min', category: 'mediterranean' },
-  { name: 'Grilled Sea Bass', emoji: '\u{1F41F}', calories: 320, protein: 38, carbs: 4, fats: 16, prepTime: '20 min', category: 'mediterranean' },
-  { name: 'Shakshuka', emoji: '\u{1F373}', calories: 290, protein: 16, carbs: 18, fats: 16, prepTime: '20 min', category: 'mediterranean' },
-  { name: 'Falafel Wrap', emoji: '\u{1F32F}', calories: 400, protein: 14, carbs: 48, fats: 18, prepTime: '15 min', category: 'mediterranean' },
-  { name: 'Greek Moussaka', emoji: '\u{1F346}', calories: 380, protein: 20, carbs: 28, fats: 20, prepTime: '45 min', category: 'mediterranean' },
-  { name: 'Tabbouleh', emoji: '\u{1F33F}', calories: 160, protein: 4, carbs: 22, fats: 8, prepTime: '15 min', category: 'mediterranean' },
-  // Latin American
-  { name: 'Chicken Burrito Bowl', emoji: '\u{1F32E}', calories: 450, protein: 32, carbs: 48, fats: 14, prepTime: '15 min', category: 'latin' },
-  { name: 'Ceviche', emoji: '\u{1F990}', calories: 200, protein: 24, carbs: 12, fats: 6, prepTime: '30 min', category: 'latin' },
-  { name: 'Brazilian Acai Bowl', emoji: '\u{1FAD0}', calories: 380, protein: 8, carbs: 60, fats: 12, prepTime: '10 min', category: 'latin' },
-  { name: 'Cuban Black Bean Soup', emoji: '\u{1F372}', calories: 280, protein: 16, carbs: 42, fats: 4, prepTime: '25 min', category: 'latin' },
-  { name: 'Grilled Fish Tacos', emoji: '\u{1F32E}', calories: 340, protein: 26, carbs: 30, fats: 12, prepTime: '20 min', category: 'latin' },
-  // Indian
-  { name: 'Dal Tadka', emoji: '\u{1F35B}', calories: 280, protein: 16, carbs: 38, fats: 8, prepTime: '25 min', category: 'indian' },
-  { name: 'Tandoori Chicken', emoji: '\u{1F357}', calories: 320, protein: 36, carbs: 8, fats: 14, prepTime: '30 min', category: 'indian' },
-  { name: 'Palak Paneer', emoji: '\u{1F96C}', calories: 350, protein: 18, carbs: 14, fats: 24, prepTime: '25 min', category: 'indian' },
-  { name: 'Chana Masala', emoji: '\u{1F35B}', calories: 300, protein: 12, carbs: 44, fats: 8, prepTime: '20 min', category: 'indian' },
-  { name: 'Chicken Tikka Masala', emoji: '\u{1F372}', calories: 420, protein: 30, carbs: 20, fats: 24, prepTime: '30 min', category: 'indian' },
-  // African
-  { name: 'Moroccan Tagine', emoji: '\u{1F372}', calories: 380, protein: 28, carbs: 35, fats: 14, prepTime: '40 min', category: 'african' },
-  { name: 'Jollof Rice', emoji: '\u{1F35A}', calories: 420, protein: 12, carbs: 62, fats: 12, prepTime: '35 min', category: 'african' },
-  { name: 'Ethiopian Lentil Stew', emoji: '\u{1F372}', calories: 300, protein: 18, carbs: 40, fats: 6, prepTime: '30 min', category: 'african' },
-  { name: 'Grilled Suya Kebabs', emoji: '\u{1F362}', calories: 320, protein: 34, carbs: 4, fats: 18, prepTime: '20 min', category: 'african' },
-  { name: 'South African Bobotie', emoji: '\u{1F35B}', calories: 380, protein: 26, carbs: 22, fats: 20, prepTime: '45 min', category: 'african' },
-  // European
-  { name: 'Ratatouille', emoji: '\u{1F346}', calories: 220, protein: 6, carbs: 28, fats: 10, prepTime: '35 min', category: 'european' },
-  { name: 'Chicken Schnitzel', emoji: '\u{1F357}', calories: 400, protein: 34, carbs: 22, fats: 18, prepTime: '25 min', category: 'european' },
-  { name: 'Spanish Gazpacho', emoji: '\u{1F345}', calories: 120, protein: 3, carbs: 14, fats: 6, prepTime: '15 min', category: 'european' },
-  { name: 'Swedish Meatballs', emoji: '\u{1F356}', calories: 380, protein: 28, carbs: 18, fats: 22, prepTime: '30 min', category: 'european' },
-  { name: 'Greek Souvlaki', emoji: '\u{1F962}', calories: 350, protein: 30, carbs: 24, fats: 14, prepTime: '20 min', category: 'european' },
-  // Proteins
-  { name: 'Grilled Chicken Breast', emoji: '\u{1F357}', calories: 280, protein: 42, carbs: 2, fats: 10, prepTime: '20 min', category: 'proteins' },
-  { name: 'Baked Salmon', emoji: '\u{1F41F}', calories: 350, protein: 38, carbs: 0, fats: 22, prepTime: '25 min', category: 'proteins' },
-  { name: 'Turkey Meatballs', emoji: '\u{1F356}', calories: 260, protein: 28, carbs: 10, fats: 12, prepTime: '20 min', category: 'proteins' },
-  { name: 'Grilled Shrimp Skewers', emoji: '\u{1F990}', calories: 200, protein: 30, carbs: 4, fats: 6, prepTime: '15 min', category: 'proteins' },
-  // Bowls & Grains
-  { name: 'Quinoa Power Bowl', emoji: '\u{1F35C}', calories: 420, protein: 18, carbs: 55, fats: 14, prepTime: '20 min', category: 'bowls' },
-  { name: 'Poke Bowl', emoji: '\u{1F363}', calories: 450, protein: 28, carbs: 50, fats: 14, prepTime: '15 min', category: 'bowls' },
-  { name: 'Buddha Bowl', emoji: '\u{1F966}', calories: 380, protein: 16, carbs: 48, fats: 14, prepTime: '20 min', category: 'bowls' },
-  { name: 'Couscous & Roasted Veg', emoji: '\u{1F33E}', calories: 340, protein: 12, carbs: 52, fats: 10, prepTime: '20 min', category: 'bowls' },
-  // Plant-Based
-  { name: 'Lentil Bolognese', emoji: '\u{1F35D}', calories: 340, protein: 18, carbs: 48, fats: 6, prepTime: '25 min', category: 'vegan' },
-  { name: 'Cauliflower Steak', emoji: '\u{1F966}', calories: 220, protein: 8, carbs: 18, fats: 14, prepTime: '25 min', category: 'vegan' },
-  { name: 'Tofu Stir-Fry', emoji: '\u{1F961}', calories: 300, protein: 20, carbs: 28, fats: 12, prepTime: '15 min', category: 'vegan' },
-  { name: 'Black Bean Burger', emoji: '\u{1F354}', calories: 350, protein: 16, carbs: 40, fats: 12, prepTime: '20 min', category: 'vegan' },
-  { name: 'Chickpea Curry', emoji: '\u{1F35B}', calories: 320, protein: 14, carbs: 42, fats: 10, prepTime: '20 min', category: 'vegan' },
-  // Snacks
-  { name: 'Mixed Nuts', emoji: '\u{1F95C}', calories: 170, protein: 6, carbs: 6, fats: 15, prepTime: '0 min', category: 'snacks' },
-  { name: 'Apple & Almond Butter', emoji: '\u{1F34E}', calories: 200, protein: 5, carbs: 22, fats: 12, prepTime: '2 min', category: 'snacks' },
-  { name: 'Hummus & Veggies', emoji: '\u{1F955}', calories: 150, protein: 6, carbs: 16, fats: 8, prepTime: '5 min', category: 'snacks' },
-  { name: 'Edamame', emoji: '\u{1F96C}', calories: 120, protein: 12, carbs: 8, fats: 5, prepTime: '5 min', category: 'snacks' },
-  { name: 'Dark Chocolate & Berries', emoji: '\u{1F36B}', calories: 180, protein: 3, carbs: 22, fats: 10, prepTime: '2 min', category: 'snacks' },
-]
-const filteredMenuItems = computed(() => selectedMenuCat.value === 'all' ? menuItems : menuItems.filter(i => i.category === selectedMenuCat.value))
+const selectedTags = ref([])
+const menuItems = RECIPE_DATABASE
+const toggleTag = (tagId) => {
+  const idx = selectedTags.value.indexOf(tagId)
+  if (idx === -1) selectedTags.value.push(tagId)
+  else selectedTags.value.splice(idx, 1)
+}
+const availableTags = computed(() => {
+  const catItems = selectedMenuCat.value === 'all' ? menuItems : menuItems.filter(i => i.category === selectedMenuCat.value)
+  const tagSet = new Set()
+  catItems.forEach(i => (i.tags || []).forEach(t => tagSet.add(t)))
+  return RECIPE_TAGS.filter(t => tagSet.has(t.id))
+})
+const filteredMenuItems = computed(() => {
+  let items = selectedMenuCat.value === 'all' ? menuItems : menuItems.filter(i => i.category === selectedMenuCat.value)
+  if (selectedTags.value.length > 0) {
+    items = items.filter(i => selectedTags.value.every(t => (i.tags || []).includes(t)))
+  }
+  return items
+})
 
 // ── Restaurant Guide (Tab 3) ──
 const restaurantTips = [
