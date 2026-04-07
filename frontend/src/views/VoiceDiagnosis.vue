@@ -2789,15 +2789,21 @@ async function handlePaInterview(userMessage) {
       paConversation.value.push({ role: 'assistant', content: question })
 
       // ── Visual symptom detection: suggest taking a photo ──
-      if (!photoSuggested.value && !pendingImageBase64.value && paExchangeCount.value <= 3) {
+      if (!photoSuggested.value && !pendingImageBase64.value && paExchangeCount.value <= 5) {
         const visualKeywords = ['lip', 'lips', 'skin', 'rash', 'mole', 'sore', 'crack', 'cracked',
           'bump', 'wound', 'blister', 'swelling', 'swollen', 'bruise', 'cut', 'burn', 'itch',
           'peel', 'flaky', 'lesion', 'spot', 'patch', 'lump', 'discolor', 'red', 'redness',
           'acne', 'pimple', 'wart', 'boil', 'hive', 'eczema', 'psoriasis', 'fungus', 'ring',
           'bite', 'sting', 'scratch', 'scab', 'ulcer', 'growth', 'mark', 'dry skin',
-          'eye', 'eyelid', 'tongue', 'gum', 'nail', 'hair loss', 'bald']
-        const symptomText = symptoms.toLowerCase()
-        const hasVisualSymptom = visualKeywords.some(kw => symptomText.includes(kw))
+          'eye', 'eyelid', 'tongue', 'gum', 'nail', 'hair loss', 'bald', 'color', 'irregular',
+          'changed', 'growing', 'larger', 'darker', 'bleeding', 'scaly']
+        // Read all user messages from PA conversation
+        const allUserText = paConversation.value
+          .filter(m => m.role === 'user')
+          .map(m => m.content)
+          .join(' ')
+          .toLowerCase()
+        const hasVisualSymptom = visualKeywords.some(kw => allUserText.includes(kw))
         if (hasVisualSymptom) {
           photoSuggested.value = true
           await new Promise(resolve => setTimeout(resolve, 600))
