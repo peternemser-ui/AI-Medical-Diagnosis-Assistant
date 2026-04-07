@@ -27,12 +27,33 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
           Start Consultation
         </router-link>
-        <div v-if="profile.name" class="flex items-center gap-2 px-2 py-1.5 rounded-lg"
-          :class="isDark ? 'text-slate-300' : 'text-slate-600'">
-          <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white">
-            {{ (profile.name || '').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) }}
+        <div v-if="profile.name" class="relative">
+          <button @click="showUserMenu = !showUserMenu" class="flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors cursor-pointer"
+            :class="isDark ? 'text-slate-300 hover:bg-slate-700/60' : 'text-slate-600 hover:bg-slate-100'">
+            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white">
+              {{ (profile.name || '').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) }}
+            </div>
+            <span class="text-sm font-medium hidden sm:inline">{{ profile.name }}</span>
+            <svg class="w-3 h-3 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div v-if="showUserMenu" class="absolute right-0 top-full mt-1 w-48 rounded-lg shadow-xl border z-50 overflow-hidden py-1"
+            :class="isDark ? 'bg-slate-900 border-slate-700/50' : 'bg-white border-slate-200'">
+            <router-link to="/profile" @click="showUserMenu = false" class="flex items-center gap-2 px-3 py-2 text-xs transition-colors"
+              :class="isDark ? 'text-slate-300 hover:bg-slate-800' : 'text-slate-600 hover:bg-slate-50'">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              Profile
+            </router-link>
+            <router-link to="/reports" @click="showUserMenu = false" class="flex items-center gap-2 px-3 py-2 text-xs transition-colors"
+              :class="isDark ? 'text-slate-300 hover:bg-slate-800' : 'text-slate-600 hover:bg-slate-50'">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Reports
+            </router-link>
+            <router-link to="/help" @click="showUserMenu = false" class="flex items-center gap-2 px-3 py-2 text-xs transition-colors"
+              :class="isDark ? 'text-slate-300 hover:bg-slate-800' : 'text-slate-600 hover:bg-slate-50'">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Help
+            </router-link>
           </div>
-          <span class="text-sm font-medium hidden sm:inline">{{ profile.name }}</span>
         </div>
       </div>
     </nav>
@@ -540,6 +561,7 @@ const { isDark, toggleTheme } = useTheme()
 const { lang, currentLanguage, setLang, languages } = useI18n()
 
 const profile = ref({})
+const showUserMenu = ref(false)
 const apiProvider = ref('anthropic')
 const apiKey = ref('')
 const showApiKey = ref(false)
