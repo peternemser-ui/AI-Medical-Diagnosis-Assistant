@@ -19,6 +19,12 @@ export async function loadApiKeysToCache() {
     getEncryptedApiKey('google'),
   ])
   _keyCache = { anthropic, openai, google, _loaded: true }
+
+  // CRITICAL: Ensure plaintext localStorage copies exist so that
+  // getAuthHeaders() works even after page refresh (when session key is lost).
+  if (anthropic) localStorage.setItem('anthropic_api_key', anthropic)
+  if (openai) localStorage.setItem('openai_api_key', openai)
+  if (google) localStorage.setItem('google_api_key', google)
 }
 
 /** Clear the in-memory API key cache (called on logout). */
@@ -56,7 +62,20 @@ function getAuthHeaders() {
 
   // Debug: log when no keys are being sent (helps diagnose routing issues)
   if (!anthropicKey && !openaiKey && !googleKey) {
-    console.warn('[API] No API keys available in headers — backend will fall back to Ollama or return error')
+    const hasEncrypted = !!(
+      localStorage.getItem('enc_anthropic_api_key') ||
+      localStorage.getItem('enc_openai_api_key') ||
+      localStorage.getItem('enc_google_api_key')
+    )
+    if (hasEncrypted) {
+      console.warn(
+        '[API] No API keys in headers but encrypted keys exist in localStorage. ' +
+        'The session crypto key was likely lost (page refresh). ' +
+        'Keys should be in plaintext localStorage as fallback — this indicates a bug in key saving.'
+      )
+    } else {
+      console.warn('[API] No API keys available in headers — backend will fall back to Ollama or return error')
+    }
   }
 
   return headers

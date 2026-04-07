@@ -32,6 +32,10 @@ const PHI_KEYS = [
   'google_api_key',
 ]
 
+// API key localStorage keys — these must ALWAYS have a plaintext copy
+// because the encrypted cache is lost on page refresh (session key is in-memory).
+const API_KEY_PLAINTEXT_KEYS = ['anthropic_api_key', 'openai_api_key', 'google_api_key']
+
 // PHI keys that should be cleared on logout (API keys are NOT PHI — keep them)
 const PHI_KEYS_CLEARABLE = [
   'user_profile',
@@ -160,10 +164,18 @@ export async function getEncryptedApiKey(provider) {
 
 export async function saveEncryptedApiKey(provider, key) {
   await setEncrypted(`${provider}_api_key`, key)
+  // CRITICAL: Always keep a plaintext copy in localStorage.
+  // The encrypted cache (_keyCache) is lost on page refresh because the
+  // session CryptoKey lives only in memory.  Without this plaintext fallback,
+  // getAuthHeaders() finds no key and the backend falls back to Ollama.
+  if (key) {
+    localStorage.setItem(`${provider}_api_key`, key)
+  }
 }
 
 export async function removeEncryptedApiKey(provider) {
   removeEncrypted(`${provider}_api_key`)
+  localStorage.removeItem(`${provider}_api_key`)
 }
 
 /**
@@ -254,11 +266,18 @@ export async function migrateToEncryptedStorage() {
       try {
         const data = JSON.parse(plaintext)
         await setEncrypted(key, data)
-        localStorage.removeItem(key)
+        // IMPORTANT: Do NOT delete plaintext API keys — they are the reliable
+        // fallback for getAuthHeaders() after page refresh (when the session
+        // CryptoKey is lost).  Only remove non-API-key PHI data.
+        if (!API_KEY_PLAINTEXT_KEYS.includes(key)) {
+          localStorage.removeItem(key)
+        }
         migrated = true
       } catch {
-        // Not valid JSON — just remove it
-        localStorage.removeItem(key)
+        // Not valid JSON — remove it (but not API keys, which are plain strings)
+        if (!API_KEY_PLAINTEXT_KEYS.includes(key)) {
+          localStorage.removeItem(key)
+        }
       }
     }
   }
