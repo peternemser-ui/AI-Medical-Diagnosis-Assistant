@@ -231,7 +231,7 @@
                   <div class="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style="background: rgba(139,92,246,0.15)">
                     <svg class="w-3 h-3" style="color: #a78bfa" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                   </div>
-                  <span style="color: rgba(255,255,255,0.5)">{{ t('chat.analyzedBy') }} <strong class="font-semibold" style="color: rgba(255,255,255,0.7)">{{ (message.agentsUsed || []).length }} {{ t('chat.agentsWord') }}</strong> in <strong class="font-semibold tabular-nums" style="color: #a78bfa">{{ message.totalTime.toFixed(1) }}s</strong></span>
+                  <span style="color: rgba(255,255,255,0.5)">{{ t('chat.analyzedBy') }} <strong class="font-semibold" style="color: rgba(255,255,255,0.7)">{{ (message.agentsUsed || []).length }} {{ t('chat.agentsWord') }}</strong> in <strong class="font-semibold tabular-nums" style="color: #a78bfa">{{ message.totalTime.toFixed(1) }}s</strong><template v-if="message.estimatedCost > 0"> · <strong class="font-semibold tabular-nums" style="color: #34d399">${{ message.estimatedCost.toFixed(2) }}</strong></template></span>
                 </div>
 
                 <!-- Red flags alert -->

@@ -71,7 +71,8 @@
                     <div class="text-detail mt-0.5 truncate" :class="!modelHasKey(model.id) && !model.free ? 'text-slate-600' : (isDark ? 'text-slate-500' : 'text-slate-400')">{{ model.desc }}</div>
                   </div>
                   <div class="text-detail font-mono flex-shrink-0 text-right" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-                    {{ model.price }}
+                    <div>{{ model.price }}</div>
+                    <div v-if="!model.free" class="text-micro opacity-60">/diagnosis</div>
                   </div>
                 </div>
               </div>
@@ -958,6 +959,7 @@ import CameraCapture from '@/components/CameraCapture.vue'
 import UpgradePrompt from '@/components/UpgradePrompt.vue'
 import HandoffTransitionCard from '@/components/HandoffTransitionCard.vue'
 import { getSpecialist } from '@/data/specialistDoctors.js'
+import { MODEL_PRICING, getModelPrice, formatModelCost } from '@/data/modelPricing.js'
 import { saveSession } from '@/services/historyService.js'
 import { useTheme } from '@/composables/useTheme.js'
 import { useI18n } from '@/composables/useI18n.js'
@@ -1449,18 +1451,27 @@ const showMobileMenu = ref(false)
 const showModelPicker = ref(false)
 const modelPreference = ref(localStorage.getItem('model_preference') || 'auto')
 
-const modelPickerOptions = [
-  { id: 'auto', name: 'Auto', desc: 'Uses Claude Sonnet 4.6 — best balance of quality & speed', badge: 'default', badgeClass: 'bg-blue-500/20 text-blue-400', price: '~$0.50', free: false },
-  { id: 'opus', name: 'Claude Opus 4.6', desc: 'Highest quality clinical reasoning', badge: 'best', badgeClass: 'bg-purple-500/20 text-purple-400', price: '~$2.50', free: false },
-  { id: 'sonnet', name: 'Claude Sonnet 4.6', desc: 'Fast and capable', badge: 'fast', badgeClass: 'bg-emerald-500/20 text-emerald-400', price: '~$0.50', free: false },
-  { id: 'haiku', name: 'Claude Haiku 4.5', desc: 'Fastest, simple cases', badge: 'budget', badgeClass: 'bg-amber-500/20 text-amber-400', price: '~$0.10', free: false },
-  { id: 'gpt-4o', name: 'GPT-4o', desc: 'OpenAI flagship', badge: 'OpenAI', badgeClass: 'bg-green-500/20 text-green-400', price: '~$0.40', free: false },
-  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', desc: 'Fast OpenAI model', badge: 'OpenAI', badgeClass: 'bg-green-500/20 text-green-400', price: '~$0.06', free: false },
-  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', desc: 'Google flagship', badge: 'Google', badgeClass: 'bg-sky-500/20 text-sky-400', price: '~$0.35', free: false },
-  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Fast Google model', badge: 'Google', badgeClass: 'bg-sky-500/20 text-sky-400', price: '~$0.05', free: false },
-  { id: 'llama3.1:8b', name: 'Llama 3.1 8B', desc: 'Local via Ollama', badge: 'free', badgeClass: 'bg-orange-500/20 text-orange-400', price: 'Free', free: true },
-  { id: 'qwen2.5:7b', name: 'Qwen 2.5 7B', desc: 'Local via Ollama', badge: 'free', badgeClass: 'bg-orange-500/20 text-orange-400', price: 'Free', free: true },
-]
+const badgeClassMap = {
+  'default': 'bg-blue-500/20 text-blue-400',
+  'best quality': 'bg-purple-500/20 text-purple-400',
+  'fast': 'bg-emerald-500/20 text-emerald-400',
+  'budget': 'bg-amber-500/20 text-amber-400',
+  'OpenAI': 'bg-green-500/20 text-green-400',
+  'Google': 'bg-sky-500/20 text-sky-400',
+  'free': 'bg-orange-500/20 text-orange-400',
+  'fast + free': 'bg-orange-500/20 text-orange-400',
+}
+
+const modelPickerOptions = Object.entries(MODEL_PRICING).map(([id, m]) => ({
+  id,
+  name: m.label,
+  desc: m.description,
+  badge: m.badge,
+  badgeClass: badgeClassMap[m.badge] || 'bg-slate-500/20 text-slate-400',
+  price: m.estimatedCost,
+  pricePerDiagnosis: m.perDiagnosis,
+  free: m.perDiagnosis === 0,
+}))
 
 const configuredKeys = computed(() => ({
   anthropic: !!localStorage.getItem('anthropic_api_key'),
@@ -3320,6 +3331,8 @@ async function handleProceedToDiagnosis() {
       provider: result.provider || '',
       providerDisplay: result.provider_display || '',
       modelUsed: result.model_used || '',
+      // Cost info
+      estimatedCost: result.estimated_cost || 0,
     })
 
     conversationState.value = 'diagnosed'
@@ -3383,9 +3396,14 @@ async function handleProceedToDiagnosis() {
     // Show diagnosis summary before redirecting to dashboard
     const topCause = result.causes?.[0]
     const specialist = paRouting.value?.specialties?.[0] || 'general medicine'
+    const agentCount = result.agents_used?.length || 7
+    const elapsed = result.total_time ? `${result.total_time.toFixed(1)}s` : `${diagnosisElapsed.value.toFixed(1)}s`
+    const costStr = result.estimated_cost > 0 ? ` · $${result.estimated_cost.toFixed(2)}` : ''
+    const statsLine = `${agentCount} agents · ${elapsed}${costStr}`
+
     const summaryMsg = topCause
-      ? `Diagnosis complete! Top finding: **${topCause.cause}** (${topCause.value}% confidence). Specialist consulted: **${specialist.replace(/_/g, ' ')}**.\n\nOpening your full report...`
-      : `Diagnosis complete! Your full report is ready.\n\nOpening your consultation report...`
+      ? `Diagnosis complete! Top finding: **${topCause.cause}** (${topCause.value}% confidence). Specialist consulted: **${specialist.replace(/_/g, ' ')}**.\n\n_${statsLine}_\n\nOpening your full report...`
+      : `Diagnosis complete! Your full report is ready.\n\n_${statsLine}_\n\nOpening your consultation report...`
     addMessage('assistant', summaryMsg)
     toast.success('Diagnosis complete!')
 

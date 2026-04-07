@@ -389,10 +389,15 @@
                   ? (isDark ? 'bg-blue-500/10 border-blue-500/30' : 'bg-blue-50 border-blue-300')
                   : (isDark ? 'border-slate-700 hover:border-slate-600' : 'border-slate-200 hover:border-slate-300')">
                 <input type="radio" :value="m.id" v-model="modelPreference" @change="saveModelPreference" class="mt-1 text-blue-600">
-                <div>
+                <div class="flex-1">
                   <div class="text-sm font-medium text-[var(--text-primary)]">{{ m.name }}</div>
                   <div class="text-detail mt-0.5" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ m.desc }}</div>
-                  <span v-if="m.badge" class="inline-block mt-1 text-tiny px-1.5 py-0.5 rounded-full" :class="m.badgeClass">{{ m.badge }}</span>
+                  <div class="flex items-center gap-2 mt-1 flex-wrap">
+                    <span v-if="m.badge" class="text-tiny px-1.5 py-0.5 rounded-full" :class="m.badgeClass">{{ m.badge }}</span>
+                    <span class="text-tiny font-mono px-1.5 py-0.5 rounded-full" :class="m.free ? (isDark ? 'bg-emerald-500/15 text-emerald-400' : 'bg-emerald-50 text-emerald-600') : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600')">
+                      {{ m.free ? 'Free -- runs locally' : `Estimated: ${m.price} per diagnosis` }}
+                    </span>
+                  </div>
                 </div>
               </label>
             </div>
@@ -492,6 +497,7 @@ import { getProfile, getPreferences, savePreference, exportAllData, clearUserDat
 import { clearAllEncryptedDataIncludingKeys } from '@/services/encryptedStorage.js'
 import { clearHistory as clearHistoryFn } from '@/services/historyService.js'
 import { validateApiKeys, API_BASE_URL } from '@/services/api.js'
+import { MODEL_PRICING, getModelPrice } from '@/data/modelPricing.js'
 
 const router = useRouter()
 const { isDark, toggleTheme } = useTheme()
@@ -616,25 +622,27 @@ function loadProviderKey() {
 
 // Model preference
 const modelPreference = ref(localStorage.getItem('model_preference') || 'auto')
-const modelOptions = [
-  // Auto
-  { id: 'auto', name: 'Auto (Recommended)', desc: 'Opus for diagnostician, Sonnet for other agents. Best balance of quality and speed.', badge: 'default', badgeClass: 'bg-blue-500/20 text-blue-400' },
-  // Anthropic
-  { id: 'opus', name: 'Claude Opus 4.6', desc: 'Highest quality. Most thorough clinical reasoning across all 7 agents.', badge: 'best quality', badgeClass: 'bg-purple-500/20 text-purple-400' },
-  { id: 'sonnet', name: 'Claude Sonnet 4.6', desc: 'Fast and capable. Good quality for most cases.', badge: 'fast', badgeClass: 'bg-emerald-500/20 text-emerald-400' },
-  { id: 'haiku', name: 'Claude Haiku 4.5', desc: 'Fastest Anthropic model. Good for simple symptom checks.', badge: 'budget', badgeClass: 'bg-amber-500/20 text-amber-400' },
-  // OpenAI
-  { id: 'gpt-4o', name: 'GPT-4o', desc: 'OpenAI flagship. Strong general reasoning. Requires OpenAI API key.', badge: 'OpenAI', badgeClass: 'bg-green-500/20 text-green-400' },
-  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', desc: 'Faster OpenAI model. Lower cost, good for routine cases.', badge: 'OpenAI', badgeClass: 'bg-green-500/20 text-green-400' },
-  { id: 'o3', name: 'OpenAI o3', desc: 'Advanced reasoning model. Excellent for complex differential diagnosis.', badge: 'OpenAI', badgeClass: 'bg-green-500/20 text-green-400' },
-  // Google
-  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', desc: 'Google flagship. Strong medical knowledge. Requires Google API key.', badge: 'Google', badgeClass: 'bg-sky-500/20 text-sky-400' },
-  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Fast Google model. Good balance of speed and quality.', badge: 'Google', badgeClass: 'bg-sky-500/20 text-sky-400' },
-  // Ollama (local)
-  { id: 'llama3.1:8b', name: 'Llama 3.1 8B (Ollama)', desc: 'Runs locally on your machine. Free, no API key needed. Good for development.', badge: 'free', badgeClass: 'bg-orange-500/20 text-orange-400' },
-  { id: 'qwen2.5:7b', name: 'Qwen 2.5 7B (Ollama)', desc: 'Local model with strong multilingual support. Free, no API key.', badge: 'free', badgeClass: 'bg-orange-500/20 text-orange-400' },
-  { id: 'gemma2:2b', name: 'Gemma 2 2B (Ollama)', desc: 'Smallest and fastest local model. Good for quick tests.', badge: 'fast + free', badgeClass: 'bg-orange-500/20 text-orange-400' },
-]
+const settingsBadgeClassMap = {
+  'default': 'bg-blue-500/20 text-blue-400',
+  'best quality': 'bg-purple-500/20 text-purple-400',
+  'fast': 'bg-emerald-500/20 text-emerald-400',
+  'budget': 'bg-amber-500/20 text-amber-400',
+  'OpenAI': 'bg-green-500/20 text-green-400',
+  'Google': 'bg-sky-500/20 text-sky-400',
+  'free': 'bg-orange-500/20 text-orange-400',
+  'fast + free': 'bg-orange-500/20 text-orange-400',
+}
+
+const modelOptions = Object.entries(MODEL_PRICING).map(([id, m]) => ({
+  id,
+  name: m.label,
+  desc: m.description,
+  badge: m.badge,
+  badgeClass: settingsBadgeClassMap[m.badge] || 'bg-slate-500/20 text-slate-400',
+  price: m.estimatedCost,
+  perDiagnosis: m.perDiagnosis,
+  free: m.perDiagnosis === 0,
+}))
 
 function saveModelPreference() {
   localStorage.setItem('model_preference', modelPreference.value)

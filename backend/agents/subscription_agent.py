@@ -255,6 +255,33 @@ class SubscriptionManager:
             user["stripe_subscription_id"] = stripe_subscription_id
         self._save()
 
+    def track_cost(self, user_id: str, cost: float):
+        """Add a cost entry to the user's monthly running total."""
+        if cost <= 0:
+            return
+        user = self._ensure_user(user_id)
+        if "costs" not in user:
+            user["costs"] = []
+        user["costs"].append({
+            "month": self._month_key(),
+            "amount": round(cost, 4),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        })
+        self._save()
+
+    def get_monthly_cost(self, user_id: str) -> dict:
+        """Return total cost spent this month."""
+        user = self._ensure_user(user_id)
+        month = self._month_key()
+        costs = user.get("costs", [])
+        total = sum(c["amount"] for c in costs if c.get("month") == month)
+        count = sum(1 for c in costs if c.get("month") == month)
+        return {
+            "month": month,
+            "total_cost": round(total, 4),
+            "diagnosis_count": count,
+        }
+
     def get_all_tiers(self) -> list[dict]:
         """Return all tiers with their details for the pricing page."""
         result = []

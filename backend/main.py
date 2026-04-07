@@ -663,6 +663,14 @@ async def diagnose_symptoms(
                     logger.warning("Email notification failed (non-critical): %s", email_err)
             # ── End email notifications ─────────────────────────────────
 
+            # ── Track cost per user ────────────────────────────────────
+            if user:
+                try:
+                    sub.track_cost(user["id"], result.get("estimated_cost", 0))
+                except Exception as cost_err:
+                    logger.warning("Cost tracking failed (non-critical): %s", cost_err)
+            # ── End cost tracking ──────────────────────────────────────
+
             return result
 
         except Exception as e:
@@ -836,6 +844,12 @@ async def diagnose_symptoms_stream(
                             event["result"]["provider"] = _stream_provider
                             event["result"]["model_used"] = _stream_model
                             event["result"]["provider_display"] = _stream_display
+                            # Track cost for streaming diagnoses
+                            if user:
+                                try:
+                                    sub.track_cost(user["id"], event["result"].get("estimated_cost", 0))
+                                except Exception:
+                                    pass
                         yield {"data": json.dumps(event)}
                         if event.get("event") == "complete":
                             break
