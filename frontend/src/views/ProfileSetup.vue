@@ -37,8 +37,20 @@
           <span class="hidden sm:inline">Medications</span>
         </router-link>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 sm:gap-3">
         <ThemeLangControls />
+        <router-link to="/consult"
+          class="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-xl transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          Start Consultation
+        </router-link>
+        <div v-if="form.name" class="flex items-center gap-2 px-2 py-1.5 rounded-lg"
+          :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+          <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white">
+            {{ (form.name || '').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) }}
+          </div>
+          <span class="text-sm font-medium hidden sm:inline">{{ form.name }}</span>
+        </div>
       </div>
     </nav>
 
