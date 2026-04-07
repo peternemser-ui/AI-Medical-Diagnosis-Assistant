@@ -121,6 +121,12 @@ const routes = [
     meta: { title: 'Compare Plans — MedDiagnose AI' }
   },
   {
+    path: '/help',
+    name: 'HelpCenter',
+    component: () => import('@/views/HelpCenter.vue'),
+    meta: { title: 'Help Center — MedDiagnose AI' }
+  },
+  {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/components/DiagnosisDashboard.vue'),

@@ -13,15 +13,25 @@
         <component :is="Component" />
       </Transition>
     </router-view>
+    <HelpButton v-if="showHelpButton" />
     <ToastContainer />
   </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import ToastContainer from '@/components/ToastContainer.vue'
+import HelpButton from '@/components/HelpButton.vue'
 import { useOnlineStatus } from '@/composables/useOnlineStatus'
 
 const { isOnline } = useOnlineStatus()
+const route = useRoute()
+
+const showHelpButton = computed(() => {
+  const path = route.path || ''
+  return !path.startsWith('/help') && !path.startsWith('/admin')
+})
 </script>
 
 <style>

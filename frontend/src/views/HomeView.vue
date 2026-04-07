@@ -986,6 +986,17 @@
     <!-- Footer -->
     <div class="relative border-t py-6 px-6 text-center" style="z-index:10"
       :class="isDark ? 'border-slate-800/50' : 'border-slate-200'">
+      <div class="flex items-center justify-center gap-4 mb-3">
+        <router-link to="/help" class="text-sm font-medium transition-colors"
+          :class="isDark ? 'text-slate-400 hover:text-blue-400' : 'text-slate-500 hover:text-blue-600'">
+          Help Center
+        </router-link>
+        <span :class="isDark ? 'text-slate-700' : 'text-slate-300'">|</span>
+        <router-link to="/pricing" class="text-sm font-medium transition-colors"
+          :class="isDark ? 'text-slate-400 hover:text-blue-400' : 'text-slate-500 hover:text-blue-600'">
+          Pricing
+        </router-link>
+      </div>
       <p class="text-caption max-w-lg mx-auto leading-relaxed" :class="isDark ? 'text-slate-600' : 'text-slate-400'">
         {{ t('hero.disclaimer') }}
       </p>
