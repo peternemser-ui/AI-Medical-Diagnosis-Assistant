@@ -39,26 +39,15 @@
       <Transition name="tab-fade" mode="out-in">
         <!-- ==================== TAB 1: MEAL PLAN ==================== -->
         <div v-if="activeTab==='meal-plan'" key="meal-plan" class="space-y-5">
-          <!-- Profile Summary Bar -->
-          <div class="rounded-2xl border overflow-hidden backdrop-blur-xl" :class="dc('bg-slate-900/70 border-slate-800','bg-white/80 border-slate-200')">
-            <div class="px-5 py-3 flex items-center gap-3 flex-wrap">
-              <div class="flex items-center gap-4 flex-wrap flex-1">
-                <span class="pill-stat">Age: <strong>{{ profile.age||'--' }}</strong></span>
-                <span class="pill-stat capitalize">{{ profile.gender||'Gender: --' }}</span>
-                <span v-if="selectedGoal" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-emerald-500/15 to-teal-500/15 text-emerald-500 border border-emerald-500/20">{{ currentGoalObj?.emoji }} {{ currentGoalObj?.label }}</span>
-                <span v-for="r in selectedRestrictions" :key="r" class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium" :class="dc('bg-teal-500/10 text-teal-400 border border-teal-500/20','bg-teal-50 text-teal-600 border border-teal-200')">{{ restrictionObj(r)?.emoji }} {{ restrictionObj(r)?.label }}</span>
-                <span class="text-[10px] text-[var(--text-secondary)]">{{ profile.allergies.length }} allergies &middot; {{ profile.medications.length }} meds</span>
-              </div>
-              <button @click="showProfileEditor=!showProfileEditor" class="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors" :class="isDark ? 'text-emerald-400 hover:bg-emerald-500/10' : 'text-emerald-600 hover:bg-emerald-50'">{{ showProfileEditor ? 'Hide' : 'Edit Profile' }}</button>
-            </div>
-            <div v-if="profileCompleteness<100" class="px-5 pb-3">
-              <div class="flex items-center gap-3">
-                <div class="flex-1 h-1.5 rounded-full overflow-hidden" :class="dc('bg-slate-800','bg-slate-200')">
-                  <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500" :style="{width:profileCompleteness+'%'}"></div>
-                </div>
-                <span class="text-[10px] text-[var(--text-secondary)] whitespace-nowrap">Profile {{ profileCompleteness }}% complete{{ profileHint }}</span>
-              </div>
-            </div>
+
+          <!-- Personalized Planning Summary Bar -->
+          <div class="rounded-xl border p-4 flex items-center gap-3 flex-wrap backdrop-blur-xl" :class="dc('bg-slate-900/70 border-slate-800','bg-white/80 border-slate-200')">
+            <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">Your Plan Profile:</span>
+            <span class="plan-profile-pill" :class="dc('bg-emerald-500/15 text-emerald-400 border-emerald-500/20','bg-emerald-50 text-emerald-700 border-emerald-200')">{{ currentGoalObj?.emoji || '&#x2728;' }} {{ currentGoalObj?.label || 'General Wellness' }}</span>
+            <span v-for="r in selectedRestrictions" :key="r" class="plan-profile-pill" :class="dc('bg-teal-500/10 text-teal-400 border-teal-500/20','bg-teal-50 text-teal-600 border-teal-200')">{{ restrictionObj(r)?.emoji }} {{ restrictionObj(r)?.label }}</span>
+            <span v-if="profile.allergies?.length" class="plan-profile-pill" :class="dc('bg-amber-500/10 text-amber-400 border-amber-500/20','bg-amber-50 text-amber-600 border-amber-200')">&#x26A0;&#xFE0F; {{ profile.allergies.length }} allergies</span>
+            <span v-if="profile.medications?.length" class="plan-profile-pill" :class="dc('bg-blue-500/10 text-blue-400 border-blue-500/20','bg-blue-50 text-blue-600 border-blue-200')">&#x1F48A; {{ profile.medications.length }} medications</span>
+            <button @click="showProfileEditor=!showProfileEditor" class="ml-auto text-xs font-medium px-3 py-1.5 rounded-lg transition-colors" :class="isDark ? 'text-emerald-400 hover:bg-emerald-500/10' : 'text-emerald-600 hover:bg-emerald-50'">{{ showProfileEditor ? 'Hide Profile' : 'Edit Profile' }}</button>
           </div>
 
           <!-- Profile Editor -->
@@ -76,6 +65,16 @@
               </div>
             </div>
           </Transition>
+
+          <!-- Profile Completeness -->
+          <div v-if="profileCompleteness<100" class="rounded-xl border p-4 backdrop-blur-xl" :class="dc('bg-slate-900/70 border-slate-800','bg-white/80 border-slate-200')">
+            <div class="flex items-center gap-3">
+              <div class="flex-1 h-1.5 rounded-full overflow-hidden" :class="dc('bg-slate-800','bg-slate-200')">
+                <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500" :style="{width:profileCompleteness+'%'}"></div>
+              </div>
+              <span class="text-[10px] text-[var(--text-secondary)] whitespace-nowrap">Profile {{ profileCompleteness }}% complete{{ profileHint }}</span>
+            </div>
+          </div>
 
           <!-- Diet Goal Cards -->
           <div class="card-section" :class="dc('bg-slate-900/70 border-slate-800','bg-white/80 border-slate-200')">
@@ -107,82 +106,204 @@
             </div>
           </div>
 
-          <!-- 7-Day Meal Plan -->
+          <!-- AI Meal Planning Studio -->
           <div class="card-section" :class="dc('bg-slate-900/70 border-slate-800','bg-white/80 border-slate-200')">
-            <div class="section-header justify-between" :class="dc('border-slate-800 bg-lime-500/5','border-slate-200 bg-lime-50/50')">
+            <div class="section-header justify-between flex-wrap gap-3" :class="dc('border-slate-800 bg-gradient-to-r from-emerald-500/5 to-teal-500/5','border-slate-200 bg-gradient-to-r from-emerald-50/50 to-teal-50/50')">
               <div class="flex items-center gap-3">
-                <div class="icon-box bg-gradient-to-br from-lime-500 to-emerald-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div>
-                <div><h2 class="text-lg font-bold text-[var(--text-primary)]">7-Day Meal Plan</h2><p class="text-xs text-[var(--text-secondary)]">AI-generated meals tailored to your profile</p></div>
+                <div class="icon-box bg-gradient-to-br from-emerald-500 to-teal-600">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                </div>
+                <div>
+                  <h2 class="text-lg font-bold text-[var(--text-primary)]">AI Meal Planning Studio</h2>
+                  <p class="text-xs text-[var(--text-secondary)]">Choose a planning mode and generate your personalized 7-day plan</p>
+                </div>
               </div>
-              <button @click="generateMealPlan" :disabled="generating" class="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all">
-                <svg v-if="generating" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                {{ generating ? 'Generating...' : 'Generate 7-Day Meal Plan' }}
-              </button>
+              <div v-if="mealPlan" class="flex items-center gap-2">
+                <span class="text-xs text-[var(--text-secondary)]">Plan active</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              </div>
             </div>
 
+            <!-- GENERATED PLAN VIEW -->
             <div v-if="mealPlan" class="p-6 space-y-5">
+              <!-- Daily Target -->
               <div class="p-4 rounded-xl border" :class="dc('bg-slate-800/50 border-slate-700','bg-slate-50 border-slate-200')">
-                <div class="flex items-center justify-between mb-2"><span class="text-sm font-semibold text-[var(--text-primary)]">Daily Target</span><span class="text-sm font-bold text-emerald-500">{{ mealPlan.calorie_target }} kcal</span></div>
-                <div class="w-full h-2 rounded-full overflow-hidden" :class="dc('bg-slate-700','bg-slate-200')"><div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" style="width:100%"></div></div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm font-semibold text-[var(--text-primary)]">Daily Target</span>
+                  <span class="text-sm font-bold text-emerald-500">{{ mealPlan.calorie_target }} kcal</span>
+                </div>
+                <div class="w-full h-2 rounded-full overflow-hidden" :class="dc('bg-slate-700','bg-slate-200')">
+                  <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" style="width:100%"></div>
+                </div>
               </div>
+
+              <!-- Day Tab Strip -->
               <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 <button v-for="(day,idx) in mealPlan.days" :key="idx" @click="selectedDay=idx"
-                  class="flex-shrink-0 px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200"
-                  :class="selectedDay===idx ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25' : dc('text-slate-400 bg-slate-800/60 hover:bg-slate-800','text-slate-500 bg-slate-100 hover:bg-slate-200')">
+                  class="flex-shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200"
+                  :class="selectedDay===idx
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25'
+                    : dc('text-slate-400 bg-slate-800/60 hover:bg-slate-700','text-slate-500 bg-slate-100 hover:bg-slate-200')">
                   {{ dayLabels[idx]||day.day?.slice(0,3) }}
                 </button>
               </div>
+
+              <!-- 4 Meal Cards -->
               <div v-if="currentDay" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div v-for="mt in ['breakfast','lunch','dinner','snack']" :key="mt" class="rounded-xl border overflow-hidden transition-all duration-200 hover:shadow-lg" :class="dc('bg-slate-800/40 border-slate-700 hover:border-slate-600','bg-white border-slate-200 hover:border-slate-300')">
+                  <div v-for="mt in ['breakfast','lunch','dinner','snack']" :key="mt"
+                    class="rounded-xl border overflow-hidden transition-all duration-200 hover:shadow-lg group"
+                    :class="dc('bg-slate-800/40 border-slate-700 hover:border-slate-600','bg-white border-slate-200 hover:border-slate-300')">
+                    <!-- Colored header bar -->
+                    <div class="px-4 py-2.5 flex items-center justify-between"
+                      :class="mealHeaderBg(mt)">
+                      <span class="text-sm font-bold flex items-center gap-2">
+                        <span>{{ mealTypeEmoji(mt) }}</span>
+                        <span class="capitalize">{{ mt }}</span>
+                      </span>
+                      <span class="text-xs font-semibold">{{ getMealData(mt)?.calories||0 }} kcal</span>
+                    </div>
                     <div class="p-4">
-                      <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-3">
-                          <span class="text-2xl">{{ getMealData(mt)?.emoji||mealTypeEmoji(mt) }}</span>
-                          <div><div class="text-[10px] uppercase tracking-wider font-bold" :class="mealTypeColor(mt)">{{ mt }}</div><div class="text-sm font-bold text-[var(--text-primary)]">{{ getMealData(mt)?.name }}</div></div>
-                        </div>
-                        <button @click="expandedMeals[mt]=!expandedMeals[mt]" class="w-7 h-7 rounded-lg flex items-center justify-center" :class="dc('hover:bg-slate-700','hover:bg-slate-100')">
-                          <svg class="w-4 h-4 text-[var(--text-secondary)] transition-transform duration-200" :class="expandedMeals[mt]?'rotate-180':''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                        </button>
+                      <h4 class="font-bold text-sm text-[var(--text-primary)] mb-1">{{ getMealData(mt)?.name }}</h4>
+                      <!-- AI Smart Labels -->
+                      <div class="flex flex-wrap gap-1.5 mb-2">
+                        <span v-if="getMealData(mt)?.calories && selectedGoal" class="smart-label" :class="dc('bg-emerald-500/10 text-emerald-400','bg-emerald-50 text-emerald-600')">&#x2705; Fits your goal</span>
+                        <span v-if="selectedGoal==='heart_health' || selectedRestrictions.includes('mediterranean')" class="smart-label" :class="dc('bg-green-500/10 text-green-400','bg-green-50 text-green-600')">&#x1F49A; Heart-healthy</span>
+                        <span v-if="getMealData(mt)?.prep_time && (getMealData(mt).prep_time.includes('10') || getMealData(mt).prep_time.includes('5 ')|| getMealData(mt).prep_time.includes('15'))" class="smart-label" :class="dc('bg-amber-500/10 text-amber-400','bg-amber-50 text-amber-600')">&#x26A1; Quick prep</span>
+                        <span v-if="selectedRestrictions.includes('vegan') || selectedRestrictions.includes('vegetarian')" class="smart-label" :class="dc('bg-lime-500/10 text-lime-400','bg-lime-50 text-lime-600')">&#x1F331; Plant-based</span>
                       </div>
+                      <!-- Macro Pills -->
+                      <div class="flex gap-2 mb-3">
+                        <span class="macro-pill" :class="dc('bg-red-500/10 text-red-400','bg-red-50 text-red-500')">P: {{ getMealData(mt)?.protein||0 }}g</span>
+                        <span class="macro-pill" :class="dc('bg-amber-500/10 text-amber-400','bg-amber-50 text-amber-600')">C: {{ getMealData(mt)?.carbs||0 }}g</span>
+                        <span class="macro-pill" :class="dc('bg-blue-500/10 text-blue-400','bg-blue-50 text-blue-500')">F: {{ getMealData(mt)?.fats||0 }}g</span>
+                      </div>
+                      <!-- Prep time -->
                       <div class="flex items-center gap-3 mb-3 text-xs text-[var(--text-secondary)]">
-                        <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ getMealData(mt)?.prep_time||'--' }}</span>
-                        <span class="font-bold text-emerald-500">{{ getMealData(mt)?.calories||0 }} kcal</span>
+                        <span class="flex items-center gap-1">
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                          {{ getMealData(mt)?.prep_time||'--' }}
+                        </span>
                       </div>
-                      <div class="space-y-1.5">
+                      <!-- Nutrient bars -->
+                      <div class="space-y-1.5 mb-3">
                         <div v-for="n in nutrientDefs" :key="n.key" class="flex items-center gap-2">
                           <span class="text-[10px] w-12 text-right text-[var(--text-secondary)]">{{ n.label }}</span>
-                          <div class="flex-1 h-1.5 rounded-full overflow-hidden" :class="dc('bg-slate-700','bg-slate-200')"><div class="h-full rounded-full transition-all duration-500" :class="n.color" :style="{width:nutrientPct(getMealData(mt)?.[n.key],n.max)+'%'}"></div></div>
+                          <div class="flex-1 h-1.5 rounded-full overflow-hidden" :class="dc('bg-slate-700','bg-slate-200')">
+                            <div class="h-full rounded-full transition-all duration-500" :class="n.color" :style="{width:nutrientPct(getMealData(mt)?.[n.key],n.max)+'%'}"></div>
+                          </div>
                           <span class="text-[10px] w-8 text-[var(--text-secondary)]">{{ getMealData(mt)?.[n.key]||0 }}g</span>
                         </div>
                       </div>
+                      <!-- Action buttons -->
+                      <div class="flex gap-2 pt-2 border-t" :class="dc('border-slate-700/50','border-slate-100')">
+                        <button @click="expandedMeals[mt]=!expandedMeals[mt]" class="meal-action-btn" :class="dc('hover:bg-slate-700 border-slate-700','hover:bg-blue-50 border-slate-200')">
+                          {{ expandedMeals[mt] ? '&#x1F4D6; Less' : '&#x1F4D6; Details' }}
+                        </button>
+                        <button class="meal-action-btn" :class="dc('hover:bg-slate-700 border-slate-700','hover:bg-blue-50 border-slate-200')">&#x1F504; Swap</button>
+                        <button class="meal-action-btn" :class="dc('hover:bg-slate-700 border-slate-700','hover:bg-blue-50 border-slate-200')">&#x2764;&#xFE0F; Save</button>
+                        <button class="meal-action-btn" :class="dc('hover:bg-slate-700 border-slate-700','hover:bg-blue-50 border-slate-200')">&#x1F6D2; List</button>
+                      </div>
                     </div>
-                    <Transition name="slide-down"><div v-if="expandedMeals[mt]" class="px-4 pb-4 pt-2 border-t text-xs text-[var(--text-secondary)]" :class="dc('border-slate-700 bg-slate-800/20','border-slate-100 bg-slate-50/50')">
-                      <div v-if="getMealData(mt)?.ingredients" class="mb-2"><strong class="text-[var(--text-primary)]">Ingredients:</strong> {{ Array.isArray(getMealData(mt).ingredients)?getMealData(mt).ingredients.join(', '):getMealData(mt).ingredients }}</div>
-                      <div v-if="getMealData(mt)?.instructions"><strong class="text-[var(--text-primary)]">Instructions:</strong> {{ getMealData(mt).instructions }}</div>
-                    </div></Transition>
+                    <!-- Expandable details -->
+                    <Transition name="slide-down">
+                      <div v-if="expandedMeals[mt]" class="px-4 pb-4 pt-2 border-t text-xs text-[var(--text-secondary)]" :class="dc('border-slate-700 bg-slate-800/20','border-slate-100 bg-slate-50/50')">
+                        <div v-if="getMealData(mt)?.ingredients" class="mb-2"><strong class="text-[var(--text-primary)]">Ingredients:</strong> {{ Array.isArray(getMealData(mt).ingredients)?getMealData(mt).ingredients.join(', '):getMealData(mt).ingredients }}</div>
+                        <div v-if="getMealData(mt)?.instructions"><strong class="text-[var(--text-primary)]">Instructions:</strong> {{ getMealData(mt).instructions }}</div>
+                      </div>
+                    </Transition>
                   </div>
                 </div>
-                <div class="rounded-xl border p-4 flex flex-wrap items-center justify-between gap-4" :class="dc('bg-slate-800/50 border-slate-700','bg-slate-50 border-slate-200')">
-                  <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">Daily Totals</span>
-                  <div class="flex items-center gap-5 text-sm">
-                    <span v-for="m in macroSummary" :key="m.label" class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" :class="m.dot"></span><strong :class="m.cls">{{ m.val }}</strong><span class="text-[var(--text-secondary)] text-xs">{{ m.label }}</span></span>
+
+                <!-- Daily Summary Bar -->
+                <div class="rounded-xl border p-4" :class="dc('bg-slate-800/50 border-slate-700','bg-slate-50 border-slate-200')">
+                  <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+                    <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">Daily Totals</span>
+                    <div class="flex items-center gap-5 text-sm">
+                      <span v-for="m in macroSummary" :key="m.label" class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full" :class="m.dot"></span>
+                        <strong :class="m.cls">{{ m.val }}</strong>
+                        <span class="text-[var(--text-secondary)] text-xs">{{ m.label }}</span>
+                      </span>
+                    </div>
+                  </div>
+                  <!-- Macro progress bars -->
+                  <div class="grid grid-cols-3 gap-3">
+                    <div>
+                      <div class="flex items-center justify-between text-[10px] mb-1"><span class="text-[var(--text-secondary)]">Protein</span><span class="font-semibold text-red-400">{{ currentDay?.totals?.protein||0 }}g</span></div>
+                      <div class="h-1.5 rounded-full overflow-hidden" :class="dc('bg-slate-700','bg-slate-200')"><div class="h-full rounded-full bg-red-400 transition-all duration-500" :style="{width: Math.min(100, ((currentDay?.totals?.protein||0)/150)*100)+'%'}"></div></div>
+                    </div>
+                    <div>
+                      <div class="flex items-center justify-between text-[10px] mb-1"><span class="text-[var(--text-secondary)]">Carbs</span><span class="font-semibold text-amber-400">{{ currentDay?.totals?.carbs||0 }}g</span></div>
+                      <div class="h-1.5 rounded-full overflow-hidden" :class="dc('bg-slate-700','bg-slate-200')"><div class="h-full rounded-full bg-amber-400 transition-all duration-500" :style="{width: Math.min(100, ((currentDay?.totals?.carbs||0)/250)*100)+'%'}"></div></div>
+                    </div>
+                    <div>
+                      <div class="flex items-center justify-between text-[10px] mb-1"><span class="text-[var(--text-secondary)]">Fats</span><span class="font-semibold text-blue-400">{{ currentDay?.totals?.fats||0 }}g</span></div>
+                      <div class="h-1.5 rounded-full overflow-hidden" :class="dc('bg-slate-700','bg-slate-200')"><div class="h-full rounded-full bg-blue-400 transition-all duration-500" :style="{width: Math.min(100, ((currentDay?.totals?.fats||0)/80)*100)+'%'}"></div></div>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              <!-- Regenerate button -->
+              <button @click="generateMealPlan" :disabled="generating"
+                class="w-full py-3 rounded-xl text-sm font-semibold border transition-all duration-200"
+                :class="dc('border-slate-700 text-slate-400 hover:border-emerald-500/50 hover:text-emerald-400','border-slate-200 text-slate-500 hover:border-emerald-400 hover:text-emerald-600')">
+                &#x1F504; Regenerate Plan
+              </button>
             </div>
 
-            <!-- Empty state -->
-            <div v-else class="p-8 text-center">
-              <div class="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border" :class="dc('border-slate-700','border-slate-200')"><span class="text-4xl">&#x1F957;</span></div>
-              <h3 class="text-lg font-bold mb-2 text-[var(--text-primary)]">No Meal Plan Yet</h3>
-              <p class="text-sm text-[var(--text-secondary)] max-w-md mx-auto mb-6">Configure your goals and restrictions above, then generate a personalized 7-day meal plan.</p>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 opacity-20 pointer-events-none select-none">
-                <div v-for="meal in ['Breakfast','Lunch','Dinner','Snack']" :key="meal" class="rounded-xl border p-4" :class="dc('bg-slate-800/40 border-slate-700','bg-white border-slate-200')">
-                  <div class="text-[10px] uppercase tracking-wider font-bold text-[var(--text-secondary)] mb-2">{{ meal }}</div>
-                  <div class="h-3 w-3/4 rounded-full mb-2" :class="dc('bg-slate-700','bg-slate-200')"></div>
-                  <div class="h-2 w-1/2 rounded-full" :class="dc('bg-slate-700','bg-slate-200')"></div>
+            <!-- EMPTY STATE: Plan Creation Studio -->
+            <div v-else class="p-6 space-y-6">
+
+              <!-- Plan Creation Mode Tiles -->
+              <div>
+                <h3 class="text-sm font-bold text-[var(--text-primary)] mb-3">Choose Your Planning Mode</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                  <button v-for="mode in planModes" :key="mode.id" @click="planMode=mode.id"
+                    class="relative rounded-xl border p-4 text-left transition-all duration-200"
+                    :class="planMode===mode.id
+                      ? (isDark ? 'bg-emerald-500/10 border-emerald-500/50 ring-1 ring-emerald-500/30 shadow-lg shadow-emerald-500/10' : 'bg-emerald-50 border-emerald-400 ring-1 ring-emerald-300 shadow-lg shadow-emerald-500/10')
+                      : dc('border-slate-700 hover:border-slate-600 bg-slate-800/30 hover:bg-slate-800/50','border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50')">
+                    <div v-if="planMode===mode.id" class="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                      <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <div class="text-2xl mb-2">{{ mode.icon }}</div>
+                    <div class="text-sm font-semibold text-[var(--text-primary)] mb-0.5 leading-tight">{{ mode.title }}</div>
+                    <div class="text-[10px] leading-tight text-[var(--text-secondary)]">{{ mode.desc }}</div>
+                  </button>
                 </div>
+              </div>
+
+              <!-- Generate Button -->
+              <button @click="generateMealPlan" :disabled="generating"
+                class="w-full py-4 rounded-xl text-base font-bold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xl hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-200">
+                <span v-if="generating" class="flex items-center justify-center gap-3">
+                  <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  {{ generatingStage }}
+                </span>
+                <span v-else>&#x2728; Generate My 7-Day Meal Plan</span>
+              </button>
+
+              <!-- Premium Empty State Preview -->
+              <div class="opacity-40 pointer-events-none select-none">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div v-for="meal in ['Breakfast', 'Lunch', 'Dinner', 'Snack']" :key="meal"
+                    class="rounded-xl border p-4" :class="dc('bg-slate-800/40 border-slate-700','bg-white border-slate-200')">
+                    <div class="text-[10px] uppercase tracking-wider font-bold text-[var(--text-secondary)] mb-2">{{ meal }}</div>
+                    <div class="h-3 w-3/4 rounded-full mt-2" :class="dc('bg-slate-700','bg-slate-200')"></div>
+                    <div class="h-2 w-1/2 rounded-full mt-1.5" :class="dc('bg-slate-700','bg-slate-200')"></div>
+                    <div class="flex gap-2 mt-3">
+                      <div class="h-2 w-10 rounded-full bg-emerald-500/20"></div>
+                      <div class="h-2 w-8 rounded-full bg-amber-500/20"></div>
+                      <div class="h-2 w-8 rounded-full bg-blue-500/20"></div>
+                    </div>
+                  </div>
+                </div>
+                <p class="text-center text-xs mt-3 text-[var(--text-secondary)]">Your personalized 7-day plan will appear here</p>
               </div>
             </div>
           </div>
@@ -447,11 +568,36 @@ const nutrientDefs = [
 ]
 const nutrientPct = (v, m) => (!v || !m) ? 0 : Math.min(100, Math.round((v / m) * 100))
 const mealPlan = ref(null), generating = ref(false), selectedDay = ref(0), expandedMeals = reactive({})
+const planMode = ref('goal')
+const generatingStage = ref('')
+let stageInterval = null
+
+const planModes = [
+  { id: 'goal', icon: '\u{1F3AF}', title: 'Goal-Based Plan', desc: 'Aligned to your selected wellness goal' },
+  { id: 'quick', icon: '\u26A1', title: 'Quick Meals Only', desc: 'Everything under 15 minutes prep' },
+  { id: 'macro', icon: '\u{1F4CA}', title: 'Macro-Focused', desc: 'Hit specific protein/carb/fat targets' },
+  { id: 'budget', icon: '\u{1F4B0}', title: 'Budget-Friendly', desc: 'Affordable ingredients, no waste' },
+  { id: 'world', icon: '\u{1F30D}', title: 'World Cuisine Explorer', desc: 'Different cuisine each day' },
+  { id: 'protein', icon: '\u{1F3CB}\uFE0F', title: 'High-Protein Builder', desc: '30g+ protein every meal' },
+  { id: 'mediterranean', icon: '\u{1FAD2}', title: 'Mediterranean Week', desc: 'Heart-healthy Mediterranean diet' },
+  { id: 'plant', icon: '\u{1F331}', title: 'Plant-Based Week', desc: '100% plant-powered meals' },
+  { id: 'restaurant', icon: '\u{1F37D}\uFE0F', title: 'Restaurant + Home Mix', desc: 'Include restaurant meals' },
+  { id: 'supermarket', icon: '\u{1F6D2}', title: 'Supermarket Smart', desc: 'Built from grocery staples' },
+]
 const dayLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
 const currentDay = computed(() => mealPlan.value?.days?.[selectedDay.value] || null)
 function getMealData(mt) { if (!currentDay.value) return null; return mt === 'snack' ? (currentDay.value.snacks?.[0] || currentDay.value.snack) : currentDay.value[mt] }
 const mealTypeEmoji = t => ({ breakfast: '\u{1F305}', lunch: '\u2600\uFE0F', dinner: '\u{1F319}', snack: '\u{1F37F}' })[t] || '\u{1F37D}\uFE0F'
 const mealTypeColor = t => ({ breakfast: 'text-amber-500', lunch: 'text-blue-500', dinner: 'text-purple-500', snack: 'text-emerald-500' })[t] || 'text-slate-400'
+const mealHeaderBg = t => {
+  const map = {
+    breakfast: isDark.value ? 'bg-amber-500/10 text-amber-300' : 'bg-amber-50 text-amber-700',
+    lunch: isDark.value ? 'bg-blue-500/10 text-blue-300' : 'bg-blue-50 text-blue-700',
+    dinner: isDark.value ? 'bg-purple-500/10 text-purple-300' : 'bg-purple-50 text-purple-700',
+    snack: isDark.value ? 'bg-emerald-500/10 text-emerald-300' : 'bg-emerald-50 text-emerald-700',
+  }
+  return map[t] || (isDark.value ? 'bg-slate-800 text-slate-300' : 'bg-slate-50 text-slate-600')
+}
 const macroSummary = computed(() => {
   const d = currentDay.value?.totals || {}
   return [
@@ -464,14 +610,21 @@ const macroSummary = computed(() => {
 
 async function generateMealPlan() {
   generating.value = true
+  const stages = ['Analyzing your goals...', 'Checking dietary restrictions...', 'Balancing calories & macros...', 'Building meal variety...', 'Preparing your plan...']
+  let stageIdx = 0
+  generatingStage.value = stages[0]
+  stageInterval = setInterval(() => {
+    stageIdx = (stageIdx + 1) % stages.length
+    generatingStage.value = stages[stageIdx]
+  }, 2000)
   try {
     const API = import.meta.env.VITE_API_BASE_URL || ''
     const resp = await fetch(`${API}/api/nutrition/meal-plan`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ profile: { age: profile.value.age, gender: profile.value.gender, allergies: profile.value.allergies, medications: profile.value.medications, conditions: profile.value.conditions, diet_goal: selectedGoal.value, dietary_restrictions: selectedRestrictions.value }, days: 7 }) })
+      body: JSON.stringify({ profile: { age: profile.value.age, gender: profile.value.gender, allergies: profile.value.allergies, medications: profile.value.medications, conditions: profile.value.conditions, diet_goal: selectedGoal.value, dietary_restrictions: selectedRestrictions.value, plan_mode: planMode.value }, days: 7 }) })
     const data = await resp.json()
     if (data.plan) { mealPlan.value = data.plan; selectedDay.value = 0 }
   } catch (e) { console.error('Meal plan error:', e) }
-  finally { generating.value = false }
+  finally { clearInterval(stageInterval); generatingStage.value = ''; generating.value = false }
 }
 
 // ── Visual Menu (Tab 2) ──
@@ -557,4 +710,7 @@ function saveTracker() { localStorage.setItem('nutrition_tracker', JSON.stringif
 .icon-box { @apply w-10 h-10 rounded-xl flex items-center justify-center text-white; }
 .pill-stat { @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-[color-mix(in_srgb,var(--clinical-surface)_90%,transparent)] text-[var(--text-secondary)]; }
 .macro-pill { @apply px-2 py-0.5 rounded text-[9px] font-medium; }
+.plan-profile-pill { @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border; }
+.smart-label { @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold; }
+.meal-action-btn { @apply text-xs px-2.5 py-1.5 rounded-lg border font-medium transition-colors text-[var(--text-secondary)]; }
 </style>
