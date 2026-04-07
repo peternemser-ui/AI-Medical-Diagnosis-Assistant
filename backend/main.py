@@ -283,6 +283,21 @@ Provide at least 3 differential diagnoses ranked by likelihood. Include clinical
 
         total_time = round(time.time() - start, 2)
 
+        # Calculate actual cost from token usage
+        usage = response.usage
+        input_tokens = usage.prompt_tokens if usage else 0
+        output_tokens = usage.completion_tokens if usage else 0
+        # Pricing per 1M tokens (as of 2026)
+        model_name = "gpt-4o"
+        OPENAI_PRICING = {
+            "gpt-4o": {"input": 2.50, "output": 10.00},
+            "gpt-4o-mini": {"input": 0.15, "output": 0.60},
+            "o3": {"input": 10.00, "output": 40.00},
+            "o4-mini": {"input": 1.10, "output": 4.40},
+        }
+        pricing = OPENAI_PRICING.get(model_name, {"input": 2.50, "output": 10.00})
+        estimated_cost = round((input_tokens * pricing["input"] + output_tokens * pricing["output"]) / 1_000_000, 4)
+
         return {
             "answer": f"AI Medical Assessment (OpenAI GPT-4o)\n{'=' * 40}\nAge: {req.age} | Gender: {req.gender}\n\n"
                       + "\n".join(f"{i+1}. {c['cause']} — {c['value']}% confidence\n   {c['explanation']}" for i, c in enumerate(causes)),
@@ -305,7 +320,8 @@ Provide at least 3 differential diagnoses ranked by likelihood. Include clinical
             "agent_communication_log": [],
             "multi_agent": False,
             "agents_used": ["openai_gpt4o"],
-            "estimated_cost": 0.05,
+            "estimated_cost": estimated_cost,
+            "token_usage": {"total_input_tokens": input_tokens, "total_output_tokens": output_tokens},
         }
     except Exception as e:
         logger.error("OpenAI diagnosis failed: %s", e)
