@@ -31,6 +31,9 @@
         <router-link to="/reports" class="text-sm transition-colors px-3 py-1.5 hidden sm:inline" :class="isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'">
           {{ t('nav.reports') }}
         </router-link>
+        <router-link to="/features" class="text-sm transition-colors px-3 py-1.5 hidden sm:inline" :class="isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'">
+          Features
+        </router-link>
         <ThemeLangControls />
         <!-- Start Consultation CTA in nav — desktop only -->
         <button @click="startConsultation" class="hidden lg:inline-flex btn-blue btn-sm">

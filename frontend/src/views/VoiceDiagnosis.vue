@@ -126,6 +126,39 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3h6v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V3zm-2 4h10v14a2 2 0 01-2 2H9a2 2 0 01-2-2V7z"/></svg>
           <span class="hidden lg:inline">{{ t('nav.medications') }}</span>
         </router-link>
+        <!-- More dropdown -->
+        <div class="relative">
+          <button @click="showMoreMenu = !showMoreMenu" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all" :class="isDark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01"/></svg>
+            <span class="hidden lg:inline">More</span>
+            <svg class="w-3 h-3 opacity-50 transition-transform" :class="showMoreMenu ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <Transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+            <div v-if="showMoreMenu" class="absolute right-0 top-full mt-1 w-52 rounded-xl shadow-xl border overflow-hidden py-1" style="z-index: 9999"
+              :class="isDark ? 'bg-slate-900 border-slate-700/50' : 'bg-white border-slate-200'">
+              <router-link to="/nutrition" @click="showMoreMenu = false" class="flex items-center gap-2.5 px-3.5 py-2.5 text-sm transition-colors" :class="isDark ? 'text-slate-300 hover:bg-slate-800 hover:text-white' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'">
+                <span class="text-base">&#x1F957;</span> Nutrition
+                <span class="ml-auto text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white">NEW</span>
+              </router-link>
+              <router-link to="/mental-health" @click="showMoreMenu = false" class="flex items-center gap-2.5 px-3.5 py-2.5 text-sm transition-colors" :class="isDark ? 'text-slate-300 hover:bg-slate-800 hover:text-white' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'">
+                <span class="text-base">&#x1F9E0;</span> Mental Health
+                <span class="ml-auto text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white">NEW</span>
+              </router-link>
+              <router-link to="/journal" @click="showMoreMenu = false" class="flex items-center gap-2.5 px-3.5 py-2.5 text-sm transition-colors" :class="isDark ? 'text-slate-300 hover:bg-slate-800 hover:text-white' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'">
+                <span class="text-base">&#x1F4D3;</span> Journal
+                <span class="ml-auto text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white">NEW</span>
+              </router-link>
+              <router-link to="/second-opinion" @click="showMoreMenu = false" class="flex items-center gap-2.5 px-3.5 py-2.5 text-sm transition-colors" :class="isDark ? 'text-slate-300 hover:bg-slate-800 hover:text-white' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'">
+                <span class="text-base">&#x1F52C;</span> Second Opinion
+                <span class="ml-auto text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white">NEW</span>
+              </router-link>
+              <div class="border-t my-1" :class="isDark ? 'border-slate-700/50' : 'border-slate-200'"></div>
+              <router-link to="/features" @click="showMoreMenu = false" class="flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-medium transition-colors" :class="isDark ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-600 hover:bg-slate-50'">
+                <span class="text-base">&#x2728;</span> All Features
+              </router-link>
+            </div>
+          </Transition>
+        </div>
         <div class="w-px h-5 mx-0.5" :class="isDark ? 'bg-slate-700' : 'bg-slate-300'"></div>
         <ThemeLangControls />
         <button @click="goToApiSettings" class="p-2 rounded-lg transition-all" :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'">
@@ -1452,6 +1485,7 @@ const showTyping = ref(false)
 const showHelp = ref(false)
 const showSettings = ref(false)
 const showMobileMenu = ref(false)
+const showMoreMenu = ref(false)
 const showModelPicker = ref(false)
 const modelPreference = ref(localStorage.getItem('model_preference') || 'auto')
 
@@ -1503,10 +1537,13 @@ function selectModel(id) {
   showModelPicker.value = false
 }
 
-// Close model picker on outside click
+// Close model picker / more menu on outside click
 function handleDocClick(e) {
   if (showModelPicker.value && !e.target.closest('.relative')) {
     showModelPicker.value = false
+  }
+  if (showMoreMenu.value && !e.target.closest('.relative')) {
+    showMoreMenu.value = false
   }
 }
 const showHistory = ref(false)

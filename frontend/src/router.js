@@ -121,6 +121,36 @@ const routes = [
     meta: { title: 'Compare Plans — MedDiagnose AI' }
   },
   {
+    path: '/features',
+    name: 'Features',
+    component: () => import('@/views/FeaturesShowcase.vue'),
+    meta: { title: 'Features — MedDiagnose AI' }
+  },
+  {
+    path: '/nutrition',
+    name: 'Nutrition',
+    component: () => import('@/views/NutritionPlanner.vue'),
+    meta: { title: 'Nutrition Planner — MedDiagnose AI' }
+  },
+  {
+    path: '/mental-health',
+    name: 'MentalHealth',
+    component: () => import('@/views/MentalHealth.vue'),
+    meta: { title: 'Mental Health — MedDiagnose AI' }
+  },
+  {
+    path: '/journal',
+    name: 'SymptomJournal',
+    component: () => import('@/views/SymptomJournal.vue'),
+    meta: { title: 'Symptom Journal — MedDiagnose AI' }
+  },
+  {
+    path: '/second-opinion',
+    name: 'SecondOpinion',
+    component: () => import('@/views/SecondOpinion.vue'),
+    meta: { title: 'Second Opinion — MedDiagnose AI' }
+  },
+  {
     path: '/help',
     name: 'HelpCenter',
     component: () => import('@/views/HelpCenter.vue'),

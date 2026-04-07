@@ -77,6 +77,9 @@ app.include_router(revenue_router)
 from subscription_routes import subscription_router
 app.include_router(subscription_router)
 
+from nutrition_routes import nutrition_router
+app.include_router(nutrition_router)
+
 
 # ── Helpers ──────────────────────────────────────────────────────────
 
