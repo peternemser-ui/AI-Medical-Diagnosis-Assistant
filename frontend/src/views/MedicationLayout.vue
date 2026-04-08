@@ -7,59 +7,93 @@
     <div class="flex-1 flex">
       <!-- Mobile sidebar toggle -->
       <button @click="mobileOpen = !mobileOpen"
-        class="fixed top-16 left-3 z-40 p-2 rounded-lg sm:hidden"
-        :class="isDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-900 shadow'">
+        class="fixed top-16 left-3 z-40 p-2 rounded-lg sm:hidden shadow-md"
+        :class="isDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-900'">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
 
       <!-- Mobile overlay -->
       <div v-if="mobileOpen" @click="mobileOpen = false" class="fixed inset-0 bg-black/50 z-30 sm:hidden" style="top: 52px;"></div>
 
-      <!-- Sidebar -->
+      <!-- ── Sidebar ── -->
       <aside class="fixed left-0 h-[calc(100vh-52px)] border-r flex flex-col transition-all duration-300 z-30" style="top: 52px;"
         :class="[
           isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200',
-          sidebarCollapsed ? 'w-14' : 'w-56',
+          sidebarCollapsed ? 'w-14' : 'w-60',
           mobileOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'
         ]">
+
+        <!-- Sidebar header -->
+        <div v-if="!sidebarCollapsed" class="px-4 py-4 border-b"
+          :class="isDark ? 'border-slate-800' : 'border-slate-100'">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+              :class="isDark ? 'bg-purple-500/20' : 'bg-purple-100'">
+              <svg class="w-4 h-4" :class="isDark ? 'text-purple-400' : 'text-purple-700'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3h6v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V3zm-2 4h10v14a2 2 0 01-2 2H9a2 2 0 01-2-2V7z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Medications</p>
+              <p class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Safety & Schedule</p>
+            </div>
+          </div>
+        </div>
+
         <!-- Nav items -->
-        <nav class="flex-1 py-2 px-1.5 space-y-0.5 overflow-y-auto">
+        <nav class="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
           <router-link v-for="item in navItems" :key="item.path" :to="item.path" @click="mobileOpen = false"
-            class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-all group"
+            class="flex items-center gap-3 rounded-lg text-[13px] font-medium transition-all group"
             :class="[
+              sidebarCollapsed ? 'px-2.5 py-2.5 justify-center' : 'px-3 py-2.5',
               isActive(item.path)
-                ? (isDark ? 'bg-violet-500/10 text-violet-400' : 'bg-violet-50 text-violet-700')
-                : (isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'),
-            ]">
-            <div class="w-4.5 h-4.5 flex-shrink-0" v-html="item.icon"></div>
+                ? (isDark ? 'bg-purple-500/15 text-purple-400 font-semibold' : 'bg-purple-100 text-purple-700 font-semibold')
+                : (isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800/70' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'),
+            ]"
+            :title="sidebarCollapsed ? item.label : undefined">
+            <!-- Icon -->
+            <div class="w-5 h-5 flex-shrink-0 flex items-center justify-center" v-html="item.icon"></div>
+            <!-- Label -->
             <span v-if="!sidebarCollapsed" class="truncate">{{ item.label }}</span>
+            <!-- Active indicator dot -->
+            <div v-if="!sidebarCollapsed && isActive(item.path)" class="ml-auto w-1.5 h-1.5 rounded-full"
+              :class="isDark ? 'bg-purple-400' : 'bg-purple-600'"></div>
           </router-link>
         </nav>
 
         <!-- Bottom: collapse toggle -->
-        <div class="px-1.5 py-2 border-t" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
+        <div class="px-2 py-3 border-t" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
           <button @click="sidebarCollapsed = !sidebarCollapsed"
-            class="hidden sm:flex w-full items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs transition-colors"
+            class="hidden sm:flex w-full items-center gap-3 px-3 py-2 rounded-lg text-xs transition-colors"
             :class="isDark ? 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/60' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'">
-            <svg class="w-4 h-4 transition-transform" :class="sidebarCollapsed ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+            <svg class="w-4 h-4 flex-shrink-0 transition-transform" :class="sidebarCollapsed ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
             <span v-if="!sidebarCollapsed">Collapse</span>
           </button>
         </div>
       </aside>
 
-      <!-- Main content area -->
-      <div class="flex-1 flex flex-col transition-all duration-300" :class="sidebarCollapsed ? 'sm:ml-14' : 'sm:ml-56'">
+      <!-- ── Main content area ── -->
+      <div class="flex-1 flex flex-col transition-all duration-300" :class="sidebarCollapsed ? 'sm:ml-14' : 'sm:ml-60'">
         <!-- Breadcrumb sub-header -->
-        <div class="flex items-center justify-between px-4 sm:px-6 py-2.5 border-b text-xs"
-          :class="isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-slate-50 border-slate-100'">
-          <div class="flex items-center gap-1.5 pl-10 sm:pl-0">
-            <router-link to="/medications" class="transition-colors" :class="isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'">Medications</router-link>
-            <svg class="w-3 h-3" :class="isDark ? 'text-slate-700' : 'text-slate-300'" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-            <span class="font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ currentPageTitle }}</span>
+        <div class="flex items-center justify-between px-4 sm:px-6 py-3 border-b"
+          :class="isDark ? 'bg-slate-900/60 border-slate-800/60' : 'bg-slate-50/80 border-slate-100'">
+          <div class="flex flex-col pl-10 sm:pl-0">
+            <div class="flex items-center gap-1.5 text-xs">
+              <router-link to="/medications"
+                class="transition-colors font-medium"
+                :class="isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'">
+                Medications
+              </router-link>
+              <svg class="w-3 h-3 flex-shrink-0" :class="isDark ? 'text-slate-700' : 'text-slate-300'" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+              </svg>
+              <span class="font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">{{ currentPageTitle }}</span>
+            </div>
+            <p v-if="currentPageSubtitle" class="text-xs mt-0.5" :class="isDark ? 'text-slate-600' : 'text-slate-400'">{{ currentPageSubtitle }}</p>
           </div>
-          <div class="flex items-center gap-1.5" :class="isDark ? 'text-violet-400' : 'text-violet-600'">
-            <div class="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse"></div>
-            <span>Active</span>
+          <div class="flex items-center gap-1.5">
+            <div class="w-1.5 h-1.5 rounded-full animate-pulse" :class="isDark ? 'bg-purple-500' : 'bg-purple-400'"></div>
+            <span class="text-xs font-medium" :class="isDark ? 'text-purple-400' : 'text-purple-600'">Active</span>
           </div>
         </div>
 
@@ -98,14 +132,14 @@ const userInitials = computed(() => {
 })
 
 const navItems = [
-  { path: '/medications', label: 'My Medications', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3h6v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V3zm-2 4h10v14a2 2 0 01-2 2H9a2 2 0 01-2-2V7z"/></svg>' },
-  { path: '/medications/interactions', label: 'Interactions', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>' },
-  { path: '/medications/food', label: 'Food & Lifestyle', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75l-1.5.75a3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0L3 16.5m18-12.75v14.25"/></svg>' },
-  { path: '/medications/side-effects', label: 'Side Effects', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>' },
-  { path: '/medications/schedule', label: 'Schedule', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' },
-  { path: '/medications/scan', label: 'Scan Rx', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>' },
-  { path: '/medications/refills', label: 'Refills', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M21.015 4.356v4.992"/></svg>' },
-  { path: '/medications/identify', label: 'Pill ID', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>' },
+  { path: '/medications', label: 'My Medications', subtitle: 'View and manage your drugs', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3h6v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V3zm-2 4h10v14a2 2 0 01-2 2H9a2 2 0 01-2-2V7z"/></svg>' },
+  { path: '/medications/interactions', label: 'Interactions', subtitle: 'Drug-drug safety matrix', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>' },
+  { path: '/medications/food', label: 'Food & Lifestyle', subtitle: 'Food and alcohol effects', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75l-1.5.75a3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0L3 16.5m18-12.75v14.25"/></svg>' },
+  { path: '/medications/side-effects', label: 'Side Effects', subtitle: 'Track and report symptoms', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>' },
+  { path: '/medications/schedule', label: 'Schedule', subtitle: 'Daily reminders and timing', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' },
+  { path: '/medications/scan', label: 'Scan Rx', subtitle: 'Photograph your prescription', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>' },
+  { path: '/medications/refills', label: 'Refills', subtitle: 'Manage prescription refills', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M21.015 4.356v4.992"/></svg>' },
+  { path: '/medications/identify', label: 'Pill ID', subtitle: 'Identify unknown medications', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>' },
 ]
 
 function isActive(path) {
@@ -116,5 +150,10 @@ function isActive(path) {
 const currentPageTitle = computed(() => {
   const item = navItems.find(n => isActive(n.path))
   return item?.label || 'My Medications'
+})
+
+const currentPageSubtitle = computed(() => {
+  const item = navItems.find(n => isActive(n.path))
+  return item?.subtitle || ''
 })
 </script>

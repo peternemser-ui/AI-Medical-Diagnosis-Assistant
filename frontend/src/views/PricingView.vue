@@ -24,10 +24,10 @@
       </div>
 
       <!-- Header -->
-      <div class="text-center max-w-2xl mx-auto mb-12">
-        <h2 class="text-3xl sm:text-4xl font-extrabold mb-4" :class="isDark ? 'text-white' : 'text-slate-900'">
+      <div class="text-center max-w-2xl mx-auto mb-10">
+        <h1 class="text-3xl sm:text-4xl font-extrabold mb-3" :class="isDark ? 'text-white' : 'text-slate-900'">
           Choose Your Plan
-        </h2>
+        </h1>
         <p class="text-base sm:text-lg" :class="isDark ? 'text-slate-400' : 'text-slate-600'">
           Get AI-powered medical insights with the right plan for you. All plans include our core diagnostic engine.
         </p>
@@ -37,12 +37,13 @@
       <div class="flex items-center justify-center gap-3 mb-10">
         <span class="text-sm font-medium" :class="!annual ? (isDark ? 'text-white' : 'text-slate-900') : (isDark ? 'text-slate-500' : 'text-slate-400')">Monthly</span>
         <button @click="annual = !annual" class="relative w-12 h-6 rounded-full transition-colors"
-          :class="annual ? 'bg-emerald-500' : (isDark ? 'bg-slate-700' : 'bg-slate-300')">
+          :class="annual ? 'bg-indigo-600' : (isDark ? 'bg-slate-700' : 'bg-slate-300')">
           <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
             :class="annual ? 'translate-x-6' : 'translate-x-0'"></span>
         </button>
         <span class="text-sm font-medium" :class="annual ? (isDark ? 'text-white' : 'text-slate-900') : (isDark ? 'text-slate-500' : 'text-slate-400')">
-          Annual <span class="text-emerald-500 font-semibold">Save 20%</span>
+          Annual
+          <span class="ml-1.5 text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">Save 20%</span>
         </span>
       </div>
 
@@ -52,13 +53,13 @@
           class="relative rounded-2xl border p-6 flex flex-col transition-all duration-200"
           :class="[
             tier.tier_key === 'pro'
-              ? (isDark ? 'border-blue-500/40 bg-blue-500/5 shadow-xl shadow-blue-500/10 ring-1 ring-blue-500/20' : 'border-blue-400 bg-blue-50/50 shadow-xl shadow-blue-200/40 ring-1 ring-blue-300')
-              : (isDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white'),
-            tier.tier_key === currentTier ? 'ring-2 ring-emerald-500/50' : ''
+              ? (isDark ? 'border-indigo-500/50 bg-indigo-500/5 shadow-xl shadow-indigo-500/10 ring-2 ring-indigo-500' : 'border-indigo-400 bg-indigo-50/60 shadow-xl shadow-indigo-200/50 ring-2 ring-indigo-500')
+              : (isDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white shadow-sm'),
+            tier.tier_key === currentTier && tier.tier_key !== 'pro' ? 'ring-2 ring-emerald-500/50' : ''
           ]">
           <!-- Popular badge -->
-          <div v-if="tier.tier_key === 'pro'" class="absolute -top-3 left-1/2 -translate-x-1/2">
-            <span class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg">
+          <div v-if="tier.tier_key === 'pro'" class="absolute -top-3.5 left-1/2 -translate-x-1/2">
+            <span class="px-3.5 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-indigo-700 text-white shadow-lg shadow-indigo-700/30">
               Most Popular
             </span>
           </div>
@@ -296,16 +297,16 @@ function ctaClass(tier) {
       : 'bg-slate-100 text-slate-400 cursor-not-allowed'
   }
   if (tier.tier_key === 'pro') {
-    return 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 shadow-lg shadow-blue-500/20'
+    return 'bg-indigo-700 text-white hover:bg-indigo-800 shadow-lg shadow-indigo-700/20'
   }
   if (tier.price === 0) {
     return isDark.value
-      ? 'bg-slate-800 text-white hover:bg-slate-700 border border-slate-700'
-      : 'bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200'
+      ? 'bg-slate-800 text-slate-200 hover:bg-slate-700 border border-slate-700'
+      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
   }
   return isDark.value
-    ? 'bg-blue-600 text-white hover:bg-blue-500'
-    : 'bg-blue-500 text-white hover:bg-blue-600'
+    ? 'bg-slate-700 text-white hover:bg-slate-600 border border-slate-600'
+    : 'bg-white text-slate-800 hover:bg-slate-50 border border-slate-300'
 }
 
 const comparisonRows = computed(() => {

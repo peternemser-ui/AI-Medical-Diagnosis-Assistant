@@ -93,17 +93,23 @@
 
       <template v-else>
         <!-- Chief Complaint -->
-        <div v-if="session.symptoms" class="p-4 rounded-xl border" :class="isDark ? 'bg-slate-800/40 border-slate-700/40' : 'bg-slate-50 border-slate-200'">
-          <div class="text-label mb-1" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Chief Complaint</div>
+        <div v-if="session.symptoms" class="p-4 rounded-xl border border-l-4 border-l-sky-500"
+          :class="isDark ? 'bg-sky-900/10 border-slate-700/40' : 'bg-sky-50 border-sky-100'">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-3.5 h-3.5" :class="isDark ? 'text-sky-400' : 'text-sky-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            <span class="text-xs font-bold uppercase tracking-wide" :class="isDark ? 'text-sky-400' : 'text-sky-700'">Chief Complaint</span>
+          </div>
           <p class="text-sm leading-relaxed" :class="isDark ? 'text-slate-300' : 'text-slate-700'">{{ session.symptoms }}</p>
         </div>
 
         <!-- Row 1: Confidence Chart + Agent Performance -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Confidence Chart (2/3) -->
-          <div class="surface-card lg:col-span-2 rounded-xl overflow-hidden border transition-colors">
+          <div class="surface-card lg:col-span-2 rounded-xl overflow-hidden border border-l-4 border-l-sky-500 transition-colors">
             <div class="px-5 py-3 border-b divider flex items-center gap-2">
-              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
               <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Differential Diagnoses Confidence</h2>
             </div>
             <div class="p-5">
@@ -185,9 +191,9 @@
         <!-- Row 3: Recommended Tests + Body Systems -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Recommended Tests -->
-          <div class="surface-card rounded-xl overflow-hidden border transition-colors">
+          <div class="surface-card rounded-xl overflow-hidden border border-l-4 border-l-indigo-500 transition-colors">
             <div class="px-5 py-3 border-b divider flex items-center gap-2">
-              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+              <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
               <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Recommended Tests</h2>
             </div>
             <div class="p-4">
@@ -209,7 +215,7 @@
         <!-- Row 4: Action Items + Safety Review -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Action Items -->
-          <div class="surface-card rounded-xl overflow-hidden border transition-colors">
+          <div class="surface-card rounded-xl overflow-hidden border border-l-4 border-l-amber-500 transition-colors">
             <div class="px-5 py-3 border-b divider flex items-center gap-2">
               <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
               <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Action Items</h2>
@@ -227,7 +233,7 @@
           </div>
 
           <!-- Safety Review -->
-          <div class="surface-card rounded-xl overflow-hidden border transition-colors">
+          <div class="surface-card rounded-xl overflow-hidden border border-l-4 border-l-red-500 transition-colors">
             <div class="px-5 py-3 border-b divider flex items-center gap-2">
               <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
               <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Safety Review</h2>
@@ -261,9 +267,9 @@
         <!-- Row 5: Treatment & Dietary -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Treatment Plan -->
-          <div class="surface-card rounded-xl overflow-hidden border transition-colors">
+          <div class="surface-card rounded-xl overflow-hidden border border-l-4 border-l-sky-500 transition-colors">
             <div class="px-5 py-3 border-b divider flex items-center gap-2">
-              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+              <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
               <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Treatment Recommendations</h2>
             </div>
             <div class="p-4">
@@ -290,9 +296,9 @@
           </div>
 
           <!-- Dietary Recommendations -->
-          <div class="surface-card rounded-xl overflow-hidden border transition-colors">
+          <div class="surface-card rounded-xl overflow-hidden border border-l-4 border-l-emerald-500 transition-colors">
             <div class="px-5 py-3 border-b divider flex items-center gap-2">
-              <span class="text-base">&#127957;</span>
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
               <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Dietary & Healing Guidance</h2>
             </div>
             <div class="p-4">
@@ -314,9 +320,9 @@
         </div>
 
         <!-- Row 6: Find Nearby Specialists -->
-        <div class="surface-card rounded-xl overflow-hidden border transition-colors">
+        <div class="surface-card rounded-xl overflow-hidden border border-l-4 border-l-rose-500 transition-colors">
           <div class="px-5 py-3 border-b divider flex items-center gap-2">
-            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             <h2 class="text-body-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">Find Nearby Specialists</h2>
           </div>
           <div class="p-4">

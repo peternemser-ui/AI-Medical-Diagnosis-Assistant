@@ -1,106 +1,121 @@
 <template>
   <div class="min-h-screen transition-colors duration-300 surface-page">
-    <!-- Calming ambient background -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[120px]"
-        :class="isDark ? 'bg-indigo-600/8' : 'bg-indigo-300/15'"></div>
-      <div class="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full blur-[100px]"
-        :class="isDark ? 'bg-purple-600/6' : 'bg-purple-300/12'"></div>
-      <div class="absolute top-2/3 left-1/3 w-72 h-72 rounded-full blur-[110px]"
-        :class="isDark ? 'bg-teal-600/5' : 'bg-teal-300/10'"></div>
-    </div>
-
-    <!-- Nav bar -->
     <AppNav currentPage="mental-health" />
 
-    <!-- Crisis Disclaimer Banner -->
-    <div class="relative z-10 max-w-4xl mx-auto px-4 mt-4">
-      <div class="rounded-2xl border px-5 py-3 flex items-start gap-3"
-        :class="isDark ? 'bg-indigo-950/40 border-indigo-800/50' : 'bg-indigo-50 border-indigo-200'">
-        <svg class="w-5 h-5 mt-0.5 flex-shrink-0" :class="isDark ? 'text-indigo-400' : 'text-indigo-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    <!-- Crisis Banner -->
+    <div class="max-w-4xl mx-auto px-4 mt-4">
+      <div class="rounded-xl border px-5 py-3.5 flex items-start gap-3"
+        :class="isDark ? 'bg-rose-950/30 border-rose-800/50' : 'bg-rose-50 border-rose-200'">
+        <svg class="w-5 h-5 mt-0.5 flex-shrink-0" :class="isDark ? 'text-rose-400' : 'text-rose-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
         </svg>
-        <div>
-          <p class="text-sm font-medium" :class="isDark ? 'text-indigo-300' : 'text-indigo-800'">
-            This is a screening tool, not a diagnosis. If you're in crisis, call
-            <a href="tel:988" class="underline font-bold">988</a>
-            (Suicide &amp; Crisis Lifeline) or text HOME to 741741.
+        <div class="flex-1 min-w-0">
+          <p class="text-sm" :class="isDark ? 'text-rose-200' : 'text-rose-800'">
+            You are not alone. If you're in crisis or need immediate support, free help is available 24/7.
           </p>
         </div>
+        <a href="tel:988"
+          class="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold bg-red-600 hover:bg-red-700 text-white transition-colors shadow-sm"
+          aria-label="Call 988 Suicide and Crisis Lifeline">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+          Call 988
+        </a>
       </div>
     </div>
 
     <!-- Main Content -->
-    <div class="relative z-10 max-w-4xl mx-auto px-4 py-6 space-y-8">
+    <div class="max-w-4xl mx-auto px-4 py-6 space-y-6">
 
-      <!-- Tab Navigation -->
-      <div class="flex gap-1 p-1 rounded-2xl"
-        :class="isDark ? 'bg-slate-800/60' : 'bg-slate-100'">
+      <!-- Page Header -->
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-violet-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Mental Health &amp; Wellness</h1>
+          <p class="text-sm mt-0.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Track your wellbeing with clinically validated tools in a safe, private space</p>
+        </div>
+      </div>
+
+      <!-- Tab Bar -->
+      <div class="flex gap-1 p-1 rounded-xl" :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
         <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
-          class="flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all duration-200"
+          class="flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200"
           :class="activeTab === tab.id
-            ? (isDark ? 'bg-indigo-600/30 text-indigo-300 shadow-sm' : 'bg-white text-indigo-700 shadow-sm')
-            : (isDark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')">
+            ? 'bg-violet-600 text-white shadow-sm'
+            : isDark ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'">
           {{ tab.label }}
         </button>
       </div>
 
       <!-- ===== ASSESSMENT TAB ===== -->
-      <div v-if="activeTab === 'assessment'">
+      <div v-if="activeTab === 'assessment'" class="space-y-5">
 
         <!-- Assessment Type Selection -->
-        <div v-if="!assessmentActive" class="space-y-4">
-          <h2 class="text-xl font-bold text-[var(--text-primary)]">Weekly Mental Health Check-in</h2>
-          <p class="text-sm text-[var(--text-secondary)]">Take a clinically validated screening to track your mental health over time.</p>
+        <div v-if="!assessmentActive" class="space-y-5">
+          <div>
+            <h2 class="text-lg font-semibold mb-1" :class="isDark ? 'text-white' : 'text-slate-900'">Weekly Mental Health Check-in</h2>
+            <p class="text-sm" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Take a clinically validated screening to track your mental health over time.</p>
+          </div>
 
           <div class="grid sm:grid-cols-2 gap-4">
             <!-- PHQ-9 Card -->
             <button @click="startAssessment('phq9')"
-              class="rounded-2xl border p-5 text-left transition-all hover:scale-[1.01] hover:shadow-lg"
-              :class="isDark ? 'bg-slate-800/60 border-slate-700 hover:border-indigo-600' : 'bg-white border-slate-200 hover:border-indigo-400 shadow-sm'">
-              <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                  <span class="text-white text-sm font-bold">P9</span>
+              class="rounded-xl border p-6 text-left transition-all hover:shadow-md group"
+              :class="isDark ? 'bg-slate-900 border-slate-700 hover:border-violet-600' : 'bg-white border-slate-200 hover:border-violet-400 shadow-sm'">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm">
+                  <span class="text-white text-base font-bold">PHQ</span>
                 </div>
                 <div>
-                  <h3 class="font-semibold text-[var(--text-primary)]">PHQ-9 Depression Screen</h3>
-                  <p class="text-xs text-[var(--text-secondary)]">9 questions ~ 3 min</p>
+                  <h3 class="font-semibold text-base" :class="isDark ? 'text-white' : 'text-slate-900'">PHQ-9 Depression Screen</h3>
+                  <p class="text-xs mt-0.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">9 questions &middot; about 3 minutes</p>
                 </div>
               </div>
-              <p class="text-xs text-[var(--text-secondary)]">Patient Health Questionnaire for depression screening. Widely used in clinical settings.</p>
+              <p class="text-sm" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Patient Health Questionnaire — the gold standard for depression screening. Widely used in clinical settings.</p>
+              <div class="mt-4 flex items-center gap-1.5 text-xs font-medium" :class="isDark ? 'text-violet-400' : 'text-violet-600'">
+                Start screening
+                <svg class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </div>
             </button>
 
             <!-- GAD-7 Card -->
             <button @click="startAssessment('gad7')"
-              class="rounded-2xl border p-5 text-left transition-all hover:scale-[1.01] hover:shadow-lg"
-              :class="isDark ? 'bg-slate-800/60 border-slate-700 hover:border-teal-600' : 'bg-white border-slate-200 hover:border-teal-400 shadow-sm'">
-              <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center">
-                  <span class="text-white text-sm font-bold">G7</span>
+              class="rounded-xl border p-6 text-left transition-all hover:shadow-md group"
+              :class="isDark ? 'bg-slate-900 border-slate-700 hover:border-teal-600' : 'bg-white border-slate-200 hover:border-teal-400 shadow-sm'">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shadow-sm">
+                  <span class="text-white text-base font-bold">GAD</span>
                 </div>
                 <div>
-                  <h3 class="font-semibold text-[var(--text-primary)]">GAD-7 Anxiety Screen</h3>
-                  <p class="text-xs text-[var(--text-secondary)]">7 questions ~ 2 min</p>
+                  <h3 class="font-semibold text-base" :class="isDark ? 'text-white' : 'text-slate-900'">GAD-7 Anxiety Screen</h3>
+                  <p class="text-xs mt-0.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">7 questions &middot; about 2 minutes</p>
                 </div>
               </div>
-              <p class="text-xs text-[var(--text-secondary)]">Generalized Anxiety Disorder scale. Standard measure for anxiety severity.</p>
+              <p class="text-sm" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Generalized Anxiety Disorder scale — a standard measure for anxiety severity used in clinical practice.</p>
+              <div class="mt-4 flex items-center gap-1.5 text-xs font-medium" :class="isDark ? 'text-teal-400' : 'text-teal-600'">
+                Start screening
+                <svg class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </div>
             </button>
           </div>
 
           <!-- Past Scores Summary -->
-          <div v-if="scoreHistory.length > 0" class="rounded-2xl border p-5"
-            :class="isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
-            <h3 class="text-sm font-semibold text-[var(--text-primary)] mb-3">Recent Scores</h3>
-            <div class="space-y-2">
+          <div v-if="scoreHistory.length > 0" class="rounded-xl border p-5"
+            :class="isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
+            <h3 class="text-sm font-semibold mb-4" :class="isDark ? 'text-white' : 'text-slate-900'">Recent Scores</h3>
+            <div class="space-y-2.5">
               <div v-for="entry in scoreHistory.slice(0, 5)" :key="entry.date + entry.type"
-                class="flex items-center justify-between text-sm">
-                <div class="flex items-center gap-2">
-                  <span class="w-10 text-xs font-mono" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ entry.type.toUpperCase() }}</span>
-                  <span class="text-[var(--text-secondary)]">{{ formatDate(entry.date) }}</span>
+                class="flex items-center justify-between text-sm py-1">
+                <div class="flex items-center gap-3">
+                  <span class="w-12 text-xs font-bold font-mono" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ entry.type.toUpperCase() }}</span>
+                  <span class="text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ formatDate(entry.date) }}</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <span class="font-semibold" :style="{ color: getSeverityColor(entry.score, entry.type) }">{{ entry.score }}</span>
-                  <span class="text-xs px-2 py-0.5 rounded-full"
+                  <span class="font-semibold text-sm" :style="{ color: getSeverityColor(entry.score, entry.type) }">{{ entry.score }}</span>
+                  <span class="text-xs px-2.5 py-0.5 rounded-full font-medium"
                     :style="{ background: getSeverityColor(entry.score, entry.type) + '20', color: getSeverityColor(entry.score, entry.type) }">
                     {{ getSeverityLabel(entry.score, entry.type) }}
                   </span>
@@ -110,41 +125,41 @@
           </div>
         </div>
 
-        <!-- Active Assessment Stepper -->
-        <div v-else class="space-y-6">
+        <!-- Active Assessment -->
+        <div v-else class="space-y-5">
           <!-- Progress Bar -->
           <div class="space-y-2">
-            <div class="flex items-center justify-between text-xs text-[var(--text-secondary)]">
-              <span>{{ currentAssessmentLabel }}</span>
+            <div class="flex items-center justify-between text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+              <span class="font-medium">{{ currentAssessmentLabel }}</span>
               <span>Question {{ currentQuestion + 1 }} of {{ currentQuestions.length }}</span>
             </div>
             <div class="h-2 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-700' : 'bg-slate-200'">
               <div class="h-full rounded-full transition-all duration-500 ease-out"
-                :class="assessmentType === 'phq9' ? 'bg-gradient-to-r from-indigo-500 to-purple-500' : 'bg-gradient-to-r from-teal-500 to-emerald-500'"
+                :class="assessmentType === 'phq9' ? 'bg-violet-600' : 'bg-teal-500'"
                 :style="{ width: ((currentQuestion + 1) / currentQuestions.length * 100) + '%' }"></div>
             </div>
           </div>
 
           <!-- Question Card -->
-          <div class="rounded-2xl border p-6 sm:p-8 transition-all"
-            :class="isDark ? 'bg-slate-800/60 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
-            <p class="text-sm text-[var(--text-secondary)] mb-2">Over the last 2 weeks, how often have you been bothered by:</p>
-            <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-6">
+          <div class="rounded-xl border p-6 sm:p-8"
+            :class="isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
+            <p class="text-xs font-medium uppercase tracking-wider mb-2" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Over the last 2 weeks, how often have you been bothered by:</p>
+            <h3 class="text-lg font-semibold mb-7" :class="isDark ? 'text-white' : 'text-slate-900'">
               {{ currentQuestions[currentQuestion] }}
             </h3>
 
             <div class="space-y-3">
               <button v-for="option in answerOptions" :key="option.value"
                 @click="answerQuestion(option.value)"
-                class="w-full text-left px-5 py-3.5 rounded-xl border text-sm font-medium transition-all"
+                class="w-full text-left px-5 py-4 rounded-xl border text-sm font-medium transition-all"
                 :class="answers[currentQuestion] === option.value
-                  ? (isDark ? 'border-indigo-500 bg-indigo-500/15 text-indigo-300' : 'border-indigo-500 bg-indigo-50 text-indigo-700')
-                  : (isDark ? 'border-slate-600 hover:border-slate-500 text-slate-300 hover:bg-slate-700/50' : 'border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50')">
+                  ? isDark ? 'border-violet-500 bg-violet-900/20 text-violet-300' : 'border-violet-500 bg-violet-50 text-violet-700'
+                  : isDark ? 'border-slate-700 hover:border-slate-600 text-slate-300 hover:bg-slate-800/60' : 'border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50'">
                 <span class="inline-flex items-center gap-3">
-                  <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
+                  <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
                     :class="answers[currentQuestion] === option.value
-                      ? (isDark ? 'bg-indigo-500/30 text-indigo-300' : 'bg-indigo-100 text-indigo-600')
-                      : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500')">
+                      ? isDark ? 'bg-violet-600/40 text-violet-300' : 'bg-violet-100 text-violet-600'
+                      : isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500'">
                     {{ option.value }}
                   </span>
                   {{ option.label }}
@@ -155,32 +170,32 @@
 
           <!-- Navigation -->
           <div class="flex items-center justify-between">
-            <button @click="prevQuestion"
-              :disabled="currentQuestion === 0"
-              class="px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+            <button @click="prevQuestion" :disabled="currentQuestion === 0"
+              class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
               :class="currentQuestion === 0
-                ? 'opacity-30 cursor-not-allowed text-[var(--text-secondary)]'
-                : (isDark ? 'text-slate-300 hover:bg-slate-800' : 'text-slate-600 hover:bg-slate-100')">
+                ? 'opacity-30 cursor-not-allowed ' + (isDark ? 'text-slate-400' : 'text-slate-500')
+                : isDark ? 'text-slate-300 hover:bg-slate-800' : 'text-slate-600 hover:bg-slate-100'">
               Back
             </button>
             <button @click="cancelAssessment"
-              class="px-4 py-2 rounded-xl text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+              class="px-4 py-2 rounded-lg text-sm transition-colors"
+              :class="isDark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700'">
               Cancel
             </button>
           </div>
         </div>
 
         <!-- Results Card -->
-        <div v-if="latestResult" class="rounded-2xl border p-6 mt-6"
-          :style="{ borderColor: getSeverityColor(latestResult.score, latestResult.type) + '60' }"
-          :class="isDark ? 'bg-slate-800/60' : 'bg-white shadow-sm'">
-          <div class="flex items-start justify-between mb-4">
+        <div v-if="latestResult" class="rounded-xl border p-6"
+          :style="{ borderColor: getSeverityColor(latestResult.score, latestResult.type) + '50' }"
+          :class="isDark ? 'bg-slate-900' : 'bg-white shadow-sm'">
+          <div class="flex items-start justify-between mb-5">
             <div>
-              <h3 class="font-bold text-[var(--text-primary)]">{{ latestResult.type === 'phq9' ? 'PHQ-9' : 'GAD-7' }} Results</h3>
-              <p class="text-xs text-[var(--text-secondary)] mt-0.5">Completed {{ formatDate(latestResult.date) }}</p>
+              <h3 class="font-semibold text-base" :class="isDark ? 'text-white' : 'text-slate-900'">{{ latestResult.type === 'phq9' ? 'PHQ-9' : 'GAD-7' }} Results</h3>
+              <p class="text-xs mt-0.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Completed {{ formatDate(latestResult.date) }}</p>
             </div>
             <div class="text-right">
-              <div class="text-3xl font-bold" :style="{ color: getSeverityColor(latestResult.score, latestResult.type) }">
+              <div class="text-4xl font-bold" :style="{ color: getSeverityColor(latestResult.score, latestResult.type) }">
                 {{ latestResult.score }}
               </div>
               <div class="text-xs" :style="{ color: getSeverityColor(latestResult.score, latestResult.type) }">
@@ -189,126 +204,143 @@
             </div>
           </div>
 
-          <div class="rounded-xl px-4 py-3 mb-4"
-            :style="{ background: getSeverityColor(latestResult.score, latestResult.type) + '15' }">
-            <p class="text-sm font-semibold" :style="{ color: getSeverityColor(latestResult.score, latestResult.type) }">
+          <div class="rounded-xl px-4 py-4 mb-5 border"
+            :style="{ background: getSeverityColor(latestResult.score, latestResult.type) + '12', borderColor: getSeverityColor(latestResult.score, latestResult.type) + '30' }">
+            <p class="text-sm font-semibold mb-1" :style="{ color: getSeverityColor(latestResult.score, latestResult.type) }">
               {{ getSeverityLabel(latestResult.score, latestResult.type) }}
             </p>
-            <p class="text-xs mt-1 text-[var(--text-secondary)]">{{ getSeverityRecommendation(latestResult.score, latestResult.type) }}</p>
+            <p class="text-sm" :class="isDark ? 'text-slate-300' : 'text-slate-600'">{{ getSeverityRecommendation(latestResult.score, latestResult.type) }}</p>
           </div>
 
-          <button @click="latestResult = null" class="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+          <button @click="latestResult = null" class="text-xs transition-colors"
+            :class="isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-700'">
             Dismiss
           </button>
         </div>
       </div>
 
       <!-- ===== MOOD TRACKER TAB ===== -->
-      <div v-if="activeTab === 'mood'">
-        <h2 class="text-xl font-bold text-[var(--text-primary)] mb-1">Daily Mood Tracker</h2>
-        <p class="text-sm text-[var(--text-secondary)] mb-6">Track how you feel each day to spot patterns over time.</p>
+      <div v-if="activeTab === 'mood'" class="space-y-5">
+        <div>
+          <h2 class="text-lg font-semibold mb-1" :class="isDark ? 'text-white' : 'text-slate-900'">Daily Mood Tracker</h2>
+          <p class="text-sm" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Track how you feel each day to spot patterns over time.</p>
+        </div>
 
         <!-- Today's Mood Entry -->
-        <div class="rounded-2xl border p-6 mb-6"
-          :class="isDark ? 'bg-slate-800/60 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
-          <h3 class="text-sm font-semibold text-[var(--text-primary)] mb-4">How are you feeling today?</h3>
-          <div class="flex items-center justify-center gap-3 sm:gap-5 mb-5">
+        <div class="rounded-xl border p-6"
+          :class="isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
+          <h3 class="text-sm font-semibold mb-5" :class="isDark ? 'text-white' : 'text-slate-900'">How are you feeling today?</h3>
+
+          <!-- Mood Options — larger with labels -->
+          <div class="flex items-center justify-center gap-4 sm:gap-6 mb-6">
             <button v-for="mood in moodOptions" :key="mood.value"
               @click="selectedMood = mood.value"
-              class="flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all"
+              class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200"
               :class="selectedMood === mood.value
-                ? 'scale-110 shadow-lg ' + (isDark ? 'bg-slate-700' : 'bg-slate-100')
-                : 'hover:scale-105 ' + (isDark ? 'hover:bg-slate-800' : 'hover:bg-slate-50')">
-              <span class="text-3xl">{{ mood.emoji }}</span>
-              <span class="text-[10px] font-medium" :class="selectedMood === mood.value ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'">
+                ? isDark ? 'border-violet-500 bg-violet-900/20 scale-110 shadow-md' : 'border-violet-500 bg-violet-50 scale-110 shadow-md'
+                : isDark ? 'border-slate-700 hover:border-slate-600 hover:scale-105' : 'border-slate-200 hover:border-slate-300 hover:scale-105'">
+              <span class="text-4xl leading-none">{{ mood.emoji }}</span>
+              <span class="text-xs font-semibold"
+                :class="selectedMood === mood.value
+                  ? isDark ? 'text-violet-300' : 'text-violet-700'
+                  : isDark ? 'text-slate-400' : 'text-slate-500'">
                 {{ mood.label }}
               </span>
             </button>
           </div>
 
-          <div class="mb-4">
-            <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">What's on your mind? (optional)</label>
+          <div class="mb-5">
+            <label class="block text-xs font-medium mb-2" :class="isDark ? 'text-slate-400' : 'text-slate-600'">What's on your mind? (optional)</label>
             <textarea v-model="journalEntry" rows="3" placeholder="Write anything you'd like to remember about today..."
               class="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors resize-none"
               :class="isDark
-                ? 'bg-slate-900/60 border-slate-600 text-white placeholder-slate-500 focus:border-indigo-500'
-                : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-indigo-500'"></textarea>
+                ? 'bg-slate-800 border-slate-600 text-white placeholder-slate-500 focus:border-violet-500'
+                : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-violet-500'"></textarea>
           </div>
 
           <button @click="saveMoodEntry" :disabled="!selectedMood"
             class="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all"
             :class="selectedMood
-              ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:shadow-lg hover:shadow-indigo-500/25'
+              ? 'bg-violet-600 text-white hover:bg-violet-700 shadow-sm'
               : 'opacity-40 cursor-not-allowed ' + (isDark ? 'bg-slate-700 text-slate-500' : 'bg-slate-200 text-slate-400')">
             Log Today's Mood
           </button>
 
-          <div v-if="moodSaved" class="mt-3 text-xs font-medium" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'">
-            Mood logged successfully!
-          </div>
+          <Transition name="pop">
+            <div v-if="moodSaved" class="mt-3 text-sm font-medium text-emerald-500">
+              Mood logged successfully!
+            </div>
+          </Transition>
         </div>
 
         <!-- 30-Day Mood Calendar -->
-        <div class="rounded-2xl border p-5 mb-6"
-          :class="isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
-          <h3 class="text-sm font-semibold text-[var(--text-primary)] mb-4">30-Day Mood Calendar</h3>
+        <div class="rounded-xl border p-5"
+          :class="isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
+          <h3 class="text-sm font-semibold mb-4" :class="isDark ? 'text-white' : 'text-slate-900'">30-Day Mood Calendar</h3>
           <div class="grid grid-cols-7 gap-1.5">
-            <div v-for="(day, di) in ['S','M','T','W','T','F','S']" :key="'h'+di" class="text-center text-[10px] font-medium text-[var(--text-secondary)] pb-1">{{ day }}</div>
+            <div v-for="(day, di) in ['S','M','T','W','T','F','S']" :key="'h'+di"
+              class="text-center text-[10px] font-semibold pb-1" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ day }}</div>
             <div v-for="(cell, idx) in calendarCells" :key="idx"
               class="aspect-square rounded-lg flex items-center justify-center text-xs relative group cursor-default"
               :class="cell.empty ? 'opacity-0' : ''"
-              :style="cell.mood ? { background: getMoodColor(cell.mood) + '30' } : {}">
-              <span v-if="!cell.empty" class="text-[10px]" :class="cell.isToday ? 'font-bold text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'">
+              :style="cell.mood ? { background: getMoodColor(cell.mood) + '25' } : {}">
+              <span v-if="!cell.empty" class="text-[10px]"
+                :class="cell.isToday ? 'font-bold ' + (isDark ? 'text-white' : 'text-slate-900') : isDark ? 'text-slate-400' : 'text-slate-500'">
                 {{ cell.day }}
               </span>
               <span v-if="cell.mood" class="absolute -top-1 -right-1 text-xs">{{ getMoodEmoji(cell.mood) }}</span>
-              <!-- Tooltip -->
               <div v-if="cell.journal" class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 rounded-lg text-xs max-w-48 hidden group-hover:block z-30 whitespace-normal"
                 :class="isDark ? 'bg-slate-700 text-slate-200 shadow-lg' : 'bg-white text-slate-700 shadow-lg border border-slate-200'">
                 {{ cell.journal }}
               </div>
             </div>
           </div>
+
+          <!-- Empty state -->
+          <div v-if="moodEntries.length === 0" class="text-center py-8 mt-2">
+            <div class="text-3xl mb-2">💜</div>
+            <p class="text-sm" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Start tracking your mood to see your calendar fill in</p>
+          </div>
         </div>
 
         <!-- Weekly Trend -->
-        <div class="rounded-2xl border p-5"
-          :class="isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
-          <h3 class="text-sm font-semibold text-[var(--text-primary)] mb-4">Weekly Mood Trend</h3>
+        <div class="rounded-xl border p-5"
+          :class="isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
+          <h3 class="text-sm font-semibold mb-4" :class="isDark ? 'text-white' : 'text-slate-900'">Weekly Mood Trend</h3>
           <div class="flex items-end gap-2 h-28">
             <div v-for="(bar, idx) in weeklyTrend" :key="idx" class="flex-1 flex flex-col items-center gap-1">
               <div class="w-full rounded-t-lg transition-all duration-500"
                 :style="{ height: (bar.avg / 5 * 100) + '%', background: getMoodColor(bar.avg) }"
                 :class="!bar.avg ? 'opacity-20' : ''"></div>
-              <span class="text-[9px] text-[var(--text-secondary)]">{{ bar.label }}</span>
+              <span class="text-[9px]" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ bar.label }}</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- ===== WELLNESS TAB ===== -->
-      <div v-if="activeTab === 'wellness'">
-        <h2 class="text-xl font-bold text-[var(--text-primary)] mb-1">AI Wellness Recommendations</h2>
-        <p class="text-sm text-[var(--text-secondary)] mb-6">Personalized suggestions based on your recent screenings.</p>
+      <div v-if="activeTab === 'wellness'" class="space-y-5">
+        <div>
+          <h2 class="text-lg font-semibold mb-1" :class="isDark ? 'text-white' : 'text-slate-900'">AI Wellness Recommendations</h2>
+          <p class="text-sm" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Personalized suggestions based on your recent screenings.</p>
+        </div>
 
         <!-- Breathing Exercise -->
-        <div class="rounded-2xl border p-6 mb-6"
-          :class="isDark ? 'bg-slate-800/60 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
-          <h3 class="text-sm font-semibold text-[var(--text-primary)] mb-2">Breathing Exercise</h3>
-          <p class="text-xs text-[var(--text-secondary)] mb-5">4-7-8 technique: breathe in for 4s, hold for 7s, exhale for 8s.</p>
+        <div class="rounded-xl border p-6"
+          :class="isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
+          <h3 class="text-sm font-semibold mb-1" :class="isDark ? 'text-white' : 'text-slate-900'">Breathing Exercise</h3>
+          <p class="text-xs mb-6" :class="isDark ? 'text-slate-400' : 'text-slate-500'">4-7-8 technique: breathe in for 4s, hold for 7s, exhale for 8s.</p>
 
           <div class="flex flex-col items-center">
-            <!-- Breathing circle -->
-            <div class="relative w-40 h-40 mb-4">
+            <div class="relative w-40 h-40 mb-5">
               <div class="absolute inset-0 rounded-full border-2 transition-all duration-1000"
                 :class="breathPhase === 'inhale' ? 'scale-100' : breathPhase === 'hold' ? 'scale-100' : breathPhase === 'exhale' ? 'scale-75' : 'scale-90'"
-                :style="{ borderColor: breathPhaseColor }">
-              </div>
+                :style="{ borderColor: breathPhaseColor }"></div>
               <div class="absolute inset-4 rounded-full transition-all duration-1000 flex items-center justify-center"
                 :class="breathPhase === 'inhale' ? 'scale-100' : breathPhase === 'hold' ? 'scale-100' : breathPhase === 'exhale' ? 'scale-75' : 'scale-90'"
                 :style="{ background: breathPhaseColor + '20' }">
                 <div class="text-center">
-                  <p class="text-lg font-bold text-[var(--text-primary)]">{{ breathTimer }}s</p>
+                  <p class="text-lg font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">{{ breathTimer }}s</p>
                   <p class="text-xs font-medium" :style="{ color: breathPhaseColor }">
                     {{ breathPhase === 'inhale' ? 'Breathe In' : breathPhase === 'hold' ? 'Hold' : breathPhase === 'exhale' ? 'Breathe Out' : 'Ready' }}
                   </p>
@@ -318,7 +350,7 @@
 
             <div class="flex gap-3">
               <button @click="startBreathing" v-if="!breathingActive"
-                class="px-5 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:shadow-lg transition-all">
+                class="px-5 py-2 rounded-xl text-sm font-medium bg-violet-600 text-white hover:bg-violet-700 shadow-sm transition-all">
                 Start Exercise
               </button>
               <button @click="stopBreathing" v-else
@@ -327,22 +359,22 @@
                 Stop
               </button>
             </div>
-            <p class="text-xs text-[var(--text-secondary)] mt-2">Cycle {{ breathCycles }} / 4</p>
+            <p class="text-xs mt-2" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Cycle {{ breathCycles }} / 4</p>
           </div>
         </div>
 
         <!-- Personalized Recommendations -->
-        <div class="grid sm:grid-cols-2 gap-4 mb-6">
+        <div class="grid sm:grid-cols-2 gap-4">
           <div v-for="rec in wellnessRecommendations" :key="rec.title"
-            class="rounded-2xl border p-5 transition-colors"
-            :class="isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
+            class="rounded-xl border p-5"
+            :class="isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xl">{{ rec.icon }}</span>
-              <h4 class="text-sm font-semibold text-[var(--text-primary)]">{{ rec.title }}</h4>
+              <h4 class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">{{ rec.title }}</h4>
             </div>
-            <ul class="space-y-1.5">
-              <li v-for="(tip, i) in rec.tips" :key="i" class="text-xs text-[var(--text-secondary)] flex items-start gap-1.5">
-                <span class="w-1 h-1 rounded-full mt-1.5 flex-shrink-0" :class="isDark ? 'bg-indigo-400' : 'bg-indigo-500'"></span>
+            <ul class="space-y-2">
+              <li v-for="(tip, i) in rec.tips" :key="i" class="text-sm flex items-start gap-2" :class="isDark ? 'text-slate-400' : 'text-slate-600'">
+                <span class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" :class="isDark ? 'bg-violet-400' : 'bg-violet-500'"></span>
                 {{ tip }}
               </li>
             </ul>
@@ -350,123 +382,115 @@
         </div>
 
         <!-- Crisis Resources -->
-        <div class="rounded-2xl border p-5"
-          :class="isDark ? 'bg-indigo-950/30 border-indigo-800/40' : 'bg-indigo-50/80 border-indigo-200'">
-          <h3 class="text-sm font-semibold mb-3" :class="isDark ? 'text-indigo-300' : 'text-indigo-800'">Talk to Someone</h3>
+        <div class="rounded-xl border p-5"
+          :class="isDark ? 'bg-violet-950/30 border-violet-800/40' : 'bg-violet-50 border-violet-200'">
+          <h3 class="text-sm font-semibold mb-4" :class="isDark ? 'text-violet-300' : 'text-violet-900'">Talk to Someone</h3>
 
-          <!-- Prominent Call 988 Button -->
           <a href="tel:988"
-            class="flex items-center justify-center gap-2 w-full mb-4 px-4 py-3 rounded-xl text-white font-bold text-base bg-red-600 hover:bg-red-500 transition-colors shadow-lg shadow-red-600/30"
+            class="flex items-center justify-center gap-2 w-full mb-4 px-4 py-3.5 rounded-xl text-white font-bold bg-red-600 hover:bg-red-700 transition-colors shadow-sm"
             aria-label="Call 988 Suicide and Crisis Lifeline">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-            Call 988 Now
+            Call 988 Now — Free, Confidential, 24/7
           </a>
 
-          <div class="space-y-2">
-            <div class="flex items-center gap-3 text-sm">
-              <span class="font-medium" :class="isDark ? 'text-indigo-200' : 'text-indigo-900'">988 Suicide &amp; Crisis Lifeline:</span>
-              <a href="tel:988" class="font-bold underline" :class="isDark ? 'text-indigo-300' : 'text-indigo-700'">Call or text 988</a>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between text-sm">
+              <span :class="isDark ? 'text-violet-200' : 'text-violet-900'">988 Suicide &amp; Crisis Lifeline</span>
+              <a href="tel:988" class="font-semibold underline underline-offset-2" :class="isDark ? 'text-violet-300' : 'text-violet-700'">Call or text 988</a>
             </div>
-            <div class="flex items-center gap-3 text-sm">
-              <span class="font-medium" :class="isDark ? 'text-indigo-200' : 'text-indigo-900'">Crisis Text Line:</span>
-              <span class="font-bold" :class="isDark ? 'text-indigo-300' : 'text-indigo-700'">Text HOME to 741741</span>
+            <div class="flex items-center justify-between text-sm">
+              <span :class="isDark ? 'text-violet-200' : 'text-violet-900'">Crisis Text Line</span>
+              <span class="font-semibold" :class="isDark ? 'text-violet-300' : 'text-violet-700'">Text HOME to 741741</span>
             </div>
-            <div class="flex items-center gap-3 text-sm">
-              <span class="font-medium" :class="isDark ? 'text-indigo-200' : 'text-indigo-900'">SAMHSA Helpline:</span>
-              <a href="tel:1-800-662-4357" class="font-bold underline" :class="isDark ? 'text-indigo-300' : 'text-indigo-700'">1-800-662-4357</a>
+            <div class="flex items-center justify-between text-sm">
+              <span :class="isDark ? 'text-violet-200' : 'text-violet-900'">SAMHSA Helpline</span>
+              <a href="tel:1-800-662-4357" class="font-semibold underline underline-offset-2" :class="isDark ? 'text-violet-300' : 'text-violet-700'">1-800-662-4357</a>
             </div>
           </div>
         </div>
       </div>
 
       <!-- ===== PROGRESS TAB ===== -->
-      <div v-if="activeTab === 'progress'">
-        <h2 class="text-xl font-bold text-[var(--text-primary)] mb-1">Progress Over Time</h2>
-        <p class="text-sm text-[var(--text-secondary)] mb-6">Track your mental health journey.</p>
+      <div v-if="activeTab === 'progress'" class="space-y-5">
+        <div>
+          <h2 class="text-lg font-semibold mb-1" :class="isDark ? 'text-white' : 'text-slate-900'">Progress Over Time</h2>
+          <p class="text-sm" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Track your mental health journey.</p>
+        </div>
 
         <!-- Milestones -->
-        <div v-if="milestones.length > 0" class="flex flex-wrap gap-2 mb-6">
+        <div v-if="milestones.length > 0" class="flex flex-wrap gap-2">
           <div v-for="m in milestones" :key="m.text"
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium"
-            :class="isDark ? 'bg-purple-500/15 text-purple-300' : 'bg-purple-50 text-purple-700'">
+            :class="isDark ? 'bg-violet-900/20 text-violet-300' : 'bg-violet-50 text-violet-700'">
             <span>{{ m.icon }}</span> {{ m.text }}
           </div>
         </div>
 
         <!-- Score History Chart -->
-        <div class="rounded-2xl border p-5 mb-6"
-          :class="isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
-          <h3 class="text-sm font-semibold text-[var(--text-primary)] mb-4">Score History</h3>
+        <div class="rounded-xl border p-5"
+          :class="isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
+          <h3 class="text-sm font-semibold mb-4" :class="isDark ? 'text-white' : 'text-slate-900'">Score History</h3>
 
           <div v-if="scoreHistory.length < 2" class="py-8 text-center">
-            <p class="text-sm text-[var(--text-secondary)]">Complete at least 2 assessments to see your trend chart.</p>
+            <p class="text-sm" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Complete at least 2 assessments to see your trend chart.</p>
           </div>
 
           <div v-else class="space-y-6">
-            <!-- PHQ-9 Chart -->
             <div v-if="phq9History.length > 0">
               <div class="flex items-center gap-2 mb-2">
-                <div class="w-3 h-3 rounded-full bg-indigo-500"></div>
-                <span class="text-xs font-medium text-[var(--text-secondary)]">PHQ-9 Depression</span>
+                <div class="w-3 h-3 rounded-full bg-violet-500"></div>
+                <span class="text-xs font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">PHQ-9 Depression</span>
               </div>
               <div class="flex items-end gap-1 h-24">
-                <div v-for="(pt, idx) in phq9History" :key="'p'+idx"
-                  class="flex-1 flex flex-col items-center gap-1 group relative">
-                  <div class="w-full rounded-t-md bg-indigo-500/80 transition-all"
-                    :style="{ height: Math.max(4, pt.score / 27 * 100) + '%' }"></div>
-                  <span class="text-[8px] text-[var(--text-secondary)]">{{ formatShortDate(pt.date) }}</span>
-                  <div class="absolute bottom-full mb-1 px-2 py-1 rounded text-[10px] font-medium hidden group-hover:block z-10"
-                    :class="isDark ? 'bg-slate-700 text-white' : 'bg-slate-800 text-white'">
+                <div v-for="(pt, idx) in phq9History" :key="'p'+idx" class="flex-1 flex flex-col items-center gap-1 group relative">
+                  <div class="w-full rounded-t-md bg-violet-500/80 transition-all" :style="{ height: Math.max(4, pt.score / 27 * 100) + '%' }"></div>
+                  <span class="text-[8px]" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ formatShortDate(pt.date) }}</span>
+                  <div class="absolute bottom-full mb-1 px-2 py-1 rounded text-[10px] font-medium hidden group-hover:block z-10 bg-slate-800 text-white">
                     {{ pt.score }} - {{ getSeverityLabel(pt.score, 'phq9') }}
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- GAD-7 Chart -->
             <div v-if="gad7History.length > 0">
               <div class="flex items-center gap-2 mb-2">
                 <div class="w-3 h-3 rounded-full bg-teal-500"></div>
-                <span class="text-xs font-medium text-[var(--text-secondary)]">GAD-7 Anxiety</span>
+                <span class="text-xs font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">GAD-7 Anxiety</span>
               </div>
               <div class="flex items-end gap-1 h-24">
-                <div v-for="(pt, idx) in gad7History" :key="'g'+idx"
-                  class="flex-1 flex flex-col items-center gap-1 group relative">
-                  <div class="w-full rounded-t-md bg-teal-500/80 transition-all"
-                    :style="{ height: Math.max(4, pt.score / 21 * 100) + '%' }"></div>
-                  <span class="text-[8px] text-[var(--text-secondary)]">{{ formatShortDate(pt.date) }}</span>
-                  <div class="absolute bottom-full mb-1 px-2 py-1 rounded text-[10px] font-medium hidden group-hover:block z-10"
-                    :class="isDark ? 'bg-slate-700 text-white' : 'bg-slate-800 text-white'">
+                <div v-for="(pt, idx) in gad7History" :key="'g'+idx" class="flex-1 flex flex-col items-center gap-1 group relative">
+                  <div class="w-full rounded-t-md bg-teal-500/80 transition-all" :style="{ height: Math.max(4, pt.score / 21 * 100) + '%' }"></div>
+                  <span class="text-[8px]" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ formatShortDate(pt.date) }}</span>
+                  <div class="absolute bottom-full mb-1 px-2 py-1 rounded text-[10px] font-medium hidden group-hover:block z-10 bg-slate-800 text-white">
                     {{ pt.score }} - {{ getSeverityLabel(pt.score, 'gad7') }}
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Improvement callout -->
-            <div v-if="improvementText" class="rounded-xl px-4 py-3"
-              :class="isDark ? 'bg-emerald-900/20 border border-emerald-800/40' : 'bg-emerald-50 border border-emerald-200'">
+            <div v-if="improvementText" class="rounded-xl px-4 py-3 border"
+              :class="isDark ? 'bg-emerald-900/20 border-emerald-800/40' : 'bg-emerald-50 border-emerald-200'">
               <p class="text-sm font-medium" :class="isDark ? 'text-emerald-400' : 'text-emerald-700'">{{ improvementText }}</p>
             </div>
           </div>
         </div>
 
-        <!-- Check-in Streak -->
-        <div class="rounded-2xl border p-5"
-          :class="isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
-          <h3 class="text-sm font-semibold text-[var(--text-primary)] mb-3">Check-in Activity</h3>
+        <!-- Check-in Stats -->
+        <div class="rounded-xl border p-5"
+          :class="isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200 shadow-sm'">
+          <h3 class="text-sm font-semibold mb-4" :class="isDark ? 'text-white' : 'text-slate-900'">Check-in Activity</h3>
           <div class="grid grid-cols-3 gap-4 text-center">
             <div>
-              <div class="text-2xl font-bold text-[var(--text-primary)]">{{ scoreHistory.length }}</div>
-              <div class="text-xs text-[var(--text-secondary)]">Total Screenings</div>
+              <div class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">{{ scoreHistory.length }}</div>
+              <div class="text-xs mt-0.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Total Screenings</div>
             </div>
             <div>
-              <div class="text-2xl font-bold text-[var(--text-primary)]">{{ moodEntries.length }}</div>
-              <div class="text-xs text-[var(--text-secondary)]">Mood Entries</div>
+              <div class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">{{ moodEntries.length }}</div>
+              <div class="text-xs mt-0.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Mood Entries</div>
             </div>
             <div>
-              <div class="text-2xl font-bold" :class="isDark ? 'text-purple-400' : 'text-purple-600'">{{ currentStreak }}</div>
-              <div class="text-xs text-[var(--text-secondary)]">Day Streak</div>
+              <div class="text-2xl font-bold" :class="isDark ? 'text-violet-400' : 'text-violet-600'">{{ currentStreak }}</div>
+              <div class="text-xs mt-0.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Day Streak</div>
             </div>
           </div>
         </div>
@@ -913,3 +937,10 @@ function formatShortDate(iso) {
   try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) } catch { return '' }
 }
 </script>
+
+<style scoped>
+.pop-enter-active { transition: all .3s cubic-bezier(.34,1.56,.64,1); }
+.pop-leave-active { transition: all .15s ease; }
+.pop-enter-from { opacity: 0; transform: scale(.7); }
+.pop-leave-to { opacity: 0; }
+</style>

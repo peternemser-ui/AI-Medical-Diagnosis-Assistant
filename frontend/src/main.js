@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import './index.css'
-import './assets/designSystem.css'
+// designSystem.css merged into index.css
 import App from './App.vue'
 import router from './router.js'
 import { initErrorTracking, captureError } from '@/services/errorTracking'

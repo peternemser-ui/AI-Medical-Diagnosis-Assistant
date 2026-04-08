@@ -1,122 +1,127 @@
 <template>
   <div class="min-h-screen transition-colors duration-300 surface-page">
-    <!-- Ambient background -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[120px]"
-        :class="isDark ? 'bg-violet-600/8' : 'bg-violet-400/12'"></div>
-      <div class="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-[120px]"
-        :class="isDark ? 'bg-indigo-600/6' : 'bg-indigo-400/10'"></div>
-      <div class="absolute top-2/3 left-1/2 w-64 h-64 rounded-full blur-[100px]"
-        :class="isDark ? 'bg-blue-600/4' : 'bg-blue-400/8'"></div>
-    </div>
-
-    <!-- Nav bar -->
     <AppNav currentPage="journal" />
 
-    <!-- Main content -->
-    <div class="relative z-10 max-w-4xl mx-auto px-4 py-6 space-y-6">
+    <div class="max-w-4xl mx-auto px-4 py-6 space-y-6">
+
+      <!-- Page Header -->
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Health Journal</h1>
+          <p class="text-sm mt-0.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Log your daily symptoms to track patterns and share with your doctor</p>
+        </div>
+      </div>
 
       <!-- ======= SECTION 1: Daily Check-in ======= -->
-      <section class="rounded-2xl border overflow-hidden backdrop-blur-xl"
-        :class="isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white/80 border-slate-200'">
+      <section class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden"
+        :class="isDark ? 'bg-slate-900 border-slate-700' : ''">
         <div class="px-6 py-4 border-b flex items-center gap-3"
-          :class="isDark ? 'border-slate-800 bg-violet-500/5' : 'border-slate-200 bg-violet-50/50'">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          :class="isDark ? 'border-slate-700 bg-indigo-900/10' : 'border-slate-200 bg-indigo-50/60'">
+          <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
           </div>
           <div>
-            <h2 class="text-lg font-bold text-[var(--text-primary)]">How are you feeling today?</h2>
-            <p class="text-xs text-[var(--text-secondary)]">Log your symptoms and mood for daily tracking</p>
+            <h2 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">How are you feeling today?</h2>
+            <p class="text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Log your symptoms and mood for daily tracking</p>
           </div>
         </div>
-        <div class="p-6 space-y-5">
-          <!-- Mood selector -->
+
+        <div class="p-6 space-y-6">
+
+          <!-- Mood Selector -->
           <div>
-            <label class="text-sm font-semibold text-[var(--text-primary)] mb-3 block">Mood</label>
+            <label class="text-sm font-semibold block mb-4" :class="isDark ? 'text-white' : 'text-slate-900'">Mood</label>
             <div class="flex gap-3 justify-center">
               <button v-for="m in moods" :key="m.value" @click="checkin.mood = m.value"
-                class="flex flex-col items-center gap-1 p-3 rounded-xl border transition-all duration-200"
+                class="flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200"
                 :class="checkin.mood === m.value
-                  ? 'border-violet-500 shadow-lg shadow-violet-500/20 scale-110 ' + (isDark ? 'bg-violet-500/15' : 'bg-violet-50')
-                  : isDark ? 'border-slate-700 hover:border-slate-600 hover:bg-slate-800/50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'">
-                <span class="text-3xl">{{ m.emoji }}</span>
-                <span class="text-[10px] font-medium text-[var(--text-secondary)]">{{ m.label }}</span>
+                  ? isDark ? 'border-indigo-500 bg-indigo-900/20 scale-110 shadow-md' : 'border-indigo-500 bg-indigo-50 scale-110 shadow-md'
+                  : isDark ? 'border-slate-700 hover:border-slate-600 hover:scale-105' : 'border-slate-200 hover:border-slate-300 hover:scale-105'">
+                <span class="text-3xl leading-none">{{ m.emoji }}</span>
+                <span class="text-[10px] font-medium"
+                  :class="checkin.mood === m.value
+                    ? isDark ? 'text-indigo-300' : 'text-indigo-700'
+                    : isDark ? 'text-slate-400' : 'text-slate-500'">{{ m.label }}</span>
               </button>
             </div>
           </div>
 
-          <!-- Symptom tags -->
+          <!-- Symptom Tags -->
           <div>
-            <label class="text-sm font-semibold text-[var(--text-primary)] mb-2 block">Symptoms</label>
+            <label class="text-sm font-semibold block mb-3" :class="isDark ? 'text-white' : 'text-slate-900'">Symptoms</label>
             <div class="flex flex-wrap gap-2">
               <button v-for="s in symptomTags" :key="s.value" @click="toggleSymptom(s.value)"
                 class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200"
                 :class="checkin.symptoms.includes(s.value)
-                  ? isDark ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300' : 'bg-indigo-50 border-indigo-300 text-indigo-700'
-                  : isDark ? 'border-slate-700 text-slate-400 hover:border-slate-600' : 'border-slate-300 text-slate-500 hover:border-slate-400'">
+                  ? isDark ? 'bg-indigo-900/20 border-indigo-500 text-indigo-300' : 'bg-indigo-50 border-indigo-400 text-indigo-700'
+                  : isDark ? 'border-slate-700 text-slate-400 hover:border-slate-600' : 'border-slate-200 text-slate-500 hover:border-slate-400'">
                 {{ s.emoji }} {{ s.label }}
               </button>
             </div>
           </div>
 
-          <!-- Severity slider -->
+          <!-- Severity Slider -->
           <div>
-            <div class="flex items-center justify-between mb-2">
-              <label class="text-sm font-semibold text-[var(--text-primary)]">Severity</label>
+            <div class="flex items-center justify-between mb-3">
+              <label class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">Overall Severity</label>
               <span class="text-sm font-bold" :class="severityColor">{{ checkin.severity }}/10</span>
             </div>
             <input type="range" min="1" max="10" v-model.number="checkin.severity"
               class="w-full h-2 rounded-full appearance-none cursor-pointer"
-              :class="isDark ? 'bg-slate-700' : 'bg-slate-200'"
               :style="{ background: severityGradient }" />
-            <div class="flex justify-between mt-1">
-              <span class="text-[10px] text-[var(--text-secondary)]">Mild</span>
-              <span class="text-[10px] text-[var(--text-secondary)]">Severe</span>
+            <div class="flex justify-between mt-1.5">
+              <span class="text-[10px]" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Mild</span>
+              <span class="text-[10px]" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Severe</span>
             </div>
           </div>
 
-          <!-- Notes -->
+          <!-- Notes Textarea -->
           <div>
-            <label class="text-sm font-semibold text-[var(--text-primary)] mb-2 block">Notes</label>
+            <label class="text-sm font-semibold block mb-2" :class="isDark ? 'text-white' : 'text-slate-900'">Notes</label>
             <textarea v-model="checkin.notes" rows="3" placeholder="Any additional details about how you're feeling..."
               class="w-full px-4 py-3 rounded-xl border text-sm transition-colors resize-none"
-              :class="isDark ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-500 focus:border-violet-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:border-violet-500'"
-              style="outline: none"></textarea>
+              :class="isDark ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-500 focus:border-indigo-500 outline-none' : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-indigo-500 outline-none'">
+            </textarea>
           </div>
 
-          <!-- Log button -->
+          <!-- Save Button -->
           <button @click="logEntry" :disabled="!checkin.mood"
-            class="w-full py-3 rounded-xl text-sm font-semibold transition-all duration-200 bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/20 hover:shadow-xl disabled:opacity-40 disabled:cursor-not-allowed">
-            Log Entry
+            class="w-full py-3 rounded-xl text-sm font-semibold transition-all duration-200 bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm hover:shadow-md disabled:opacity-40 disabled:cursor-not-allowed">
+            Save Entry
           </button>
         </div>
       </section>
 
       <!-- ======= SECTION 2: AI Pattern Detection ======= -->
       <section v-if="aiInsights.length > 0"
-        class="rounded-2xl border overflow-hidden backdrop-blur-xl"
-        :class="isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white/80 border-slate-200'">
+        class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden"
+        :class="isDark ? 'bg-slate-900 border-slate-700' : ''">
         <div class="px-6 py-4 border-b flex items-center gap-3"
-          :class="isDark ? 'border-slate-800 bg-amber-500/5' : 'border-slate-200 bg-amber-50/50'">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          :class="isDark ? 'border-slate-700 bg-amber-900/10' : 'border-slate-200 bg-amber-50/60'">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
           </div>
           <div>
-            <h2 class="text-lg font-bold text-[var(--text-primary)]">AI Insights</h2>
-            <p class="text-xs text-[var(--text-secondary)]">Patterns detected from your journal entries</p>
+            <h2 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">AI Insights</h2>
+            <p class="text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Patterns detected from your journal entries</p>
           </div>
         </div>
         <div class="p-6 space-y-3">
           <div v-for="(insight, idx) in aiInsights" :key="idx"
             class="flex gap-3 p-4 rounded-xl border"
-            :class="isDark ? 'bg-slate-800/30 border-slate-700' : 'bg-amber-50/50 border-amber-100'">
-            <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-              :class="isDark ? 'bg-amber-500/10' : 'bg-amber-100'">
+            :class="isDark ? 'bg-slate-800/30 border-slate-700' : 'bg-amber-50/60 border-amber-100'">
+            <div class="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-xl"
+              :class="isDark ? 'bg-amber-900/20' : 'bg-amber-100'">
               {{ insight.emoji }}
             </div>
             <div>
-              <h4 class="text-sm font-semibold text-[var(--text-primary)]">{{ insight.title }}</h4>
-              <p class="text-xs mt-0.5 text-[var(--text-secondary)]">{{ insight.description }}</p>
+              <h4 class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">{{ insight.title }}</h4>
+              <p class="text-xs mt-0.5" :class="isDark ? 'text-slate-400' : 'text-slate-600'">{{ insight.description }}</p>
             </div>
           </div>
         </div>
@@ -124,56 +129,54 @@
 
       <!-- ======= SECTION 3: Trend Charts ======= -->
       <section v-if="entries.length >= 2"
-        class="rounded-2xl border overflow-hidden backdrop-blur-xl"
-        :class="isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white/80 border-slate-200'">
+        class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden"
+        :class="isDark ? 'bg-slate-900 border-slate-700' : ''">
         <div class="px-6 py-4 border-b flex items-center gap-3"
-          :class="isDark ? 'border-slate-800 bg-cyan-500/5' : 'border-slate-200 bg-cyan-50/50'">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-white">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+          :class="isDark ? 'border-slate-700 bg-cyan-900/10' : 'border-slate-200 bg-cyan-50/60'">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
           </div>
           <div>
-            <h2 class="text-lg font-bold text-[var(--text-primary)]">Trends</h2>
-            <p class="text-xs text-[var(--text-secondary)]">Severity and mood trends over time</p>
+            <h2 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">Trends</h2>
+            <p class="text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Severity and mood trends over time</p>
           </div>
         </div>
         <div class="p-6 space-y-6">
-          <!-- Severity trend chart (CSS-based) -->
+          <!-- Severity trend -->
           <div>
-            <h3 class="text-sm font-semibold text-[var(--text-primary)] mb-3">Severity Over Time</h3>
+            <h3 class="text-sm font-semibold mb-3" :class="isDark ? 'text-white' : 'text-slate-900'">Severity Over Time</h3>
             <div class="flex items-end gap-1 h-32">
               <div v-for="(entry, idx) in recentEntries" :key="idx" class="flex-1 flex flex-col items-center gap-1">
                 <div class="w-full rounded-t-md transition-all duration-300 min-h-[4px]"
                   :class="entry.severity <= 3 ? 'bg-emerald-500' : entry.severity <= 6 ? 'bg-amber-500' : 'bg-red-500'"
                   :style="{ height: (entry.severity / 10 * 100) + '%' }"></div>
-                <span class="text-[8px] text-[var(--text-secondary)] truncate w-full text-center">{{ formatShortDate(entry.date) }}</span>
+                <span class="text-[8px] truncate w-full text-center" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ formatShortDate(entry.date) }}</span>
               </div>
             </div>
           </div>
-
           <!-- Mood trend -->
           <div>
-            <h3 class="text-sm font-semibold text-[var(--text-primary)] mb-3">Mood Trend</h3>
+            <h3 class="text-sm font-semibold mb-3" :class="isDark ? 'text-white' : 'text-slate-900'">Mood Trend</h3>
             <div class="flex items-center gap-1">
               <div v-for="(entry, idx) in recentEntries" :key="idx"
                 class="flex-1 flex flex-col items-center gap-1 p-1 rounded-lg"
                 :class="isDark ? 'bg-slate-800/50' : 'bg-slate-50'">
                 <span class="text-lg">{{ getMoodEmoji(entry.mood) }}</span>
-                <span class="text-[8px] text-[var(--text-secondary)]">{{ formatShortDate(entry.date) }}</span>
+                <span class="text-[8px]" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ formatShortDate(entry.date) }}</span>
               </div>
             </div>
           </div>
-
           <!-- Symptom frequency -->
           <div>
-            <h3 class="text-sm font-semibold text-[var(--text-primary)] mb-3">Symptom Frequency</h3>
-            <div class="space-y-2">
+            <h3 class="text-sm font-semibold mb-3" :class="isDark ? 'text-white' : 'text-slate-900'">Symptom Frequency</h3>
+            <div class="space-y-2.5">
               <div v-for="(count, symptom) in symptomFrequency" :key="symptom" class="flex items-center gap-3">
-                <span class="text-xs w-20 text-right text-[var(--text-secondary)] capitalize">{{ symptom }}</span>
-                <div class="flex-1 h-3 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'">
-                  <div class="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-500 transition-all duration-500"
+                <span class="text-xs w-24 text-right capitalize" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ symptom }}</span>
+                <div class="flex-1 h-2.5 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'">
+                  <div class="h-full rounded-full bg-indigo-500 transition-all duration-500"
                     :style="{ width: (count / entries.length * 100) + '%' }"></div>
                 </div>
-                <span class="text-xs font-bold text-[var(--text-primary)] w-6 text-right">{{ count }}</span>
+                <span class="text-xs font-bold w-6 text-right" :class="isDark ? 'text-white' : 'text-slate-900'">{{ count }}</span>
               </div>
             </div>
           </div>
@@ -181,24 +184,23 @@
       </section>
 
       <!-- ======= SECTION 4: Journal Timeline ======= -->
-      <section class="rounded-2xl border overflow-hidden backdrop-blur-xl"
-        :class="isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white/80 border-slate-200'">
+      <section class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden"
+        :class="isDark ? 'bg-slate-900 border-slate-700' : ''">
         <div class="px-6 py-4 border-b flex items-center justify-between"
-          :class="isDark ? 'border-slate-800 bg-indigo-500/5' : 'border-slate-200 bg-indigo-50/50'">
+          :class="isDark ? 'border-slate-700 bg-indigo-900/10' : 'border-slate-200 bg-indigo-50/60'">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div>
-              <h2 class="text-lg font-bold text-[var(--text-primary)]">Journal Timeline</h2>
-              <p class="text-xs text-[var(--text-secondary)]">{{ entries.length }} entries recorded</p>
+              <h2 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">Journal Timeline</h2>
+              <p class="text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ entries.length }} entries recorded</p>
             </div>
           </div>
-          <!-- Filter dropdown -->
+          <!-- Filter -->
           <select v-if="entries.length > 0" v-model="symptomFilter"
-            class="text-xs px-3 py-1.5 rounded-lg border transition-colors"
-            :class="isDark ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-600'"
-            style="outline: none">
+            class="text-xs px-3 py-1.5 rounded-lg border transition-colors outline-none"
+            :class="isDark ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-200 text-slate-600'">
             <option value="">All symptoms</option>
             <option v-for="s in symptomTags" :key="s.value" :value="s.value">{{ s.label }}</option>
           </select>
@@ -207,13 +209,12 @@
         <!-- Timeline entries -->
         <div v-if="filteredEntries.length > 0" class="p-6">
           <div class="relative">
-            <!-- Vertical timeline line -->
-            <div class="absolute left-5 top-0 bottom-0 w-px"
-              :class="isDark ? 'bg-slate-700' : 'bg-slate-200'"></div>
+            <!-- Vertical line -->
+            <div class="absolute left-5 top-0 bottom-0 w-px" :class="isDark ? 'bg-slate-700' : 'bg-slate-200'"></div>
 
-            <div v-for="(entry, idx) in filteredEntries" :key="idx" class="relative pl-12 pb-6 last:pb-0">
-              <!-- Timeline dot -->
-              <div class="absolute left-3.5 top-1 w-3 h-3 rounded-full border-2 z-10"
+            <div v-for="(entry, idx) in filteredEntries" :key="idx" class="relative pl-12 pb-5 last:pb-0">
+              <!-- Severity dot -->
+              <div class="absolute left-3.5 top-2 w-3 h-3 rounded-full border-2 z-10"
                 :class="entry.severity <= 3
                   ? 'bg-emerald-500 border-emerald-300'
                   : entry.severity <= 6
@@ -221,46 +222,47 @@
                     : 'bg-red-500 border-red-300'"></div>
 
               <!-- Entry card -->
-              <div class="rounded-xl border p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
+              <div class="rounded-xl border p-4 cursor-pointer transition-all duration-200 hover:shadow-sm"
                 :class="isDark ? 'bg-slate-800/40 border-slate-700 hover:border-slate-600' : 'bg-white border-slate-200 hover:border-slate-300'"
                 @click="toggleExpand(idx)">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="flex items-center gap-2">
-                    <span class="text-lg">{{ getMoodEmoji(entry.mood) }}</span>
-                    <span class="text-xs font-medium text-[var(--text-secondary)]">{{ formatDate(entry.date) }}</span>
+                <div class="flex items-center justify-between mb-2.5">
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-xl leading-none">{{ getMoodEmoji(entry.mood) }}</span>
+                    <span class="text-xs font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ formatDate(entry.date) }}</span>
                   </div>
                   <div class="flex items-center gap-2">
-                    <span class="text-xs font-bold px-2 py-0.5 rounded-md"
+                    <span class="text-xs font-bold px-2.5 py-0.5 rounded-lg"
                       :class="entry.severity <= 3
-                        ? isDark ? 'bg-emerald-500/15 text-emerald-400' : 'bg-emerald-50 text-emerald-600'
+                        ? isDark ? 'bg-emerald-900/20 text-emerald-400' : 'bg-emerald-50 text-emerald-700'
                         : entry.severity <= 6
-                          ? isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-50 text-amber-600'
-                          : isDark ? 'bg-red-500/15 text-red-400' : 'bg-red-50 text-red-600'">
+                          ? isDark ? 'bg-amber-900/20 text-amber-400' : 'bg-amber-50 text-amber-700'
+                          : isDark ? 'bg-red-900/20 text-red-400' : 'bg-red-50 text-red-700'">
                       {{ entry.severity }}/10
                     </span>
-                    <svg class="w-4 h-4 transition-transform text-[var(--text-secondary)]"
-                      :class="{ 'rotate-180': expandedEntries[idx] }"
+                    <svg class="w-4 h-4 transition-transform" :class="[expandedEntries[idx] ? 'rotate-180' : '', isDark ? 'text-slate-500' : 'text-slate-400']"
                       fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
                   </div>
                 </div>
+
                 <!-- Symptom tags -->
-                <div class="flex flex-wrap gap-1">
+                <div class="flex flex-wrap gap-1.5">
                   <span v-for="s in entry.symptoms" :key="s"
-                    class="px-2 py-0.5 rounded-md text-[10px] font-medium capitalize"
-                    :class="isDark ? 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/20' : 'bg-indigo-50 text-indigo-600 border border-indigo-100'">
+                    class="px-2.5 py-0.5 rounded-md text-[10px] font-medium capitalize border"
+                    :class="isDark ? 'bg-indigo-900/20 text-indigo-300 border-indigo-800/40' : 'bg-indigo-50 text-indigo-600 border-indigo-100'">
                     {{ getSymptomLabel(s) }}
                   </span>
+                  <span v-if="entry.symptoms.length === 0" class="text-[10px]" :class="isDark ? 'text-slate-500' : 'text-slate-400'">No symptoms logged</span>
                 </div>
+
                 <!-- Expanded details -->
                 <Transition enter-active-class="transition-all duration-200 ease-out" enter-from-class="max-h-0 opacity-0" enter-to-class="max-h-40 opacity-100" leave-active-class="transition-all duration-150 ease-in" leave-from-class="max-h-40 opacity-100" leave-to-class="max-h-0 opacity-0">
                   <div v-if="expandedEntries[idx]" class="overflow-hidden mt-3 pt-3 border-t"
                     :class="isDark ? 'border-slate-700' : 'border-slate-200'">
-                    <p v-if="entry.notes" class="text-xs text-[var(--text-secondary)]">{{ entry.notes }}</p>
-                    <p v-else class="text-xs italic text-[var(--text-secondary)]">No additional notes.</p>
-                    <button @click.stop="deleteEntry(idx)"
-                      class="mt-2 text-[10px] text-red-400 hover:text-red-300 transition-colors">Delete entry</button>
+                    <p v-if="entry.notes" class="text-xs" :class="isDark ? 'text-slate-400' : 'text-slate-600'">{{ entry.notes }}</p>
+                    <p v-else class="text-xs italic" :class="isDark ? 'text-slate-500' : 'text-slate-400'">No additional notes.</p>
+                    <button @click.stop="deleteEntry(idx)" class="mt-2 text-[10px] text-red-500 hover:text-red-400 transition-colors">Delete entry</button>
                   </div>
                 </Transition>
               </div>
@@ -270,12 +272,14 @@
 
         <!-- Empty state -->
         <div v-else class="p-12 text-center">
-          <div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center"
-            :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
-            <span class="text-3xl">&#x1F4D3;</span>
+          <div class="w-20 h-20 mx-auto mb-5 rounded-2xl flex items-center justify-center"
+            :class="isDark ? 'bg-slate-800' : 'bg-indigo-50'">
+            <svg class="w-10 h-10" :class="isDark ? 'text-slate-600' : 'text-indigo-300'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
           </div>
-          <h3 class="text-lg font-semibold mb-2 text-[var(--text-primary)]">No Journal Entries</h3>
-          <p class="text-sm text-[var(--text-secondary)] max-w-sm mx-auto">Start logging your daily symptoms above to build a health timeline and unlock AI-powered insights.</p>
+          <h3 class="text-base font-semibold mb-2" :class="isDark ? 'text-white' : 'text-slate-900'">Your health journal is empty</h3>
+          <p class="text-sm max-w-sm mx-auto" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Start logging your daily symptoms above to build a health timeline and unlock AI-powered insights.</p>
         </div>
       </section>
 

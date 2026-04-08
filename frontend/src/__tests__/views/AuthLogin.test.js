@@ -151,8 +151,8 @@ describe('AuthLogin', () => {
       const emailInput = wrapper.find('#email')
       await emailInput.setValue('notanemail')
       await wrapper.vm.$nextTick()
-      // The amber warning text appears when email is set but not valid
-      const hint = wrapper.find('p.text-amber-500')
+      // The error text appears when email is set but not valid (rendered as text-red-400)
+      const hint = wrapper.find('#email-error')
       expect(hint.exists()).toBe(true)
     })
 
@@ -161,7 +161,7 @@ describe('AuthLogin', () => {
       const emailInput = wrapper.find('#email')
       await emailInput.setValue('')
       await wrapper.vm.$nextTick()
-      const hint = wrapper.find('p.text-amber-500')
+      const hint = wrapper.find('#email-error')
       expect(hint.exists()).toBe(false)
     })
 
@@ -170,7 +170,7 @@ describe('AuthLogin', () => {
       const emailInput = wrapper.find('#email')
       await emailInput.setValue('valid@example.com')
       await wrapper.vm.$nextTick()
-      const hint = wrapper.find('p.text-amber-500')
+      const hint = wrapper.find('#email-error')
       expect(hint.exists()).toBe(false)
     })
   })

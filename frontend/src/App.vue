@@ -74,30 +74,12 @@ function reloadPage() {
 </script>
 
 <style>
-/* Global styles */
-body {
-  margin: 0;
-  padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-}
+/*
+  App.vue scoped global layout — minimal.
+  Page transition classes (.page-*) live in index.css @layer utilities.
+*/
 
-* {
-  box-sizing: border-box;
-}
-
-/* Page transitions */
-.page-enter-active {
-  transition: opacity 0.2s ease-out;
-}
-.page-leave-active {
-  transition: opacity 0.15s ease-in;
-}
-.page-enter-from,
-.page-leave-to {
-  opacity: 0;
-}
-
-/* Offline bar transition */
+/* Offline / update banner slide-down transition */
 .offline-bar-enter-active {
   transition: transform 0.3s ease-out, opacity 0.3s ease-out;
 }
@@ -108,5 +90,12 @@ body {
 .offline-bar-leave-to {
   transform: translateY(-100%);
   opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .offline-bar-enter-active,
+  .offline-bar-leave-active {
+    transition-duration: 0ms;
+  }
 }
 </style>

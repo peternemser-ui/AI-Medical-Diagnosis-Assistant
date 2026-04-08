@@ -1,30 +1,46 @@
 <template>
   <div>
+    <!-- ── Header ── -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <div>
-        <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Side Effects Tracker</h1>
-        <p class="text-sm mt-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Report and analyze medication side effects</p>
+        <h1 class="text-2xl font-bold text-[var(--text-primary)]">Side Effects Tracker</h1>
+        <p class="text-sm mt-1 text-[var(--text-secondary)]">Report and analyze medication side effects</p>
       </div>
-      <button @click="showReportForm = !showReportForm" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-rose-600 to-pink-600 text-white hover:from-rose-500 hover:to-pink-500 transition-all shadow-lg shadow-rose-500/25">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        Report Side Effect
+      <button @click="showReportForm = !showReportForm"
+        class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border"
+        :class="showReportForm
+          ? (isDark ? 'bg-rose-500/15 border-rose-500/30 text-rose-400' : 'bg-rose-50 border-rose-300 text-rose-700')
+          : 'bg-indigo-700 hover:bg-indigo-800 text-white border-transparent shadow-lg shadow-indigo-700/20'">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="showReportForm ? 'M6 18L18 6M6 6l12 12' : 'M12 4v16m8-8H4'"/>
+        </svg>
+        {{ showReportForm ? 'Cancel' : 'Report Side Effect' }}
       </button>
     </div>
 
-    <!-- Report Form -->
-    <Transition enter-active-class="transition-all duration-200 ease-out" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition-all duration-150 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2">
-      <div v-if="showReportForm" class="rounded-2xl border p-5 mb-6" :class="isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200'">
-        <h3 class="font-semibold mb-4" :class="isDark ? 'text-white' : 'text-slate-900'">Report a Side Effect</h3>
+    <!-- ── Report Form ── -->
+    <Transition
+      enter-active-class="transition-all duration-200 ease-out"
+      enter-from-class="opacity-0 -translate-y-2"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition-all duration-150 ease-in"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-2">
+      <div v-if="showReportForm" class="rounded-2xl border p-5 mb-6"
+        :class="isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200'">
+        <h3 class="font-semibold mb-4 text-[var(--text-primary)]">Report a Side Effect</h3>
         <div class="space-y-4">
           <div>
             <label class="block text-xs font-medium mb-1.5" :class="isDark ? 'text-slate-400' : 'text-slate-600'">Symptom Description</label>
-            <input v-model="reportForm.symptom" placeholder="e.g., Dizziness, nausea, headache..." class="w-full px-3 py-2.5 rounded-xl border text-sm" :class="isDark ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'" />
+            <input v-model="reportForm.symptom" placeholder="e.g., Dizziness, nausea, headache…"
+              class="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none"
+              :class="isDark ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'" />
           </div>
 
           <div>
             <label class="block text-xs font-medium mb-1.5" :class="isDark ? 'text-slate-400' : 'text-slate-600'">Severity ({{ reportForm.severity }}/10)</label>
             <input v-model.number="reportForm.severity" type="range" min="1" max="10" class="w-full accent-rose-500" />
-            <div class="flex justify-between text-detail mt-1" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+            <div class="flex justify-between text-xs mt-1" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
               <span>Mild</span><span>Moderate</span><span>Severe</span>
             </div>
           </div>
@@ -32,12 +48,18 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-medium mb-1.5" :class="isDark ? 'text-slate-400' : 'text-slate-600'">Date</label>
-              <input v-model="reportForm.date" type="date" class="w-full px-3 py-2.5 rounded-xl border text-sm" :class="isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'" />
+              <input v-model="reportForm.date" type="date"
+                class="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none"
+                :class="isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'" />
             </div>
             <div>
               <label class="block text-xs font-medium mb-1.5" :class="isDark ? 'text-slate-400' : 'text-slate-600'">Related Medication(s)</label>
               <div class="flex flex-wrap gap-2">
-                <label v-for="med in availableMeds" :key="med" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border cursor-pointer text-xs transition-colors" :class="reportForm.medications.includes(med) ? (isDark ? 'bg-violet-500/15 border-violet-500/30 text-violet-300' : 'bg-violet-50 border-violet-200 text-violet-700') : (isDark ? 'border-slate-700 text-slate-400 hover:border-slate-600' : 'border-slate-200 text-slate-600 hover:border-slate-300')">
+                <label v-for="med in availableMeds" :key="med"
+                  class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border cursor-pointer text-xs transition-colors"
+                  :class="reportForm.medications.includes(med)
+                    ? (isDark ? 'bg-purple-500/15 border-purple-500/30 text-purple-300' : 'bg-purple-50 border-purple-200 text-purple-700')
+                    : (isDark ? 'border-slate-700 text-slate-400 hover:border-slate-600' : 'border-slate-200 text-slate-600 hover:border-slate-300')">
                   <input type="checkbox" :value="med" v-model="reportForm.medications" class="hidden" />
                   {{ med }}
                 </label>
@@ -46,55 +68,109 @@
           </div>
 
           <div class="flex gap-3">
-            <button @click="showReportForm = false" class="px-4 py-2 rounded-xl text-sm font-medium border" :class="isDark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-slate-200 text-slate-700 hover:bg-slate-50'">Cancel</button>
-            <button @click="submitReport" :disabled="!reportForm.symptom" class="px-5 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-rose-600 to-pink-600 text-white hover:from-rose-500 hover:to-pink-500 transition-all disabled:opacity-50">Submit Report</button>
+            <button @click="showReportForm = false"
+              class="px-4 py-2 rounded-xl text-sm font-medium border transition-colors"
+              :class="isDark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-slate-200 text-slate-700 hover:bg-slate-50'">
+              Cancel
+            </button>
+            <button @click="submitReport" :disabled="!reportForm.symptom"
+              class="px-5 py-2 rounded-xl text-sm font-semibold bg-indigo-700 hover:bg-indigo-800 text-white transition-all disabled:opacity-50">
+              Submit Report
+            </button>
           </div>
         </div>
       </div>
     </Transition>
 
-    <!-- AI Analysis -->
-    <div v-if="analysis" class="rounded-2xl border p-5 mb-6" :class="isDark ? 'bg-gradient-to-r from-violet-500/5 to-purple-500/5 border-violet-500/20' : 'bg-gradient-to-r from-violet-50 to-purple-50 border-violet-200'">
+    <!-- ── AI Analysis ── -->
+    <div v-if="analysis" class="rounded-2xl border p-5 mb-6"
+      :class="isDark ? 'bg-gradient-to-r from-violet-500/5 to-purple-500/5 border-violet-500/20' : 'bg-gradient-to-r from-violet-50 to-purple-50 border-violet-200'">
       <div class="flex items-center gap-2 mb-3">
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
         </div>
-        <h3 class="font-bold" :class="isDark ? 'text-violet-300' : 'text-violet-700'">AI Analysis</h3>
+        <h3 class="font-bold" :class="isDark ? 'text-violet-300' : 'text-violet-700'">AI Pattern Analysis</h3>
       </div>
       <p class="text-sm leading-relaxed whitespace-pre-line" :class="isDark ? 'text-slate-300' : 'text-slate-700'">{{ analysis }}</p>
     </div>
 
-    <!-- Analyze button -->
+    <!-- ── Analyze button ── -->
     <div v-if="sideEffects.length > 0 && !analysis" class="mb-6">
-      <button @click="runAnalysis" :disabled="analyzing" class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all" :class="isDark ? 'bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 border border-violet-500/20' : 'bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200'">
-        <div v-if="analyzing" class="w-4 h-4 rounded-full border-2 border-t-violet-500 animate-spin" :class="isDark ? 'border-slate-700' : 'border-slate-300'"></div>
-        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-        {{ analyzing ? 'Analyzing...' : 'Analyze with AI' }}
+      <button @click="runAnalysis" :disabled="analyzing"
+        class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all border"
+        :class="isDark
+          ? 'bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 border-violet-500/20'
+          : 'bg-violet-50 text-violet-700 hover:bg-violet-100 border-violet-200'">
+        <div v-if="analyzing" class="w-4 h-4 rounded-full border-2 border-t-violet-500 animate-spin"
+          :class="isDark ? 'border-slate-700' : 'border-slate-300'"></div>
+        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+        </svg>
+        {{ analyzing ? 'Analyzing…' : 'Analyze with AI' }}
       </button>
     </div>
 
-    <!-- Empty State -->
-    <div v-if="sideEffects.length === 0 && !showReportForm" class="text-center py-20">
-      <div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center" :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
-        <svg class="w-10 h-10" :class="isDark ? 'text-slate-600' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+    <!-- ── Empty State ── -->
+    <div v-if="sideEffects.length === 0 && !showReportForm" class="flex flex-col items-center text-center py-20">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
+        :class="isDark ? 'bg-slate-800' : 'bg-rose-50'">
+        <svg class="w-8 h-8" :class="isDark ? 'text-slate-600' : 'text-rose-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        </svg>
       </div>
-      <h3 class="text-lg font-semibold mb-2" :class="isDark ? 'text-white' : 'text-slate-900'">No side effects reported</h3>
-      <p class="text-sm" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Track any side effects you experience to help your doctor optimize your treatment.</p>
+      <h3 class="text-lg font-semibold mb-2 text-[var(--text-primary)]">No side effects reported</h3>
+      <p class="text-sm text-[var(--text-secondary)] max-w-sm">Track any side effects you experience to help your doctor optimize your treatment plan.</p>
     </div>
 
-    <!-- Timeline -->
+    <!-- ── Side Effects Timeline ── -->
     <div v-else class="space-y-3">
-      <div v-for="effect in sideEffects" :key="effect.id" class="rounded-2xl border p-4 flex items-start gap-4" :class="isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200'">
-        <!-- Severity indicator -->
-        <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold" :class="severityColor(effect.severity)">
-          {{ effect.severity }}
+      <!-- Frequency legend -->
+      <div class="flex flex-wrap items-center gap-3 mb-4 text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+        <span class="font-medium" :class="isDark ? 'text-slate-400' : 'text-slate-600'">Severity scale:</span>
+        <div class="flex items-center gap-1.5">
+          <div class="w-5 h-5 rounded text-center leading-5 font-bold text-xs" :class="isDark ? 'bg-emerald-500/15 text-emerald-400' : 'bg-emerald-100 text-emerald-600'">1</div>
+          <span>Mild (1-4)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <div class="w-5 h-5 rounded text-center leading-5 font-bold text-xs" :class="isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-100 text-amber-600'">5</div>
+          <span>Moderate (5-7)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <div class="w-5 h-5 rounded text-center leading-5 font-bold text-xs" :class="isDark ? 'bg-red-500/15 text-red-400' : 'bg-red-100 text-red-600'">8</div>
+          <span>Severe (8-10)</span>
+        </div>
+      </div>
+
+      <div v-for="effect in sideEffects" :key="effect.id"
+        class="rounded-2xl border overflow-hidden flex transition-all hover:shadow-md"
+        :class="isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200'">
+        <!-- Severity color strip -->
+        <div class="w-1.5 flex-shrink-0"
+          :class="effect.severity >= 8 ? 'bg-red-500' : effect.severity >= 5 ? 'bg-amber-500' : 'bg-emerald-500'">
         </div>
 
-        <div class="flex-1 min-w-0">
-          <h4 class="font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">{{ effect.symptom }}</h4>
-          <div class="flex flex-wrap items-center gap-2 mt-1">
-            <span class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ effect.date }}</span>
-            <span v-for="med in effect.medications" :key="med" class="px-2 py-0.5 rounded-full text-detail font-medium" :class="isDark ? 'bg-violet-500/10 text-violet-400' : 'bg-violet-50 text-violet-600'">{{ med }}</span>
+        <div class="flex items-start gap-4 p-4 flex-1">
+          <!-- Severity badge -->
+          <div class="flex-shrink-0 w-11 h-11 rounded-xl flex flex-col items-center justify-center"
+            :class="severityColor(effect.severity)">
+            <span class="text-sm font-bold leading-none">{{ effect.severity }}</span>
+            <span class="text-[9px] font-medium leading-tight mt-0.5 uppercase">
+              {{ effect.severity >= 8 ? 'severe' : effect.severity >= 5 ? 'mod' : 'mild' }}
+            </span>
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <h4 class="font-semibold text-sm text-[var(--text-primary)]">{{ effect.symptom }}</h4>
+            <div class="flex flex-wrap items-center gap-2 mt-1.5">
+              <span class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ effect.date }}</span>
+              <span v-for="med in effect.medications" :key="med"
+                class="px-2 py-0.5 rounded-full text-xs font-medium"
+                :class="isDark ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-50 text-purple-600 border border-purple-200'">
+                {{ med }}
+              </span>
+            </div>
           </div>
         </div>
       </div>

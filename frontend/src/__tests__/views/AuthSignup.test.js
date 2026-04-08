@@ -153,8 +153,8 @@ describe('AuthSignup', () => {
   describe('password strength meter', () => {
     it('strength bar is not shown when password is empty', () => {
       const wrapper = mountSignup()
-      // Strength bar only renders v-if="password"
-      const bar = wrapper.find('.flex.gap-1')
+      // Strength bar only renders v-if="password" — identified by role="progressbar"
+      const bar = wrapper.find('[role="progressbar"]')
       expect(bar.exists()).toBe(false)
     })
 
@@ -162,7 +162,8 @@ describe('AuthSignup', () => {
       const wrapper = mountSignup()
       await wrapper.find('#signup-password').setValue('abc')
       await wrapper.vm.$nextTick()
-      const bar = wrapper.find('.flex.gap-1')
+      // Strength meter now renders as a single continuous progress bar with role="progressbar"
+      const bar = wrapper.find('[role="progressbar"]')
       expect(bar.exists()).toBe(true)
     })
 

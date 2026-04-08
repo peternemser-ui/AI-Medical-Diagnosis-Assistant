@@ -1,11 +1,9 @@
 <template>
   <router-link :to="helpTarget"
-    class="group fixed bottom-6 right-6 w-12 h-12 rounded-full shadow-xl flex items-center justify-center z-40 transition-all hover:scale-110"
-    :class="isDark ? 'bg-blue-600 text-white hover:bg-blue-500' : 'bg-blue-500 text-white hover:bg-blue-600'"
+    class="group fixed bottom-6 right-6 w-12 h-12 rounded-full shadow-lg flex items-center justify-center z-40 transition-all duration-200 hover:scale-110 bg-indigo-700 text-white hover:bg-indigo-800 hover:shadow-indigo-700/30 hover:shadow-xl"
     title="Help & Documentation (press ?)">
     <span
-      class="pointer-events-none absolute right-14 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium shadow-lg opacity-0 transition-opacity group-hover:opacity-100"
-      :class="isDark ? 'bg-slate-800 text-slate-200' : 'bg-slate-900 text-white'"
+      class="pointer-events-none absolute right-14 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium shadow-lg opacity-0 transition-opacity duration-150 group-hover:opacity-100 bg-slate-900 text-white"
     >
       Help &amp; Documentation (press ?)
     </span>

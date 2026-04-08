@@ -3,9 +3,9 @@
     <!-- Ambient background -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
       <div class="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[120px]"
-        :class="isDark ? 'bg-blue-600/5' : 'bg-blue-400/10'"></div>
+        :class="isDark ? 'bg-sky-600/5' : 'bg-sky-400/10'"></div>
       <div class="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-[120px]"
-        :class="isDark ? 'bg-purple-600/5' : 'bg-purple-400/10'"></div>
+        :class="isDark ? 'bg-indigo-600/5' : 'bg-indigo-400/10'"></div>
     </div>
 
     <!-- Nav bar -->
@@ -13,119 +13,178 @@
 
     <!-- Main content -->
     <div class="relative z-10 max-w-5xl mx-auto px-4 py-6">
-      <!-- Header with stats -->
-      <!-- Health Score Summary -->
-      <div v-if="allSessions.length > 0" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <div class="rounded-card p-3 text-center surface-card">
-          <div class="text-heading font-bold text-[var(--text-primary)]">{{ allSessions.length }}</div>
-          <div class="text-detail text-[var(--text-secondary)]">Consultations</div>
-        </div>
-        <div class="rounded-card p-3 text-center surface-card">
-          <div class="text-heading font-bold" :class="avgConfidence >= 70 ? 'text-emerald-500' : avgConfidence >= 40 ? 'text-amber-500' : 'text-slate-400'">{{ avgConfidence }}%</div>
-          <div class="text-detail text-[var(--text-secondary)]">Avg Confidence</div>
-        </div>
-        <div class="rounded-card p-3 text-center surface-card">
-          <div class="text-heading font-bold" :class="routineCount === allSessions.length ? 'text-emerald-500' : 'text-amber-500'">{{ routineCount }}/{{ allSessions.length }}</div>
-          <div class="text-detail text-[var(--text-secondary)]">Routine</div>
-        </div>
-        <div class="rounded-card p-3 text-center surface-card">
-          <div class="text-heading font-bold text-blue-500">{{ healthScore }}</div>
-          <div class="text-detail text-[var(--text-secondary)]">Health Score</div>
-        </div>
-      </div>
 
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <!-- ── PAGE HEADER ── -->
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
           <h1 class="text-2xl font-bold text-[var(--text-primary)]">Consultation Reports</h1>
-          <div class="flex items-center gap-4 mt-1">
-            <span class="text-xs text-[var(--text-secondary)]">
-              {{ allSessions.length }} total consultation{{ allSessions.length !== 1 ? 's' : '' }}
+          <p class="text-sm mt-1 text-[var(--text-secondary)]">
+            {{ allSessions.length }} total consultation{{ allSessions.length !== 1 ? 's' : '' }}
+            <span v-if="allSessions.length > 0" class="ml-2 text-[var(--text-tertiary)]">
+              &mdash; Latest: {{ formatDate(allSessions[0]?.timestamp) }}
             </span>
-            <span v-if="allSessions.length > 0" class="text-xs text-[var(--text-secondary)]">
-              Latest: {{ formatDate(allSessions[0]?.timestamp) }}
-            </span>
-          </div>
+          </p>
         </div>
-        <div class="flex items-center gap-2 self-start">
+        <div class="flex items-center gap-2 self-start sm:self-auto">
           <button v-if="allSessions.length >= 2" @click="toggleCompareMode"
-            class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium border transition-colors"
+            class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium border transition-colors"
             :class="compareMode
-              ? (isDark ? 'border-blue-500 text-blue-300 bg-blue-500/15' : 'border-blue-400 text-blue-600 bg-blue-50')
+              ? (isDark ? 'border-sky-500 text-sky-300 bg-sky-500/15' : 'border-sky-400 text-sky-700 bg-sky-50')
               : (isDark ? 'border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800' : 'border-slate-300 text-slate-500 hover:text-slate-900 hover:bg-slate-100')">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
             </svg>
-            {{ compareMode ? 'Cancel Compare' : 'Compare Diagnoses' }}
+            {{ compareMode ? 'Cancel Compare' : 'Compare' }}
           </button>
           <button v-if="allSessions.length > 0" @click="exportAllJson"
-            class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium border transition-colors"
+            class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium border transition-colors"
             :class="isDark
               ? 'border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800'
               : 'border-slate-300 text-slate-500 hover:text-slate-900 hover:bg-slate-100'">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
             </svg>
-            Export All as JSON
+            Export JSON
           </button>
         </div>
       </div>
 
-      <!-- View toggle + Search -->
+      <!-- ── KPI STRIP ── -->
+      <div v-if="allSessions.length > 0" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <!-- Consultations -->
+        <div class="rounded-xl p-4 border-l-4 border-sky-500 shadow-sm transition-colors"
+          :class="isDark ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200'">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="text-2xl font-bold text-[var(--text-primary)]">{{ allSessions.length }}</div>
+              <div class="text-xs mt-0.5 text-[var(--text-secondary)]">Consultations</div>
+            </div>
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+              :class="isDark ? 'bg-sky-900/30' : 'bg-sky-50'">
+              <svg class="w-4 h-4" :class="isDark ? 'text-sky-400' : 'text-sky-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Avg Confidence -->
+        <div class="rounded-xl p-4 border-l-4 shadow-sm transition-colors"
+          :class="[
+            avgConfidence >= 70 ? 'border-emerald-500' : avgConfidence >= 40 ? 'border-amber-500' : 'border-slate-400',
+            isDark ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200'
+          ]">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="text-2xl font-bold" :class="avgConfidence >= 70 ? 'text-emerald-500' : avgConfidence >= 40 ? 'text-amber-500' : 'text-slate-400'">{{ avgConfidence }}%</div>
+              <div class="text-xs mt-0.5 text-[var(--text-secondary)]">Avg Confidence</div>
+            </div>
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+              :class="isDark ? 'bg-slate-800' : 'bg-slate-50'">
+              <svg class="w-4 h-4 text-[var(--text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Routine -->
+        <div class="rounded-xl p-4 border-l-4 shadow-sm transition-colors"
+          :class="[
+            routineCount === allSessions.length ? 'border-emerald-500' : 'border-amber-500',
+            isDark ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200'
+          ]">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="text-2xl font-bold" :class="routineCount === allSessions.length ? 'text-emerald-500' : 'text-amber-500'">{{ routineCount }}/{{ allSessions.length }}</div>
+              <div class="text-xs mt-0.5 text-[var(--text-secondary)]">Routine</div>
+            </div>
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+              :class="isDark ? 'bg-slate-800' : 'bg-slate-50'">
+              <svg class="w-4 h-4 text-[var(--text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Health Score -->
+        <div class="rounded-xl p-4 border-l-4 border-indigo-500 shadow-sm transition-colors"
+          :class="isDark ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200'">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="text-2xl font-bold" :class="isDark ? 'text-indigo-400' : 'text-indigo-600'">{{ healthScore }}</div>
+              <div class="text-xs mt-0.5 text-[var(--text-secondary)]">Health Score</div>
+            </div>
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+              :class="isDark ? 'bg-indigo-900/30' : 'bg-indigo-50'">
+              <svg class="w-4 h-4" :class="isDark ? 'text-indigo-400' : 'text-indigo-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TOOLBAR: View toggle + Search ── -->
       <div class="flex items-center gap-3 mb-5">
         <div class="flex rounded-lg border overflow-hidden flex-shrink-0"
           :class="isDark ? 'border-slate-700' : 'border-slate-200'">
           <button @click="viewMode = 'list'"
-            class="px-3 py-2 text-detail font-medium transition-colors flex items-center gap-1.5"
+            class="px-3 py-2 text-xs font-medium transition-colors flex items-center gap-1.5"
             :class="viewMode === 'list'
-              ? (isDark ? 'bg-blue-500/15 text-blue-300' : 'bg-blue-50 text-blue-600')
+              ? (isDark ? 'bg-sky-500/15 text-sky-300' : 'bg-sky-50 text-sky-700')
               : (isDark ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-50')">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             List
           </button>
           <button @click="viewMode = 'timeline'"
-            class="px-3 py-2 text-detail font-medium transition-colors flex items-center gap-1.5"
+            class="px-3 py-2 text-xs font-medium transition-colors flex items-center gap-1.5"
             :class="viewMode === 'timeline'
-              ? (isDark ? 'bg-blue-500/15 text-blue-300' : 'bg-blue-50 text-blue-600')
+              ? (isDark ? 'bg-sky-500/15 text-sky-300' : 'bg-sky-50 text-sky-700')
               : (isDark ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-50')">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             Timeline
           </button>
         </div>
+        <!-- Search -->
         <div class="relative flex-1">
-          <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2" :class="isDark ? 'text-slate-600' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+            :class="isDark ? 'text-slate-500' : 'text-slate-400'"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
           <input
             v-model="searchQuery"
-            placeholder="Search consultations..."
-            class="w-full rounded-xl pl-10 pr-4 py-3 text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-transparent transition-all"
+            placeholder="Search consultations…"
+            class="w-full rounded-xl pl-10 pr-4 py-2.5 text-sm border focus:outline-none focus:ring-2 transition-all"
             :class="isDark
-              ? 'bg-slate-900/80 border-slate-800 text-white placeholder-slate-600'
-              : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'"
+              ? 'bg-slate-900/80 border-slate-800 text-white placeholder-slate-600 focus:ring-sky-500/30 focus:border-sky-500/50'
+              : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:ring-sky-400/30 focus:border-sky-400/50'"
           />
         </div>
       </div>
 
-      <!-- Compare mode action bar -->
+      <!-- ── COMPARE MODE ACTION BAR ── -->
       <div v-if="compareMode" class="mb-5 p-3 rounded-xl border flex items-center justify-between"
-        :class="isDark ? 'bg-blue-500/5 border-blue-500/20' : 'bg-blue-50 border-blue-200'">
+        :class="isDark ? 'bg-sky-500/5 border-sky-500/20' : 'bg-sky-50 border-sky-200'">
         <span class="text-sm" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
           <span v-if="selectedForCompare.length === 0">Select 2 consultations to compare</span>
           <span v-else-if="selectedForCompare.length === 1">Select 1 more consultation</span>
-          <span v-else class="font-medium" :class="isDark ? 'text-blue-300' : 'text-blue-600'">2 selected — ready to compare</span>
+          <span v-else class="font-medium" :class="isDark ? 'text-sky-300' : 'text-sky-700'">2 selected — ready to compare</span>
         </span>
         <button
           :disabled="selectedForCompare.length !== 2"
           @click="showComparisonPanel = true"
           class="px-4 py-2 rounded-xl text-xs font-semibold transition-colors"
           :class="selectedForCompare.length === 2
-            ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-500/25'
+            ? 'bg-sky-600 text-white hover:bg-sky-500 shadow-lg shadow-sky-500/25'
             : (isDark ? 'bg-slate-800 text-slate-600 cursor-not-allowed' : 'bg-slate-200 text-slate-400 cursor-not-allowed')">
           Compare Selected
         </button>
       </div>
 
-      <!-- Comparison Panel Modal -->
+      <!-- ── COMPARISON PANEL MODAL ── -->
       <Transition
         enter-active-class="transition duration-200 ease-out"
         enter-from-class="opacity-0"
@@ -157,28 +216,28 @@
               <div class="grid grid-cols-2 gap-4 mb-6">
                 <!-- Left session -->
                 <div class="rounded-xl p-4 border" :class="isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'">
-                  <div class="text-xs font-bold uppercase tracking-wide mb-2" :class="isDark ? 'text-blue-400' : 'text-blue-600'">Session A</div>
+                  <div class="text-xs font-bold uppercase tracking-wide mb-2" :class="isDark ? 'text-sky-400' : 'text-sky-700'">Session A</div>
                   <div class="text-xs mb-1 text-[var(--text-secondary)]">{{ comparisonData.left.date }}</div>
                   <div class="text-sm font-semibold text-[var(--text-primary)] mb-2">{{ comparisonData.left.summary }}</div>
                   <div class="space-y-2">
                     <div>
-                      <span class="text-detail text-[var(--text-secondary)]">Top Diagnosis</span>
+                      <span class="text-xs text-[var(--text-secondary)]">Top Diagnosis</span>
                       <p class="text-sm font-medium text-[var(--text-primary)]">{{ comparisonData.left.topDiagnosis }}</p>
                     </div>
                     <div class="flex gap-4">
                       <div>
-                        <span class="text-detail text-[var(--text-secondary)]">Confidence</span>
+                        <span class="text-xs text-[var(--text-secondary)]">Confidence</span>
                         <p class="text-sm font-bold" :class="confidenceColor(comparisonData.left.confidence)">{{ comparisonData.left.confidence }}%</p>
                       </div>
                       <div>
-                        <span class="text-detail text-[var(--text-secondary)]">Urgency</span>
+                        <span class="text-xs text-[var(--text-secondary)]">Urgency</span>
                         <p class="text-sm font-bold">
-                          <span class="px-2 py-0.5 rounded-full text-detail uppercase" :class="urgencyClass(comparisonData.left.urgency)">{{ comparisonData.left.urgency }}</span>
+                          <span class="px-2 py-0.5 rounded-full text-xs uppercase" :class="urgencyClass(comparisonData.left.urgency)">{{ comparisonData.left.urgency }}</span>
                         </p>
                       </div>
                     </div>
                     <div v-if="comparisonData.left.symptoms">
-                      <span class="text-detail text-[var(--text-secondary)]">Symptoms</span>
+                      <span class="text-xs text-[var(--text-secondary)]">Symptoms</span>
                       <p class="text-xs text-[var(--text-primary)] mt-0.5">{{ comparisonData.left.symptoms }}</p>
                     </div>
                   </div>
@@ -186,28 +245,28 @@
 
                 <!-- Right session -->
                 <div class="rounded-xl p-4 border" :class="isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'">
-                  <div class="text-xs font-bold uppercase tracking-wide mb-2" :class="isDark ? 'text-purple-400' : 'text-purple-600'">Session B</div>
+                  <div class="text-xs font-bold uppercase tracking-wide mb-2" :class="isDark ? 'text-indigo-400' : 'text-indigo-700'">Session B</div>
                   <div class="text-xs mb-1 text-[var(--text-secondary)]">{{ comparisonData.right.date }}</div>
                   <div class="text-sm font-semibold text-[var(--text-primary)] mb-2">{{ comparisonData.right.summary }}</div>
                   <div class="space-y-2">
                     <div>
-                      <span class="text-detail text-[var(--text-secondary)]">Top Diagnosis</span>
+                      <span class="text-xs text-[var(--text-secondary)]">Top Diagnosis</span>
                       <p class="text-sm font-medium text-[var(--text-primary)]">{{ comparisonData.right.topDiagnosis }}</p>
                     </div>
                     <div class="flex gap-4">
                       <div>
-                        <span class="text-detail text-[var(--text-secondary)]">Confidence</span>
+                        <span class="text-xs text-[var(--text-secondary)]">Confidence</span>
                         <p class="text-sm font-bold" :class="confidenceColor(comparisonData.right.confidence)">{{ comparisonData.right.confidence }}%</p>
                       </div>
                       <div>
-                        <span class="text-detail text-[var(--text-secondary)]">Urgency</span>
+                        <span class="text-xs text-[var(--text-secondary)]">Urgency</span>
                         <p class="text-sm font-bold">
-                          <span class="px-2 py-0.5 rounded-full text-detail uppercase" :class="urgencyClass(comparisonData.right.urgency)">{{ comparisonData.right.urgency }}</span>
+                          <span class="px-2 py-0.5 rounded-full text-xs uppercase" :class="urgencyClass(comparisonData.right.urgency)">{{ comparisonData.right.urgency }}</span>
                         </p>
                       </div>
                     </div>
                     <div v-if="comparisonData.right.symptoms">
-                      <span class="text-detail text-[var(--text-secondary)]">Symptoms</span>
+                      <span class="text-xs text-[var(--text-secondary)]">Symptoms</span>
                       <p class="text-xs text-[var(--text-primary)] mt-0.5">{{ comparisonData.right.symptoms }}</p>
                     </div>
                   </div>
@@ -216,7 +275,6 @@
 
               <!-- Diff analysis -->
               <div class="space-y-4">
-                <!-- Common findings -->
                 <div v-if="comparisonData.common.length > 0" class="rounded-xl p-4 border"
                   :class="isDark ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-emerald-50 border-emerald-200'">
                   <h4 class="text-sm font-bold mb-2 flex items-center gap-2" :class="isDark ? 'text-emerald-400' : 'text-emerald-700'">
@@ -224,13 +282,9 @@
                     Common Findings
                   </h4>
                   <ul class="space-y-1">
-                    <li v-for="(item, i) in comparisonData.common" :key="i" class="text-xs" :class="isDark ? 'text-emerald-300' : 'text-emerald-700'">
-                      {{ item }}
-                    </li>
+                    <li v-for="(item, i) in comparisonData.common" :key="i" class="text-xs" :class="isDark ? 'text-emerald-300' : 'text-emerald-700'">{{ item }}</li>
                   </ul>
                 </div>
-
-                <!-- Differences -->
                 <div v-if="comparisonData.differences.length > 0" class="rounded-xl p-4 border"
                   :class="isDark ? 'bg-amber-500/5 border-amber-500/20' : 'bg-amber-50 border-amber-200'">
                   <h4 class="text-sm font-bold mb-2 flex items-center gap-2" :class="isDark ? 'text-amber-400' : 'text-amber-700'">
@@ -238,13 +292,9 @@
                     Key Differences
                   </h4>
                   <ul class="space-y-1">
-                    <li v-for="(item, i) in comparisonData.differences" :key="i" class="text-xs" :class="isDark ? 'text-amber-300' : 'text-amber-700'">
-                      {{ item }}
-                    </li>
+                    <li v-for="(item, i) in comparisonData.differences" :key="i" class="text-xs" :class="isDark ? 'text-amber-300' : 'text-amber-700'">{{ item }}</li>
                   </ul>
                 </div>
-
-                <!-- Changes summary -->
                 <div class="rounded-xl p-4 border"
                   :class="isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'">
                   <h4 class="text-sm font-bold mb-2 text-[var(--text-primary)] flex items-center gap-2">
@@ -259,19 +309,22 @@
         </div>
       </Transition>
 
-      <!-- Empty state -->
-      <div v-if="filteredSessions.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
-        <svg class="w-16 h-16 mb-4" :class="isDark ? 'text-slate-700' : 'text-slate-300'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        <h2 class="text-lg font-semibold mb-2 text-[var(--text-primary)]">
-          {{ allSessions.length === 0 ? 'No consultations yet' : 'No matching results' }}
+      <!-- ── EMPTY STATE ── -->
+      <div v-if="filteredSessions.length === 0" class="flex flex-col items-center justify-center py-24 text-center">
+        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
+          :class="isDark ? 'bg-slate-800' : 'bg-sky-50'">
+          <svg class="w-8 h-8" :class="isDark ? 'text-slate-600' : 'text-sky-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <h2 class="text-lg font-bold mb-2 text-[var(--text-primary)]">
+          {{ allSessions.length === 0 ? 'No reports yet' : 'No matching results' }}
         </h2>
-        <p class="text-sm mb-6 text-[var(--text-secondary)]">
-          {{ allSessions.length === 0 ? 'Start your first consultation to see reports here.' : 'Try adjusting your search term.' }}
+        <p class="text-sm mb-6 text-[var(--text-secondary)] max-w-xs">
+          {{ allSessions.length === 0 ? 'Start your first consultation to generate a clinical report here.' : 'Try adjusting your search term.' }}
         </p>
         <router-link v-if="allSessions.length === 0" to="/consult"
-          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors">
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-indigo-700 hover:bg-indigo-800 text-white transition-colors shadow-lg shadow-indigo-700/20">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
           </svg>
@@ -279,32 +332,34 @@
         </router-link>
       </div>
 
-      <!-- Timeline view -->
+      <!-- ── TIMELINE VIEW ── -->
       <div v-else-if="viewMode === 'timeline' && filteredSessions.length > 0" class="relative">
         <div v-for="(group, monthKey) in groupedByMonth" :key="monthKey" class="mb-8">
           <!-- Month header -->
           <div class="flex items-center gap-3 mb-4">
-            <div class="w-3 h-3 rounded-full flex-shrink-0" :class="isDark ? 'bg-blue-400' : 'bg-blue-500'"></div>
-            <h3 class="text-body-sm font-bold text-[var(--text-primary)]">{{ monthKey }}</h3>
+            <div class="w-3 h-3 rounded-full flex-shrink-0" :class="isDark ? 'bg-sky-400' : 'bg-sky-500'"></div>
+            <h3 class="text-sm font-bold text-[var(--text-primary)]">{{ monthKey }}</h3>
             <div class="flex-1 h-px" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
-            <span class="text-detail text-[var(--text-secondary)]">{{ group.length }} consultation{{ group.length > 1 ? 's' : '' }}</span>
+            <span class="text-xs text-[var(--text-secondary)]">{{ group.length }} consultation{{ group.length > 1 ? 's' : '' }}</span>
           </div>
           <!-- Timeline cards -->
           <div class="ml-1.5 border-l-2 pl-6 space-y-4" :class="isDark ? 'border-slate-700' : 'border-slate-200'">
             <div v-for="session in group" :key="session.id"
-              class="relative surface-card rounded-xl p-4 cursor-pointer transition-all hover:shadow-elevated"
-              :class="compareMode && isSelectedForCompare(session.id) ? (isDark ? 'ring-2 ring-blue-500/50' : 'ring-2 ring-blue-400/50') : ''"
+              class="relative surface-card rounded-xl p-4 cursor-pointer transition-all hover:shadow-elevated border-l-4"
+              :class="[
+                urgencyLeftBorder(session.urgency),
+                compareMode && isSelectedForCompare(session.id) ? (isDark ? 'ring-2 ring-sky-500/50' : 'ring-2 ring-sky-400/50') : ''
+              ]"
               @click="compareMode ? toggleCompareSelection(session.id) : $router.push(`/reports/${session.id}`)">
               <!-- Timeline dot -->
               <div class="absolute -left-[1.85rem] top-5 w-2.5 h-2.5 rounded-full border-2"
                 :class="isDark ? 'bg-slate-900 border-slate-600' : 'bg-white border-slate-300'"></div>
               <!-- Content -->
               <div class="flex items-start justify-between gap-3">
-                <!-- Compare checkbox -->
                 <div v-if="compareMode" class="flex-shrink-0 pt-1" @click.stop="toggleCompareSelection(session.id)">
                   <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors"
                     :class="isSelectedForCompare(session.id)
-                      ? 'bg-blue-600 border-blue-600'
+                      ? 'bg-sky-600 border-sky-600'
                       : (isDark ? 'border-slate-600 hover:border-slate-400' : 'border-slate-300 hover:border-slate-500')">
                     <svg v-if="isSelectedForCompare(session.id)" class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
@@ -313,11 +368,11 @@
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 mb-1 flex-wrap">
-                    <span class="text-detail font-medium text-[var(--text-secondary)]">{{ formatDate(session.timestamp) }}</span>
-                    <span class="px-2 py-0.5 rounded-full text-detail font-bold uppercase tracking-wide" :class="urgencyClass(session.urgency)">{{ session.urgency }}</span>
+                    <span class="text-xs font-medium text-[var(--text-secondary)]">{{ formatDate(session.timestamp) }}</span>
+                    <span class="px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide" :class="urgencyClass(session.urgency)">{{ session.urgency }}</span>
                   </div>
                   <p class="text-sm font-medium text-[var(--text-primary)] mb-1">{{ getSessionSummary(session.id) }}</p>
-                  <div class="flex items-center gap-2 text-detail text-[var(--text-secondary)]">
+                  <div class="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
                     <span>{{ session.topDiagnosis }}</span>
                     <span v-if="session.confidence" class="font-semibold"
                       :class="session.confidence >= 70 ? 'text-emerald-400' : session.confidence >= 40 ? 'text-amber-400' : 'text-slate-400'">
@@ -325,94 +380,109 @@
                     </span>
                   </div>
                 </div>
-                <svg class="w-4 h-4 flex-shrink-0 mt-1" :class="isDark ? 'text-slate-600' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                <svg class="w-4 h-4 flex-shrink-0 mt-1 text-[var(--text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Session cards (list view) -->
-      <div v-else-if="filteredSessions.length > 0" class="space-y-3">
+      <!-- ── LIST VIEW ── -->
+      <div v-else-if="filteredSessions.length > 0" class="space-y-2">
         <div
           v-for="session in filteredSessions"
           :key="session.id"
-          class="group surface-card backdrop-blur-xl rounded-2xl p-4 transition-all duration-200 cursor-pointer hover:shadow"
-          :class="compareMode && isSelectedForCompare(session.id) ? (isDark ? 'ring-2 ring-blue-500/50' : 'ring-2 ring-blue-400/50') : ''"
+          class="group relative rounded-xl border cursor-pointer transition-all duration-150 overflow-hidden"
+          :class="[
+            compareMode && isSelectedForCompare(session.id)
+              ? (isDark ? 'ring-2 ring-sky-500/50 border-sky-500/30' : 'ring-2 ring-sky-400/50 border-sky-300')
+              : (isDark ? 'border-slate-800 hover:border-slate-700 hover:shadow-md' : 'border-slate-200 hover:border-slate-300 hover:shadow-md'),
+            isDark ? 'bg-slate-900' : 'bg-white'
+          ]"
           @click="compareMode ? toggleCompareSelection(session.id) : $router.push(`/reports/${session.id}`)"
         >
-          <div class="flex items-start justify-between gap-3">
+          <!-- Left urgency stripe -->
+          <div class="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl" :class="urgencyStripeColor(session.urgency)"></div>
+
+          <div class="flex items-start gap-3 px-5 py-4 pl-5">
             <!-- Compare checkbox -->
-            <div v-if="compareMode" class="flex-shrink-0 pt-1" @click.stop="toggleCompareSelection(session.id)">
+            <div v-if="compareMode" class="flex-shrink-0 pt-0.5" @click.stop="toggleCompareSelection(session.id)">
               <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors"
                 :class="isSelectedForCompare(session.id)
-                  ? 'bg-blue-600 border-blue-600'
+                  ? 'bg-sky-600 border-sky-600'
                   : (isDark ? 'border-slate-600 hover:border-slate-400' : 'border-slate-300 hover:border-slate-500')">
                 <svg v-if="isSelectedForCompare(session.id)" class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
                 </svg>
               </div>
             </div>
+
+            <!-- Date block -->
+            <div class="flex-shrink-0 w-24 pt-0.5">
+              <div class="text-xs font-semibold text-[var(--text-primary)]">{{ formatDateShort(session.timestamp) }}</div>
+              <div class="text-xs text-[var(--text-secondary)] mt-0.5">{{ formatTime(session.timestamp) }}</div>
+            </div>
+
+            <!-- Main content -->
             <div class="flex-1 min-w-0">
-              <!-- Date + Urgency badge + Message count -->
-              <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                <span class="text-xs font-medium text-[var(--text-secondary)]">
-                  {{ formatDate(session.timestamp) }}
-                </span>
-                <span class="px-2 py-0.5 rounded-full text-detail font-bold uppercase tracking-wide"
-                  :class="urgencyClass(session.urgency)">
-                  {{ session.urgency }}
-                </span>
-                <span v-if="getMessageCount(session.id)" class="text-detail px-1.5 py-0.5 rounded-full"
-                  :class="isDark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400'">
-                  {{ getMessageCount(session.id) }} messages
-                </span>
+              <div class="flex items-center gap-2 mb-1 flex-wrap">
+                <p class="text-sm font-medium text-[var(--text-primary)] truncate">{{ getSessionSummary(session.id) }}</p>
               </div>
-
-              <!-- Summary (first user message truncated to ~80 chars) -->
-              <p class="text-sm font-medium mb-1 leading-snug text-[var(--text-primary)]">
-                {{ getSessionSummary(session.id) }}
-              </p>
-
-              <!-- Top diagnosis -->
-              <div class="flex items-center gap-3 text-xs text-[var(--text-secondary)]">
-                <span>{{ session.topDiagnosis }}</span>
-                <span v-if="session.confidence" class="font-medium"
-                  :class="session.confidence >= 70 ? 'text-emerald-400' : session.confidence >= 40 ? 'text-amber-400' : (isDark ? 'text-slate-500' : 'text-slate-400')">
-                  {{ session.confidence }}%
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <span class="px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide" :class="urgencyClass(session.urgency)">{{ session.urgency || 'routine' }}</span>
+                <span v-if="session.topDiagnosis" class="text-xs text-[var(--text-secondary)] truncate max-w-[200px]">{{ session.topDiagnosis }}</span>
+                <span v-if="getMessageCount(session.id)" class="text-xs px-1.5 py-0.5 rounded-full"
+                  :class="isDark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400'">
+                  {{ getMessageCount(session.id) }} msgs
                 </span>
               </div>
             </div>
 
-            <!-- Actions -->
-            <div class="flex items-center gap-2 flex-shrink-0">
-              <router-link :to="`/reports/${session.id}`"
-                @click.stop
-                class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                :class="isDark
-                  ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'">
-                View Details
-              </router-link>
-              <button
-                @click.stop="handleDelete(session.id)"
-                class="p-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                :class="isDark
-                  ? 'text-slate-600 hover:text-red-400 hover:bg-red-500/10'
-                  : 'text-slate-400 hover:text-red-500 hover:bg-red-50'"
-                title="Delete consultation"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-              </button>
+            <!-- Right: confidence + actions -->
+            <div class="flex items-center gap-3 flex-shrink-0">
+              <!-- Confidence bar -->
+              <div v-if="session.confidence" class="hidden sm:flex flex-col items-end gap-1">
+                <span class="text-xs font-bold tabular-nums"
+                  :class="session.confidence >= 70 ? 'text-emerald-500' : session.confidence >= 40 ? 'text-amber-500' : 'text-slate-400'">
+                  {{ session.confidence }}%
+                </span>
+                <div class="w-16 h-1.5 rounded-full overflow-hidden" :class="isDark ? 'bg-slate-700' : 'bg-slate-200'">
+                  <div class="h-full rounded-full transition-all"
+                    :class="session.confidence >= 70 ? 'bg-emerald-500' : session.confidence >= 40 ? 'bg-amber-500' : 'bg-slate-400'"
+                    :style="{ width: session.confidence + '%' }">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex items-center gap-1.5">
+                <router-link :to="`/reports/${session.id}`"
+                  @click.stop
+                  class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border"
+                  :class="isDark
+                    ? 'border-slate-700 bg-slate-800/50 text-slate-300 hover:bg-slate-700 hover:text-white'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'">
+                  View
+                </router-link>
+                <button
+                  @click.stop="handleDelete(session.id)"
+                  class="p-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                  :class="isDark
+                    ? 'text-slate-600 hover:text-red-400 hover:bg-red-500/10'
+                    : 'text-slate-400 hover:text-red-500 hover:bg-red-50'"
+                  title="Delete consultation">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Confirm Dialog -->
+    <!-- ── CONFIRM DIALOG ── -->
     <Transition
       enter-active-class="transition duration-200 ease-out"
       enter-from-class="opacity-0"
@@ -426,8 +496,8 @@
           <p class="text-sm mb-5 text-[var(--text-primary)]">{{ confirmDialog.message }}</p>
           <div class="flex gap-3 justify-end">
             <button @click="confirmDialog.show = false"
-              class="px-4 py-2 text-xs rounded-lg transition-colors"
-              :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'">
+              class="px-4 py-2 text-xs rounded-lg transition-colors border"
+              :class="isDark ? 'border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800' : 'border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100'">
               Cancel
             </button>
             <button @click="confirmDialog.action(); confirmDialog.show = false"
@@ -659,10 +729,24 @@ const confirmDialog = reactive({
 })
 
 function urgencyClass(urgency) {
-  if (urgency === 'emergency') return 'bg-red-500/20 text-red-300'
-  if (urgency === 'urgent') return 'bg-red-500/15 text-red-400'
-  if (urgency === 'soon') return 'bg-amber-500/15 text-amber-400'
-  return 'bg-emerald-500/15 text-emerald-400'
+  if (urgency === 'emergency') return isDark.value ? 'bg-red-500/20 text-red-300' : 'bg-red-100 text-red-700'
+  if (urgency === 'urgent') return isDark.value ? 'bg-red-500/15 text-red-400' : 'bg-red-50 text-red-600'
+  if (urgency === 'soon') return isDark.value ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-50 text-amber-700'
+  return isDark.value ? 'bg-emerald-500/15 text-emerald-400' : 'bg-emerald-50 text-emerald-700'
+}
+
+function urgencyStripeColor(urgency) {
+  if (urgency === 'emergency') return 'bg-red-500'
+  if (urgency === 'urgent') return 'bg-red-400'
+  if (urgency === 'soon') return 'bg-amber-400'
+  return 'bg-emerald-400'
+}
+
+function urgencyLeftBorder(urgency) {
+  if (urgency === 'emergency') return 'border-l-red-500'
+  if (urgency === 'urgent') return 'border-l-red-400'
+  if (urgency === 'soon') return 'border-l-amber-400'
+  return isDark.value ? 'border-l-emerald-600' : 'border-l-emerald-400'
 }
 
 function formatDate(timestamp) {
@@ -679,6 +763,22 @@ function formatDate(timestamp) {
   } catch {
     return timestamp
   }
+}
+
+function formatDateShort(timestamp) {
+  if (!timestamp) return ''
+  try {
+    const d = new Date(timestamp)
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  } catch { return '' }
+}
+
+function formatTime(timestamp) {
+  if (!timestamp) return ''
+  try {
+    const d = new Date(timestamp)
+    return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+  } catch { return '' }
 }
 
 function handleDelete(id) {

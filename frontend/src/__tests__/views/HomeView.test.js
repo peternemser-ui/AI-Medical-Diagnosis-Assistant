@@ -84,10 +84,10 @@ describe('HomeView', () => {
       expect(h1.exists()).toBe(true)
     })
 
-    it('h1 text includes "AI Medical" or "Intelligence Platform"', () => {
+    it('h1 text includes "AI-Powered Medical" or "AI Medical" or "Intelligence Platform"', () => {
       const wrapper = mountHome()
       const h1 = wrapper.find('h1')
-      expect(h1.text()).toMatch(/AI Medical|Intelligence Platform/i)
+      expect(h1.text()).toMatch(/AI-Powered Medical|AI Medical|Intelligence Platform/i)
     })
 
     it('renders Start Free Consultation CTA', () => {
@@ -103,11 +103,15 @@ describe('HomeView', () => {
       expect(ctaLink.exists()).toBe(true)
     })
 
-    it('renders Explore Features link', () => {
+    it('renders a secondary CTA link in the hero', () => {
       const wrapper = mountHome()
       const links = wrapper.findAll('a, button')
-      const exploreLink = links.find(l => l.text().includes('Explore Features'))
-      expect(exploreLink).toBeDefined()
+      const secondaryCta = links.find(l =>
+        l.text().includes('See How It Works') ||
+        l.text().includes('Explore Features') ||
+        l.attributes('href') === '#how-it-works'
+      )
+      expect(secondaryCta).toBeDefined()
     })
 
     it('renders trust badges', () => {
@@ -137,7 +141,8 @@ describe('HomeView', () => {
     it('h2 headings include expected section names', () => {
       const wrapper = mountHome()
       const h2Texts = wrapper.findAll('h2').map(h => h.text())
-      expect(h2Texts.some(t => t.includes('Platform Pillars'))).toBe(true)
+      // Platform section heading changed to "One Platform, Complete Health Intelligence"
+      expect(h2Texts.some(t => t.includes('Platform') || t.includes('Health Intelligence'))).toBe(true)
       expect(h2Texts.some(t => t.includes('How It Works'))).toBe(true)
     })
 
@@ -155,7 +160,8 @@ describe('HomeView', () => {
   describe('page sections', () => {
     it('renders platform pillars section', () => {
       const wrapper = mountHome()
-      expect(wrapper.text()).toContain('Platform Pillars')
+      // Section heading changed to "One Platform, Complete Health Intelligence"
+      expect(wrapper.text()).toMatch(/Platform|Health Intelligence/i)
     })
 
     it('renders how it works section', () => {
@@ -165,12 +171,14 @@ describe('HomeView', () => {
 
     it('renders trust & privacy section', () => {
       const wrapper = mountHome()
-      expect(wrapper.text()).toContain('Built for Medical Trust')
+      // Heading changed from "Built for Medical Trust" to "Built for Trust"
+      expect(wrapper.text()).toMatch(/Built for.*Trust/i)
     })
 
     it('renders pricing section', () => {
       const wrapper = mountHome()
-      expect(wrapper.text()).toContain('Simple Pricing')
+      // Heading changed to "Simple, Transparent Pricing"
+      expect(wrapper.text()).toMatch(/Simple.*Pricing/i)
     })
 
     it('renders CTA banner section', () => {
@@ -224,7 +232,7 @@ describe('HomeView', () => {
 
     it('footer contains medical disclaimer', () => {
       const wrapper = mountHome()
-      expect(wrapper.find('footer').text()).toContain('not a substitute for professional medical advice')
+      expect(wrapper.find('footer').text().toLowerCase()).toContain('not a substitute for professional medical advice')
     })
   })
 

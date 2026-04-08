@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen transition-colors duration-300" :class="isDark ? 'bg-slate-950 text-white' : 'bg-white text-slate-900'">
+  <div class="min-h-screen transition-colors duration-300" :class="isDark ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'">
     <!-- Skip to main content (WCAG 2.1 AA) -->
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:rounded-lg focus:font-semibold focus:text-white focus:bg-emerald-600">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:rounded-lg focus:font-semibold focus:text-white focus:bg-indigo-600">
       Skip to main content
     </a>
 
@@ -9,37 +9,55 @@
 
     <main id="main-content">
 
-    <!-- S1: Hero -->
-    <section class="relative overflow-hidden py-20 sm:py-28 px-4">
-      <div class="absolute inset-0 pointer-events-none">
-        <div class="absolute rounded-full blur-[120px] opacity-20" style="width:700px;height:700px;top:-200px;right:-100px;background:radial-gradient(circle,#4f46e5,transparent)"></div>
-        <div class="absolute rounded-full blur-[120px] opacity-15" style="width:500px;height:500px;bottom:-100px;left:-100px;background:radial-gradient(circle,#10b981,transparent)"></div>
+    <!-- ─── S1: Hero ─────────────────────────────────────────── -->
+    <section class="relative overflow-hidden py-20 sm:py-28 px-4" :class="isDark ? 'bg-slate-950' : 'bg-white'">
+      <!-- Subtle background grid -->
+      <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div class="absolute inset-0 opacity-[0.025]"
+          :style="isDark
+            ? 'background-image: linear-gradient(rgba(99,102,241,0.4) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,0.4) 1px,transparent 1px); background-size: 64px 64px;'
+            : 'background-image: linear-gradient(rgba(99,102,241,0.15) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,0.15) 1px,transparent 1px); background-size: 64px 64px;'">
+        </div>
+        <!-- Single, subtle tinted gradient — no heavy blobs -->
+        <div class="absolute top-0 right-0 w-[600px] h-[600px] opacity-[0.06] rounded-full"
+          style="background: radial-gradient(circle at center, #4f46e5, transparent 70%); transform: translate(25%,-25%);"></div>
       </div>
-      <div class="max-w-6xl mx-auto relative z-10 flex flex-col lg:flex-row items-center gap-12">
+
+      <div class="max-w-6xl mx-auto relative z-10 flex flex-col lg:flex-row items-center gap-14">
+        <!-- Left: Copy -->
         <div class="flex-1 text-center lg:text-left">
-          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-6"
-            :class="isDark ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'">
-            Multi-Agent Clinical AI
+          <!-- Dr. Hopps badge — small, supporting role -->
+          <div class="inline-flex items-center gap-2.5 mb-6">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white text-xs font-bold shadow-md shadow-indigo-500/30 flex-shrink-0">H</span>
+            <span class="text-xs font-semibold px-3 py-1 rounded-full"
+              :class="isDark ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'">
+              Multi-Agent Clinical AI · Powered by Claude
+            </span>
           </div>
-          <h1 class="text-display mb-6">
-            Your AI Medical
-            <span class="bg-gradient-to-r from-indigo-400 via-emerald-400 to-teal-400 bg-clip-text text-transparent"> Intelligence </span>
-            Platform
+
+          <h1 class="text-display mb-5" style="font-size: clamp(2.25rem, 5vw, 3.5rem); line-height: 1.08; font-weight: 800; letter-spacing: -0.03em;">
+            AI-Powered Medical<br class="hidden sm:inline" />
+            <span class="bg-gradient-to-r from-indigo-500 via-indigo-400 to-sky-400 bg-clip-text text-transparent"> Diagnosis </span>
+            in Minutes
           </h1>
-          <p class="text-body-lg max-w-xl mb-8" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-            7 specialized agents collaborate on every diagnosis — from triage to treatment, with safety checks and evidence-based reasoning.
+
+          <p class="text-body-lg max-w-lg mb-8 mx-auto lg:mx-0" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+            Seven specialized AI agents collaborate on every consultation — triage, diagnosis, research, and safety checks — delivering clinical-grade insights instantly.
           </p>
+
           <div class="flex flex-wrap gap-4 justify-center lg:justify-start mb-10">
             <router-link to="/consult"
-              class="btn-primary px-8 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-xl hover:shadow-emerald-500/25">
+              class="btn-primary px-8 py-3.5 text-base bg-indigo-700 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-700/30">
               Start Free Consultation
             </router-link>
-            <a href="#pillars"
-              class="btn-secondary px-8 py-3.5"
-              :class="isDark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-slate-300 text-slate-700 hover:bg-slate-50'">
-              Explore Features
+            <a href="#how-it-works"
+              class="btn-secondary px-8 py-3.5 text-base"
+              :class="isDark ? 'border-slate-700 text-slate-300 hover:bg-slate-800/60' : 'border-slate-300 text-slate-700 hover:bg-slate-50'">
+              See How It Works
             </a>
           </div>
+
+          <!-- Trust badges -->
           <div class="flex flex-wrap gap-3 justify-center lg:justify-start">
             <span v-for="badge in trustBadges" :key="badge.label"
               class="trust-badge"
@@ -48,162 +66,186 @@
             </span>
           </div>
         </div>
-        <div class="flex-shrink-0 hidden lg:flex items-center justify-center">
-          <div class="w-80 h-96 flex items-center justify-center" style="filter: drop-shadow(0 20px 40px rgba(0,0,0,0.1))">
-            <svg viewBox="-10 -30 260 380" class="w-full h-full">
-              <defs>
-                <linearGradient id="hEarGlow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.3"/><stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/></linearGradient>
-                <linearGradient id="hBodyGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient>
-                <filter id="hGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-              </defs>
-              <!-- Ears -->
-              <g><ellipse cx="120" cy="55" rx="19" ry="65" fill="white" stroke="#64748b" stroke-width="2.5" transform="rotate(-8 120 110)"/>
-              <ellipse cx="120" cy="50" rx="10" ry="46" fill="url(#hEarGlow)" transform="rotate(-8 120 110)"/></g>
-              <g><ellipse cx="160" cy="50" rx="19" ry="65" fill="white" stroke="#64748b" stroke-width="2.5" transform="rotate(8 160 110)"/>
-              <ellipse cx="160" cy="45" rx="10" ry="46" fill="url(#hEarGlow)" transform="rotate(8 160 110)"/></g>
-              <!-- Antenna -->
-              <line x1="172" y1="30" x2="185" y2="5" stroke="#38bdf8" stroke-width="1.5" opacity="0.7"/>
-              <circle cx="185" cy="5" r="4" fill="#0ea5e9" opacity="0.9" filter="url(#hGlow)">
-                <animate attributeName="r" values="3;5;3" dur="1.2s" repeatCount="indefinite"/>
-                <animate attributeName="opacity" values="0.6;1;0.6" dur="1.2s" repeatCount="indefinite"/>
-              </circle>
-              <!-- Head -->
-              <ellipse cx="140" cy="150" rx="65" ry="60" fill="white" stroke="#64748b" stroke-width="3"/>
-              <!-- Eyes -->
-              <rect x="100" y="126" width="32" height="24" rx="12" :fill="isDark ? '#0f172a' : '#e2e8f0'" stroke="#94a3b8" stroke-width="1.5"/>
-              <circle cx="116" cy="138" r="7" fill="#3b82f6" filter="url(#hGlow)"/>
-              <circle cx="114" cy="136" r="2.5" fill="white" opacity="0.85"/>
-              <rect x="148" y="126" width="32" height="24" rx="12" :fill="isDark ? '#0f172a' : '#e2e8f0'" stroke="#94a3b8" stroke-width="1.5"/>
-              <circle cx="164" cy="138" r="7" fill="#3b82f6" filter="url(#hGlow)"/>
-              <circle cx="162" cy="136" r="2.5" fill="white" opacity="0.85"/>
-              <!-- Nose -->
-              <polygon points="140,155 136,161 144,161" fill="#94a3b8" stroke="#64748b" stroke-width="1"/>
-              <!-- Whiskers -->
-              <line x1="88" y1="152" x2="113" y2="156" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
-              <line x1="88" y1="162" x2="113" y2="161" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
-              <line x1="167" y1="156" x2="192" y2="152" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
-              <line x1="167" y1="161" x2="192" y2="162" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
-              <!-- Smile -->
-              <path d="M126 168 Q140 180 154 168" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
-              <!-- Body -->
-              <path d="M90 200 Q90 185 105 178 L120 195 Q140 205 160 195 L175 178 Q190 185 190 200 L195 290 L85 290 Z" fill="url(#hBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
-              <path d="M110 195 L140 210 L170 195" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
-              <!-- Heartbeat -->
-              <g opacity="0.5">
-                <polyline fill="none" stroke="#38bdf8" stroke-width="1" stroke-linecap="round" points="105,225 120,225 125,225 128,215 131,235 134,220 137,230 140,225 175,225" opacity="0.4"/>
-              </g>
-              <!-- Hands -->
-              <ellipse cx="88" cy="215" rx="15" ry="12" fill="url(#hBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
-              <ellipse cx="192" cy="215" rx="15" ry="12" fill="url(#hBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
-              <circle cx="80" cy="230" r="10" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
-              <circle cx="200" cy="230" r="10" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
-              <!-- Feet -->
-              <ellipse cx="115" cy="298" rx="18" ry="12" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
-              <ellipse cx="165" cy="298" rx="18" ry="12" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
-              <!-- Name tag -->
-              <rect x="108" y="250" width="64" height="14" rx="3" fill="white" stroke="#94a3b8" stroke-width="0.8"/>
-              <text x="140" y="261" text-anchor="middle" fill="#3b82f6" font-size="7.5" font-weight="bold" font-family="system-ui, sans-serif">DR. HOPPS</text>
-            </svg>
+
+        <!-- Right: Consultation mockup -->
+        <div class="flex-shrink-0 w-full max-w-sm lg:max-w-md">
+          <div class="rounded-2xl border overflow-hidden shadow-2xl"
+            :class="isDark ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-slate-200 shadow-slate-200/80'">
+            <!-- Mockup header bar -->
+            <div class="px-4 py-3 border-b flex items-center gap-2"
+              :class="isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'">
+              <div class="w-3 h-3 rounded-full bg-red-400/70"></div>
+              <div class="w-3 h-3 rounded-full bg-amber-400/70"></div>
+              <div class="w-3 h-3 rounded-full bg-emerald-400/70"></div>
+              <div class="ml-2 text-xs font-medium" :class="isDark ? 'text-slate-500' : 'text-slate-400'">MedDiagnose AI · Consultation</div>
+            </div>
+            <!-- Mockup body -->
+            <div class="p-5 space-y-4">
+              <!-- User message -->
+              <div class="flex justify-end">
+                <div class="max-w-[80%] rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm bg-indigo-600 text-white shadow-md">
+                  I have a persistent headache for 3 days with sensitivity to light.
+                </div>
+              </div>
+              <!-- Agent pipeline chips -->
+              <div class="flex flex-wrap gap-1.5">
+                <span v-for="(a, i) in pipelineMockup" :key="a"
+                  class="text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all"
+                  :class="i < 4 ? (isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border-emerald-200')
+                    : i === 4 ? (isDark ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 animate-pulse' : 'bg-blue-50 text-blue-700 border-blue-200 animate-pulse')
+                    : (isDark ? 'bg-slate-800 text-slate-600 border-slate-700' : 'bg-slate-100 text-slate-400 border-slate-200')">
+                  {{ a }}
+                </span>
+              </div>
+              <!-- AI response card -->
+              <div class="rounded-xl border p-3.5 space-y-2"
+                :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-slate-50 border-slate-200'">
+                <div class="text-[10px] font-bold uppercase tracking-widest" :class="isDark ? 'text-indigo-400' : 'text-indigo-600'">AI Assessment</div>
+                <div class="text-xs leading-relaxed" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                  Top differential: <strong>Migraine with photophobia</strong> (74%). Safety agent confirmed no red flags. Recommend rest, hydration, and OTC analgesics.
+                </div>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                  <span class="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                    :class="isDark ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'">
+                    Migraine 74%
+                  </span>
+                  <span class="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                    :class="isDark ? 'bg-slate-700 text-slate-400 border border-slate-600' : 'bg-white text-slate-500 border border-slate-200'">
+                    Tension HA 18%
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- S2: Platform Pillars -->
-    <section id="pillars" class="section-module px-4" :class="isDark ? 'bg-slate-900/50' : 'bg-slate-50'">
+    <!-- ─── S2: Stats bar ──────────────────────────────────────── -->
+    <section class="py-8 px-4 border-y"
+      :class="isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200'">
+      <div class="max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+        <div v-for="stat in heroStats" :key="stat.label">
+          <div class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-1"
+            :class="isDark ? 'text-white' : 'text-slate-900'">{{ stat.value }}</div>
+          <div class="text-xs font-medium" :class="isDark ? 'text-slate-500' : 'text-slate-500'">{{ stat.label }}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── S3: Platform Overview ──────────────────────────────── -->
+    <section id="pillars" class="section-module px-4" :class="isDark ? 'bg-slate-950' : 'bg-white'">
       <div class="max-w-6xl mx-auto">
-        <h2 class="text-headline text-center mb-3">Platform Pillars</h2>
-        <p class="text-center text-body-lg mb-12 max-w-xl mx-auto" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-          Six specialized domains — each powered by dedicated AI agents.
-        </p>
+        <div class="text-center mb-12">
+          <div class="text-xs font-bold uppercase tracking-widest mb-3"
+            :class="isDark ? 'text-indigo-400' : 'text-indigo-600'">Platform</div>
+          <h2 class="text-headline mb-3">One Platform, Complete Health Intelligence</h2>
+          <p class="text-body-lg max-w-xl mx-auto" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+            Six specialized domains — each powered by dedicated AI agents trained for clinical accuracy.
+          </p>
+        </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <router-link v-for="p in pillars" :key="p.title" :to="p.link"
             class="group rounded-2xl border p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl"
             :class="isDark
-              ? 'bg-slate-800/60 border-slate-700/50 hover:shadow-black/20'
-              : 'bg-white border-slate-200 hover:shadow-slate-200'">
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 transition-colors"
+              ? 'bg-slate-900 border-slate-800 hover:shadow-black/30 hover:border-slate-700'
+              : 'bg-white border-slate-200 hover:shadow-slate-100 hover:border-slate-300'">
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-colors"
               :style="{ background: isDark ? p.darkBg : p.lightBg }">
-              {{ p.icon }}
+              <span class="text-xl">{{ p.icon }}</span>
             </div>
             <div class="text-title mb-1.5" :class="isDark ? 'text-white' : 'text-slate-900'">{{ p.title }}</div>
             <div class="text-body" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ p.desc }}</div>
-            <div class="mt-3 h-0.5 w-0 group-hover:w-full transition-all duration-300 rounded" :style="{ background: p.color }"></div>
+            <div class="mt-4 h-0.5 w-0 group-hover:w-full transition-all duration-300 rounded" :style="{ background: p.color }"></div>
           </router-link>
         </div>
       </div>
     </section>
 
-    <!-- S3: How It Works -->
-    <section class="section-module px-4">
+    <!-- ─── S4: How It Works ───────────────────────────────────── -->
+    <section id="how-it-works" class="section-module px-4"
+      :class="isDark ? 'bg-slate-900/50 border-t border-slate-800' : 'bg-slate-50 border-t border-slate-200'">
       <div class="max-w-5xl mx-auto">
-        <h2 class="text-headline text-center mb-3">How It Works</h2>
-        <p class="text-center text-body-lg mb-12 max-w-xl mx-auto" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-          Seven agents process every consultation through a clinical-grade pipeline.
-        </p>
-        <div class="flex flex-wrap justify-center gap-3">
-          <div v-for="(agent, i) in pipelineAgents" :key="agent.name" class="flex items-center gap-3">
-            <div class="rounded-xl border px-5 py-3 text-center transition-all"
-              :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'">
-              <div class="text-xl mb-1">{{ agent.icon }}</div>
-              <div class="text-meta" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ agent.name }}</div>
+        <div class="text-center mb-12">
+          <div class="text-xs font-bold uppercase tracking-widest mb-3"
+            :class="isDark ? 'text-emerald-400' : 'text-emerald-600'">Pipeline</div>
+          <h2 class="text-headline mb-3">How It Works</h2>
+          <p class="text-body-lg max-w-xl mx-auto" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+            Seven agents process every consultation through a clinical-grade pipeline — in parallel where possible.
+          </p>
+        </div>
+
+        <!-- Pipeline flow — horizontal scroll on mobile -->
+        <div class="relative">
+          <!-- Connector line (desktop) -->
+          <div class="hidden lg:block absolute top-[2.25rem] left-[calc(3.5rem)] right-[calc(3.5rem)] h-px"
+            :class="isDark ? 'bg-slate-700' : 'bg-slate-200'" aria-hidden="true"></div>
+
+          <div class="flex flex-wrap lg:flex-nowrap justify-center gap-3 lg:gap-0 lg:justify-between">
+            <div v-for="(agent, i) in pipelineAgents" :key="agent.name"
+              class="flex flex-col items-center gap-2 relative pipeline-step"
+              :class="{ 'lg:flex-1': true }"
+              :style="{ '--step-delay': `${i * 80}ms` }">
+              <!-- Step dot + icon -->
+              <div class="relative z-10 w-[4.5rem] h-[4.5rem] rounded-full border-2 flex flex-col items-center justify-center transition-all"
+                :class="isDark
+                  ? 'bg-slate-900 border-slate-700 hover:border-indigo-500'
+                  : 'bg-white border-slate-200 shadow-sm hover:border-indigo-400 hover:shadow-indigo-100'">
+                <span class="text-2xl leading-none">{{ agent.icon }}</span>
+              </div>
+              <!-- Label -->
+              <div class="text-center">
+                <div class="text-xs font-bold" :class="isDark ? 'text-white' : 'text-slate-800'">{{ agent.name }}</div>
+                <div class="text-[10px] mt-0.5 max-w-[5rem] leading-tight" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ agent.role }}</div>
+              </div>
             </div>
-            <span v-if="i < pipelineAgents.length - 1" class="text-slate-400 text-lg hidden sm:inline">&rarr;</span>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- S4: Try It -->
-    <section class="section-module px-4" :class="isDark ? 'bg-slate-900/50' : 'bg-slate-50'">
-      <div class="max-w-4xl mx-auto">
-        <h2 class="text-headline text-center mb-3">See It In Action</h2>
-        <p class="text-center text-body-lg mb-12 max-w-xl mx-auto" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-          Watch our 7-agent pipeline analyze symptoms in real-time.
-        </p>
-        <div class="rounded-2xl border overflow-hidden"
-          :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200 shadow-lg'">
-          <div class="p-6 border-b" :class="isDark ? 'border-slate-700/50' : 'border-slate-200'">
+        <!-- Live demo widget -->
+        <div class="mt-12 rounded-2xl border overflow-hidden"
+          :class="isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-lg'">
+          <div class="p-5 border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
             <label class="text-label mb-2 block" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Try a sample symptom</label>
             <div class="flex gap-3">
               <input v-model="demoInput" type="text" placeholder="e.g. persistent headache with blurry vision"
-                class="flex-1 rounded-xl border px-4 py-3 text-sm transition-colors outline-none focus:ring-2 focus:ring-emerald-500/30"
-                :class="isDark ? 'bg-slate-900 border-slate-700 text-white placeholder-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'"
+                class="flex-1 rounded-xl border px-4 py-2.5 text-sm transition-colors outline-none focus:ring-2 focus:ring-indigo-500/30"
+                :class="isDark ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'"
                 @keydown.enter="runDemo" />
               <button @click="runDemo"
-                class="btn-primary px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
+                class="btn-primary px-5 py-2.5 bg-indigo-700 hover:bg-indigo-600 text-white text-sm"
                 :disabled="demoRunning">
                 {{ demoRunning ? 'Analyzing...' : 'Analyze' }}
               </button>
             </div>
           </div>
-          <div v-if="demoStarted" class="p-6">
-            <div class="flex flex-wrap gap-3 mb-6">
+          <div v-if="demoStarted" class="p-5">
+            <div class="flex flex-wrap gap-2 mb-5">
               <div v-for="(agent, i) in pipelineAgents" :key="agent.name"
-                class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-500"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-500"
                 :class="agentClass(i)">
-                <div class="w-2 h-2 rounded-full transition-colors duration-500"
+                <div class="w-1.5 h-1.5 rounded-full transition-colors duration-500"
                   :class="i < currentAgentIndex ? 'bg-emerald-400' : i === currentAgentIndex ? 'bg-blue-400 animate-pulse' : (isDark ? 'bg-slate-600' : 'bg-slate-300')"></div>
                 {{ agent.name }}
               </div>
             </div>
             <Transition enter-active-class="transition duration-500" enter-from-class="opacity-0 translate-y-4" enter-to-class="opacity-100 translate-y-0">
-              <div v-if="demoComplete" class="rounded-xl p-5 space-y-3"
-                :class="isDark ? 'bg-slate-900/80 border border-slate-700/50' : 'bg-slate-50 border border-slate-200'">
-                <div class="text-label" :class="isDark ? 'text-emerald-400' : 'text-emerald-600'">AI Assessment</div>
+              <div v-if="demoComplete" class="rounded-xl p-4 space-y-3"
+                :class="isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-slate-50 border border-slate-200'">
+                <div class="text-label" :class="isDark ? 'text-indigo-400' : 'text-indigo-600'">AI Assessment</div>
                 <div class="text-body" :class="isDark ? 'text-slate-300' : 'text-slate-700'">
                   Based on your symptoms, the pipeline identified <strong>3 possible conditions</strong> ranked by probability.
                   The diagnostician flagged potential neurological involvement, while the safety agent verified no dangerous red flags requiring emergency care.
                 </div>
-                <div class="flex flex-wrap gap-2 pt-2">
+                <div class="flex flex-wrap gap-2 pt-1">
                   <span v-for="tag in demoTags" :key="tag"
                     class="text-xs px-3 py-1 rounded-full font-medium"
-                    :class="isDark ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-blue-50 text-blue-700 border border-blue-200'">
+                    :class="isDark ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'">
                     {{ tag }}
                   </span>
                 </div>
-                <div class="pt-3">
-                  <router-link to="/consult" class="text-xs font-semibold text-emerald-500 hover:text-emerald-400 transition-colors">
+                <div class="pt-2">
+                  <router-link to="/consult" class="text-xs font-semibold text-indigo-500 hover:text-indigo-400 transition-colors">
                     Try it with your own symptoms &rarr;
                   </router-link>
                 </div>
@@ -214,19 +256,23 @@
       </div>
     </section>
 
-    <!-- S5: Trust & Privacy -->
-    <section class="section-module px-4">
+    <!-- ─── S5: Trust & Compliance ────────────────────────────── -->
+    <section class="section-module px-4" :class="isDark ? 'bg-slate-950 border-t border-slate-800' : 'bg-white border-t border-slate-200'">
       <div class="max-w-5xl mx-auto">
-        <h2 class="text-headline text-center mb-3">Built for Medical Trust</h2>
-        <p class="text-center text-body-lg mb-12 max-w-xl mx-auto" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-          Privacy-first architecture designed around clinical compliance standards.
-        </p>
+        <div class="text-center mb-12">
+          <div class="text-xs font-bold uppercase tracking-widest mb-3"
+            :class="isDark ? 'text-teal-400' : 'text-teal-600'">Compliance</div>
+          <h2 class="text-headline mb-3">Built for Trust</h2>
+          <p class="text-body-lg max-w-xl mx-auto" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+            Privacy-first architecture designed around clinical compliance standards.
+          </p>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div v-for="t in trustCards" :key="t.title"
-            class="rounded-2xl border p-6 transition-all"
-            :class="isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200'">
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4"
-              :style="{ background: isDark ? 'rgba(13,148,136,0.15)' : 'rgba(13,148,136,0.08)' }">
+            class="rounded-2xl border p-6 transition-all hover:-translate-y-0.5"
+            :class="isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'">
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl mb-4"
+              :style="{ background: isDark ? 'rgba(13,148,136,0.12)' : 'rgba(13,148,136,0.08)' }">
               {{ t.icon }}
             </div>
             <div class="text-title mb-1.5" :class="isDark ? 'text-white' : 'text-slate-900'">{{ t.title }}</div>
@@ -236,38 +282,42 @@
       </div>
     </section>
 
-    <!-- S6: Pricing Preview -->
-    <section class="section-module px-4" :class="isDark ? 'bg-slate-900/50' : 'bg-slate-50'">
+    <!-- ─── S6: Pricing ───────────────────────────────────────── -->
+    <section class="section-module px-4" :class="isDark ? 'bg-slate-900/60 border-t border-slate-800' : 'bg-slate-50 border-t border-slate-200'">
       <div class="max-w-5xl mx-auto">
-        <h2 class="text-headline text-center mb-3">Simple Pricing</h2>
-        <p class="text-center text-body-lg mb-12 max-w-xl mx-auto" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-          Start free. Upgrade when you need more.
-        </p>
+        <div class="text-center mb-12">
+          <div class="text-xs font-bold uppercase tracking-widest mb-3"
+            :class="isDark ? 'text-indigo-400' : 'text-indigo-600'">Pricing</div>
+          <h2 class="text-headline mb-3">Simple, Transparent Pricing</h2>
+          <p class="text-body-lg max-w-xl mx-auto" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+            Start free. Upgrade when you need more.
+          </p>
+        </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <div v-for="plan in plans" :key="plan.name"
             class="rounded-2xl border p-6 transition-all relative"
             :class="[
-              isDark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white border-slate-200',
-              plan.featured ? (isDark ? 'ring-2 ring-emerald-500/40' : 'ring-2 ring-emerald-400/50') : ''
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200',
+              plan.featured ? (isDark ? 'ring-2 ring-indigo-500/50 shadow-lg shadow-indigo-500/10' : 'ring-2 ring-indigo-400/40 shadow-lg shadow-indigo-100') : ''
             ]">
             <span v-if="plan.featured"
-              class="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase px-3 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
+              class="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase px-3 py-0.5 rounded-full bg-indigo-700 text-white shadow">
               Popular
             </span>
             <div class="text-label mb-2" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ plan.name }}</div>
-            <div class="text-headline mb-1" :class="isDark ? 'text-white' : 'text-slate-900'">{{ plan.price }}</div>
+            <div class="text-headline mb-0.5" :class="isDark ? 'text-white' : 'text-slate-900'">{{ plan.price }}</div>
             <div class="text-meta mb-4" :class="isDark ? 'text-slate-500' : 'text-slate-400'">{{ plan.period }}</div>
             <ul class="space-y-2 mb-6">
               <li v-for="f in plan.features" :key="f" class="flex items-start gap-2 text-body"
                 :class="isDark ? 'text-slate-400' : 'text-slate-500'">
-                <span class="text-emerald-500 mt-0.5">&#10003;</span> {{ f }}
+                <span class="text-emerald-500 mt-0.5 flex-shrink-0">&#10003;</span> {{ f }}
               </li>
             </ul>
             <router-link :to="plan.cta.link"
               class="block text-center rounded-xl py-2.5 text-sm font-semibold transition-all"
               :class="plan.featured
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-lg hover:shadow-emerald-500/25'
-                : (isDark ? 'border border-slate-700 text-slate-300 hover:bg-slate-700' : 'border border-slate-300 text-slate-700 hover:bg-slate-50')">
+                ? 'bg-indigo-700 hover:bg-indigo-600 text-white shadow-md shadow-indigo-700/30'
+                : (isDark ? 'border border-slate-700 text-slate-300 hover:bg-slate-800' : 'border border-slate-300 text-slate-700 hover:bg-slate-50')">
               {{ plan.cta.label }}
             </router-link>
           </div>
@@ -275,18 +325,21 @@
       </div>
     </section>
 
-    <!-- S7: CTA Banner -->
-    <section class="py-24 px-4 text-center relative overflow-hidden">
-      <div class="absolute inset-0 pointer-events-none">
-        <div class="absolute rounded-full blur-[150px] opacity-20" style="width:600px;height:600px;top:50%;left:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,#10b981,transparent)"></div>
-      </div>
-      <div class="relative z-10 max-w-2xl mx-auto">
+    <!-- ─── S7: CTA Close ─────────────────────────────────────── -->
+    <section class="py-24 px-4 text-center"
+      :class="isDark ? 'bg-slate-950 border-t border-slate-800' : 'bg-white border-t border-slate-200'">
+      <div class="max-w-2xl mx-auto">
+        <div class="w-14 h-14 mx-auto mb-6 rounded-2xl bg-indigo-700 flex items-center justify-center shadow-xl shadow-indigo-700/30">
+          <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" />
+          </svg>
+        </div>
         <h2 class="text-headline sm:text-display mb-4">Ready to Get Started?</h2>
         <p class="text-body-lg mb-8" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
           Join thousands of users getting AI-powered health insights from our 7-agent clinical pipeline.
         </p>
         <router-link to="/consult"
-          class="btn-primary px-10 py-4 text-base bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-xl hover:shadow-emerald-500/25">
+          class="btn-primary px-10 py-4 text-base bg-indigo-700 hover:bg-indigo-600 text-white shadow-xl shadow-indigo-700/25">
           Start Your Free Consultation
         </router-link>
       </div>
@@ -295,7 +348,7 @@
     <!-- Footer -->
     <footer class="border-t py-8 px-4 text-center text-xs"
       :class="isDark ? 'border-slate-800 text-slate-600' : 'border-slate-200 text-slate-400'">
-      &copy; {{ new Date().getFullYear() }} MedDiagnose AI. For informational purposes only — not a substitute for professional medical advice.
+      &copy; {{ new Date().getFullYear() }} MedDiagnose AI &mdash; For informational purposes only. Not a substitute for professional medical advice.
     </footer>
 
     </main>
@@ -316,6 +369,14 @@ const trustBadges = [
   { icon: '\uD83C\uDF0D', label: '12 Languages' },
 ]
 
+/* ── Stats ── */
+const heroStats = [
+  { value: '7', label: 'AI Agents' },
+  { value: '50+', label: 'Conditions Analyzed' },
+  { value: '<3s', label: 'Real-time Analysis' },
+  { value: '24/7', label: 'Always Available' },
+]
+
 /* ── Platform Pillars ── */
 const pillars = [
   { icon: '\uD83D\uDD2C', title: 'AI Diagnosis', desc: '7-agent pipeline with Bayesian clinical reasoning, triage, and safety checks.', link: '/consult', color: '#4f46e5', lightBg: 'rgba(79,70,229,0.08)', darkBg: 'rgba(79,70,229,0.15)' },
@@ -326,16 +387,19 @@ const pillars = [
   { icon: '\uD83D\uDD0D', title: 'Second Opinion', desc: 'Multi-model consensus analysis for added diagnostic confidence.', link: '/second-opinion', color: '#0d9488', lightBg: 'rgba(13,148,136,0.08)', darkBg: 'rgba(13,148,136,0.15)' },
 ]
 
-/* ── Pipeline agents ── */
+/* ── Pipeline agents (with short role labels) ── */
 const pipelineAgents = [
-  { name: 'Triage', icon: '\uD83D\uDEA8' },
-  { name: 'Diagnostician', icon: '\uD83E\uDE7A' },
-  { name: 'Research', icon: '\uD83D\uDCDA' },
-  { name: 'Specialist', icon: '\uD83D\uDC68\u200D\u2695\uFE0F' },
-  { name: 'Treatment', icon: '\uD83D\uDC89' },
-  { name: 'Safety', icon: '\uD83D\uDEE1\uFE0F' },
-  { name: 'Empathy', icon: '\uD83D\uDC9A' },
+  { name: 'Triage', icon: '\uD83D\uDEA8', role: 'Urgency & red flags' },
+  { name: 'Diagnostician', icon: '\uD83E\uDE7A', role: 'Differential dx' },
+  { name: 'Research', icon: '\uD83D\uDCDA', role: 'Evidence base' },
+  { name: 'Specialist', icon: '\uD83D\uDC68\u200D\u2695\uFE0F', role: 'Domain analysis' },
+  { name: 'Treatment', icon: '\uD83D\uDC89', role: 'Care plan' },
+  { name: 'Safety', icon: '\uD83D\uDEE1\uFE0F', role: 'Contraindications' },
+  { name: 'Empathy', icon: '\uD83D\uDC9A', role: 'Plain language' },
 ]
+
+/* ── Mockup pipeline chips for hero ── */
+const pipelineMockup = ['Triage', 'Diagnostician', 'Research', 'Specialist', 'Treatment', 'Safety', 'Empathy']
 
 /* ── Demo state ── */
 const demoInput = ref('persistent headache with blurry vision')
@@ -378,9 +442,9 @@ async function runDemo() {
 
 /* ── Trust & Privacy cards ── */
 const trustCards = [
-  { icon: '\uD83D\uDEE1\uFE0F', title: 'HIPAA-Aware Design', desc: 'Architecture follows HIPAA guidelines with audit logging, access controls, and data minimization.' },
-  { icon: '\uD83D\uDCF1', title: 'Local-First Data', desc: 'API keys and health data stay on your device. No server-side storage of personal information.' },
-  { icon: '\u2705', title: 'Safety Review Pipeline', desc: 'Every diagnosis passes through a dedicated Safety Agent that checks for dangerous conditions and contraindications.' },
+  { icon: '\uD83D\uDEE1\uFE0F', title: 'HIPAA Compliance', desc: 'Architecture follows HIPAA guidelines with audit logging, access controls, and data minimization principles.' },
+  { icon: '\uD83D\uDD12', title: 'Medical AI Safety', desc: 'Every diagnosis passes through a dedicated Safety Agent that checks for dangerous conditions and contraindications.' },
+  { icon: '\u2705', title: 'Data Encryption', desc: 'API keys and health data stay on your device. AES-256 encryption. No server-side storage of personal information.' },
 ]
 
 /* ── Pricing ── */
@@ -391,3 +455,15 @@ const plans = [
   { name: 'Family', price: '$29', period: '/month', featured: false, features: ['Up to 6 members', 'Shared dashboard', 'All Pro features'], cta: { label: 'Choose Family', link: '/pricing' } },
 ]
 </script>
+
+<style scoped>
+.pipeline-step {
+  animation: stepFadeIn 0.4s ease both;
+  animation-delay: var(--step-delay, 0ms);
+}
+
+@keyframes stepFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
