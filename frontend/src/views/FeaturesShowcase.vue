@@ -2,20 +2,7 @@
   <div class="min-h-screen transition-colors duration-300" :class="isDark ? 'bg-slate-950 text-white' : 'bg-white text-slate-900'">
 
     <!-- Nav -->
-    <nav class="sticky top-0 z-50 backdrop-blur-xl border-b py-3 px-4 sm:px-6 flex justify-between items-center transition-colors"
-      :style="{ background: 'var(--clinical-surface, ' + (isDark ? '#0f172a' : '#ffffff') + ')', borderColor: 'var(--clinical-border, ' + (isDark ? '#1e293b' : '#e2e8f0') + ')' }">
-      <router-link to="/" class="flex items-center gap-2.5 group">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" /></svg>
-        </div>
-        <span class="text-base font-semibold hidden sm:inline" :class="isDark ? 'text-white' : 'text-slate-900'">MedDiagnose AI</span>
-      </router-link>
-      <div class="flex items-center gap-3">
-        <router-link to="/consult" class="text-sm font-medium px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-lg hover:shadow-emerald-500/25 transition-all">
-          Start Consultation
-        </router-link>
-      </div>
-    </nav>
+    <AppNav currentPage="features" />
 
     <!-- HERO -->
     <section class="relative overflow-hidden py-20 sm:py-28 px-4">
@@ -217,6 +204,7 @@
 
 <script setup>
 import { ref, computed, inject, onMounted } from 'vue'
+import AppNav from '@/components/AppNav.vue'
 
 const isDark = inject('isDark', ref(false))
 

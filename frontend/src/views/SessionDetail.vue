@@ -1,7 +1,10 @@
 <template>
   <div class="min-h-screen transition-colors duration-300 surface-page">
+    <!-- Nav bar -->
+    <AppNav currentPage="reports" />
+
     <!-- Header -->
-    <MPageHeader title="Consultation Report" subtitle="Comprehensive Analysis"
+    <MPageHeader title="Consultation Report" subtitle="Comprehensive Analysis" :sticky="false"
       icon="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
       <template #meta v-if="session">
         <MMetaPill>
@@ -463,6 +466,7 @@ import { useRoute } from 'vue-router'
 import { getSession } from '@/services/historyService.js'
 import { API_BASE_URL } from '@/services/api.js'
 import { getProfile } from '@/services/userService.js'
+import AppNav from '@/components/AppNav.vue'
 import ThemeLangControls from '@/components/ThemeLangControls.vue'
 import DiagnosisCard from '@/components/DiagnosisCard.vue'
 import SkeletonLoader from '@/components/SkeletonLoader.vue'

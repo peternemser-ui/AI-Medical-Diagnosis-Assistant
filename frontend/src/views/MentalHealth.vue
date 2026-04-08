@@ -11,30 +11,7 @@
     </div>
 
     <!-- Nav bar -->
-    <nav class="relative z-20 flex items-center justify-between px-6 py-3 border-b backdrop-blur-xl"
-      style="background: color-mix(in srgb, var(--clinical-surface) 85%, transparent); border-color: var(--clinical-border)">
-      <div class="flex items-center gap-3">
-        <router-link to="/" class="flex items-center gap-2.5 group">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
-          </div>
-          <span class="text-sm font-semibold hidden sm:inline text-[var(--text-primary)]">Medical AI</span>
-        </router-link>
-        <div class="w-px h-5 hidden sm:block bg-[var(--clinical-border)]"></div>
-        <span class="text-sm font-medium hidden sm:inline text-[var(--text-secondary)]">Mental Health</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <ThemeLangControls />
-        <router-link to="/consult" class="p-1.5 rounded-lg transition-colors"
-          :class="isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-900'">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-          </svg>
-        </router-link>
-      </div>
-    </nav>
+    <AppNav currentPage="mental-health" />
 
     <!-- Crisis Disclaimer Banner -->
     <div class="relative z-10 max-w-4xl mx-auto px-4 mt-4">
@@ -493,7 +470,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useTheme } from '@/composables/useTheme'
-import ThemeLangControls from '@/components/ThemeLangControls.vue'
+import AppNav from '@/components/AppNav.vue'
 
 const { isDark } = useTheme()
 

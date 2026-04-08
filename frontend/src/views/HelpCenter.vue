@@ -1,49 +1,7 @@
 <template>
   <div class="min-h-screen" :class="isDark ? 'bg-slate-950 text-slate-100' : 'bg-white text-slate-900'">
     <!-- Top nav bar -->
-    <nav class="sticky top-0 z-20 backdrop-blur-xl border-b px-6 py-3"
-      :class="isDark ? 'bg-slate-950/85 border-slate-800' : 'bg-white/85 border-slate-200'">
-      <div class="max-w-7xl mx-auto flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <router-link to="/" class="flex items-center gap-2 text-blue-500 hover:text-blue-400 transition-colors">
-            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342"/>
-            </svg>
-            <span class="font-bold text-sm hidden sm:inline">MedDiagnose AI</span>
-          </router-link>
-          <span class="text-sm font-medium px-2 py-0.5 rounded-md"
-            :class="isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'">Help Center</span>
-        </div>
-
-        <!-- Search -->
-        <div class="relative w-48 sm:w-80">
-          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
-            :class="isDark ? 'text-slate-500' : 'text-slate-400'"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
-          <input v-model="searchQuery" type="text" placeholder="Search documentation..."
-            class="w-full pl-9 pr-4 py-2 text-sm rounded-lg border outline-none transition-colors"
-            :class="isDark
-              ? 'bg-slate-900 border-slate-700 text-slate-200 placeholder-slate-500 focus:border-blue-500'
-              : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-blue-500'" />
-          <button v-if="searchQuery" @click="searchQuery = ''"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-
-        <router-link to="/consult" class="text-sm font-medium transition-colors hidden sm:inline-flex items-center gap-1"
-          :class="isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-          </svg>
-          Back to App
-        </router-link>
-      </div>
-    </nav>
+    <AppNav currentPage="help" />
 
     <div class="max-w-7xl mx-auto flex">
       <!-- Mobile TOC dropdown -->
@@ -153,6 +111,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { useTheme } from '@/composables/useTheme.js'
+import AppNav from '@/components/AppNav.vue'
 import { HELP_CONTENT } from '@/data/helpContent.js'
 
 const { isDark } = useTheme()

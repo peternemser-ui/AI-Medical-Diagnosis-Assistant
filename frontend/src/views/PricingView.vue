@@ -9,19 +9,7 @@
     </div>
 
     <!-- Nav bar -->
-    <nav class="relative z-20 flex items-center justify-between px-6 py-3 border-b backdrop-blur-xl"
-      style="background: color-mix(in srgb, var(--clinical-surface) 85%, transparent); border-color: var(--clinical-border)">
-      <div class="flex items-center gap-4">
-        <button @click="$router.back()" class="p-1.5 rounded-lg transition-colors"
-          :class="isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-900'">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <h1 class="text-lg font-bold text-[var(--text-primary)]">Pricing Plans</h1>
-      </div>
-      <ThemeLangControls />
-    </nav>
+    <AppNav currentPage="pricing" />
 
     <!-- Main content -->
     <div class="relative z-10 px-4 py-10 sm:py-16">
@@ -212,7 +200,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme.js'
-import ThemeLangControls from '@/components/ThemeLangControls.vue'
+import AppNav from '@/components/AppNav.vue'
 import { trackEvent, EVENTS } from '@/services/analytics'
 
 const router = useRouter()

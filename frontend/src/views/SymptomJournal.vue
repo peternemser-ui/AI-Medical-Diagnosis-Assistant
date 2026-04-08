@@ -11,33 +11,7 @@
     </div>
 
     <!-- Nav bar -->
-    <nav class="sticky top-0 z-50 flex items-center justify-between px-6 py-3 border-b backdrop-blur-xl"
-      style="background: color-mix(in srgb, var(--clinical-surface) 85%, transparent); border-color: var(--clinical-border)">
-      <div class="flex items-center gap-3">
-        <router-link to="/" class="flex items-center gap-2.5 group">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" />
-            </svg>
-          </div>
-          <span class="text-sm font-semibold hidden sm:inline text-[var(--text-primary)]">Medical AI</span>
-        </router-link>
-        <div class="w-px h-5 hidden sm:block bg-[var(--clinical-border)]"></div>
-        <span class="text-sm font-medium hidden sm:inline text-[var(--text-secondary)]">Symptom Journal</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <router-link to="/nutrition" class="text-xs px-3 py-1.5 rounded-lg transition-colors hidden sm:inline"
-          :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'">
-          Nutrition Planner
-        </router-link>
-        <ThemeLangControls />
-        <router-link to="/consult"
-          class="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-xl transition-all">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-          Consult
-        </router-link>
-      </div>
-    </nav>
+    <AppNav currentPage="journal" />
 
     <!-- Main content -->
     <div class="relative z-10 max-w-4xl mx-auto px-4 py-6 space-y-6">
@@ -312,7 +286,7 @@
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
-import ThemeLangControls from '@/components/ThemeLangControls.vue'
+import AppNav from '@/components/AppNav.vue'
 
 const { isDark } = useTheme()
 
