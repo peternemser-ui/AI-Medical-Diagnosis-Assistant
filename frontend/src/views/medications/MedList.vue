@@ -13,6 +13,15 @@
       </button>
     </div>
 
+    <!-- Medications Disclaimer Banner -->
+    <div class="flex items-start gap-2.5 rounded-lg p-3 border mb-4"
+      :class="isDark ? 'bg-purple-900/15 border-purple-700/40 text-purple-300' : 'bg-purple-50 border-purple-200 text-purple-800'">
+      <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <p class="text-xs leading-relaxed">Medication information is for reference only. Always follow your prescribing physician's instructions. Report side effects to your healthcare provider.</p>
+    </div>
+
     <!-- ── Search / Filter bar ── -->
     <div class="flex flex-col sm:flex-row gap-3 mb-6">
       <div class="relative flex-1">
@@ -262,6 +271,9 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Footer Disclaimer -->
+    <p class="text-xs text-slate-400 text-center py-4">For informational purposes only. Not a substitute for professional medical advice.</p>
   </div>
 </template>
 

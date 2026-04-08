@@ -283,7 +283,15 @@
               class="mt-0.5 w-4 h-4 rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500/30 focus:ring-2 cursor-pointer flex-shrink-0"
             />
             <span class="text-xs leading-relaxed transition-colors" :class="isDark ? 'text-slate-400 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-700'">
-              I agree to the Terms of Service and acknowledge that my health information will be encrypted (AES-256) and stored locally on this device only. No medical data is sent to or stored on our servers. I consent to this under HIPAA guidelines.
+              I agree to the
+              <router-link to="/terms" class="underline underline-offset-2 transition-colors"
+                :class="isDark ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-800'"
+                @click.stop>Terms of Service</router-link>
+              and
+              <router-link to="/privacy" class="underline underline-offset-2 transition-colors"
+                :class="isDark ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-800'"
+                @click.stop>Privacy Policy</router-link>,
+              and acknowledge that my health information will be encrypted (AES-256) and stored locally on this device only. No medical data is sent to or stored on our servers. I consent to this under HIPAA guidelines.
             </span>
           </label>
 

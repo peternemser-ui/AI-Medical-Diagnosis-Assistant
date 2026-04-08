@@ -17,6 +17,15 @@
         </div>
       </div>
 
+      <!-- Nutrition Disclaimer Banner -->
+      <div class="flex items-start gap-2.5 rounded-lg p-3 border"
+        :class="isDark ? 'bg-amber-900/15 border-amber-700/40 text-amber-300' : 'bg-amber-50 border-amber-200 text-amber-800'">
+        <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="text-xs leading-relaxed">Nutrition recommendations are for general informational purposes. Consult a registered dietitian or healthcare provider before making dietary changes, especially if you have medical conditions.</p>
+      </div>
+
       <!-- Tab Bar -->
       <div class="flex gap-1 p-1 rounded-xl" :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
         <button v-for="(tab, idx) in tabs" :key="tab.id" :ref="el => { if (el) tabRefs[idx] = el }" @click="activeTab = tab.id"
@@ -612,6 +621,9 @@
         </div>
 
       </Transition>
+
+      <!-- Footer Disclaimer -->
+      <p class="text-xs text-slate-400 text-center py-4">For informational purposes only. Not a substitute for professional medical advice.</p>
     </div>
   </div>
 </template>

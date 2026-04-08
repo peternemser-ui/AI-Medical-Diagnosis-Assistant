@@ -348,7 +348,25 @@
     <!-- Footer -->
     <footer class="border-t py-8 px-4 text-center text-xs"
       :class="isDark ? 'border-slate-800 text-slate-600' : 'border-slate-200 text-slate-400'">
-      &copy; {{ new Date().getFullYear() }} MedDiagnose AI &mdash; For informational purposes only. Not a substitute for professional medical advice.
+      <p class="mb-3">
+        &copy; {{ new Date().getFullYear() }} MedDiagnose AI &mdash; For informational purposes only. Not a substitute for professional medical advice.
+      </p>
+      <div class="flex items-center justify-center gap-4">
+        <router-link to="/terms" class="underline underline-offset-2 transition-colors"
+          :class="isDark ? 'hover:text-slate-400' : 'hover:text-slate-600'">
+          Terms of Service
+        </router-link>
+        <span aria-hidden="true">&middot;</span>
+        <router-link to="/privacy" class="underline underline-offset-2 transition-colors"
+          :class="isDark ? 'hover:text-slate-400' : 'hover:text-slate-600'">
+          Privacy Policy
+        </router-link>
+        <span aria-hidden="true">&middot;</span>
+        <a href="mailto:legal@medassist.ai" class="underline underline-offset-2 transition-colors"
+          :class="isDark ? 'hover:text-slate-400' : 'hover:text-slate-600'">
+          legal@medassist.ai
+        </a>
+      </div>
     </footer>
 
     </main>

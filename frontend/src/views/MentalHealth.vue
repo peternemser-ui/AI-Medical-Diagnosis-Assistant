@@ -23,6 +23,17 @@
       </div>
     </div>
 
+    <!-- Mental Health Disclaimer Banner -->
+    <div class="max-w-4xl mx-auto px-4 mt-3">
+      <div class="flex items-start gap-2.5 rounded-lg p-3 border"
+        :class="isDark ? 'bg-violet-900/15 border-violet-700/40 text-violet-300' : 'bg-violet-50 border-violet-200 text-violet-800'">
+        <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="text-xs leading-relaxed">Mental health assessments (PHQ-9, GAD-7) are screening tools only and do not constitute a clinical diagnosis. Results should be discussed with a licensed mental health professional.</p>
+      </div>
+    </div>
+
     <!-- Main Content -->
     <div class="max-w-4xl mx-auto px-4 py-6 space-y-6">
 
@@ -496,6 +507,8 @@
         </div>
       </div>
 
+      <!-- Footer Disclaimer -->
+      <p class="text-xs text-slate-400 text-center py-4">For informational purposes only. Not a substitute for professional medical advice.</p>
     </div>
   </div>
 </template>

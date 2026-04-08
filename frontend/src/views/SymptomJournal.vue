@@ -17,6 +17,15 @@
         </div>
       </div>
 
+      <!-- Journal Disclaimer Banner -->
+      <div class="flex items-start gap-2.5 rounded-lg p-3 border"
+        :class="isDark ? 'bg-indigo-900/15 border-indigo-700/40 text-indigo-300' : 'bg-indigo-50 border-indigo-200 text-indigo-800'">
+        <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="text-xs leading-relaxed">Your health journal is for personal tracking only. Share entries with your healthcare provider for accurate medical guidance.</p>
+      </div>
+
       <!-- ======= SECTION 1: Daily Check-in ======= -->
       <section class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden"
         :class="isDark ? 'bg-slate-900 border-slate-700' : ''">
@@ -283,6 +292,8 @@
         </div>
       </section>
 
+      <!-- Footer Disclaimer -->
+      <p class="text-xs text-slate-400 text-center py-4">For informational purposes only. Not a substitute for professional medical advice.</p>
     </div>
   </div>
 </template>

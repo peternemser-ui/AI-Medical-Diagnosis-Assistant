@@ -49,6 +49,15 @@
         </div>
       </div>
 
+      <!-- Reports Disclaimer Banner -->
+      <div class="flex items-start gap-2.5 rounded-lg p-3 border mb-6"
+        :class="isDark ? 'bg-sky-900/15 border-sky-700/40 text-sky-300' : 'bg-sky-50 border-sky-200 text-sky-800'">
+        <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="text-xs leading-relaxed">AI-generated reports are for informational reference only. Always verify findings with a qualified healthcare professional.</p>
+      </div>
+
       <!-- ── KPI STRIP ── -->
       <div v-if="allSessions.length > 0" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <!-- Consultations -->
@@ -508,6 +517,9 @@
         </div>
       </div>
     </Transition>
+
+    <!-- Footer Disclaimer -->
+    <p class="text-xs text-slate-400 text-center py-4">For informational purposes only. Not a substitute for professional medical advice.</p>
   </div>
 </template>
 

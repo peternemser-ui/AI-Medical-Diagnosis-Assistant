@@ -962,6 +962,100 @@
       @close="showUpgradePrompt = false"
       @continue-ollama="handleContinueOllama"
     />
+
+  <!-- ── Medical Consent Overlay ── -->
+  <Transition name="consent-fade">
+    <div v-if="showConsent"
+      class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      style="backdrop-filter: blur(8px); background: rgba(0,0,0,0.55);"
+      role="dialog" aria-modal="true" aria-labelledby="consent-title">
+      <div class="w-full max-w-md rounded-2xl shadow-2xl border overflow-hidden"
+        :class="isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'">
+        <!-- Header -->
+        <div class="px-6 pt-6 pb-4 flex items-start gap-4">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+            :class="isDark ? 'bg-indigo-500/15' : 'bg-indigo-50'">
+            <svg class="w-6 h-6" :class="isDark ? 'text-indigo-400' : 'text-indigo-600'"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <h2 id="consent-title" class="text-lg font-bold"
+              :class="isDark ? 'text-white' : 'text-slate-900'">Important Medical Information</h2>
+            <p class="text-xs mt-0.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Please read before continuing</p>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="px-6 pb-4 space-y-3">
+          <div class="rounded-xl p-4 space-y-2.5 border"
+            :class="isDark ? 'bg-slate-800/60 border-slate-700' : 'bg-slate-50 border-slate-200'">
+            <p class="flex items-start gap-2.5 text-sm"
+              :class="isDark ? 'text-slate-300' : 'text-slate-700'">
+              <svg class="w-4 h-4 mt-0.5 flex-shrink-0 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+              </svg>
+              MedAssist AI provides health information for educational purposes only.
+            </p>
+            <p class="flex items-start gap-2.5 text-sm font-semibold"
+              :class="isDark ? 'text-amber-300' : 'text-amber-700'">
+              <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+              This is NOT a medical diagnosis and does NOT replace professional medical advice.
+            </p>
+            <p class="flex items-start gap-2.5 text-sm"
+              :class="isDark ? 'text-slate-300' : 'text-slate-700'">
+              <svg class="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+              Always consult a qualified healthcare provider for medical decisions.
+            </p>
+            <p class="flex items-start gap-2.5 text-sm font-semibold"
+              :class="isDark ? 'text-rose-300' : 'text-rose-700'">
+              <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+              </svg>
+              In a medical emergency, call 911 or your local emergency number immediately.
+            </p>
+          </div>
+
+          <!-- Checkbox -->
+          <label class="flex items-start gap-3 cursor-pointer group select-none">
+            <div class="relative mt-0.5 flex-shrink-0">
+              <input type="checkbox" v-model="consentChecked" class="sr-only peer" />
+              <div class="w-5 h-5 rounded border-2 transition-all flex items-center justify-center"
+                :class="consentChecked
+                  ? 'bg-indigo-600 border-indigo-600'
+                  : isDark ? 'border-slate-600 bg-slate-800 group-hover:border-indigo-500' : 'border-slate-300 bg-white group-hover:border-indigo-400'">
+                <svg v-if="consentChecked" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+            </div>
+            <span class="text-sm leading-snug"
+              :class="isDark ? 'text-slate-300' : 'text-slate-700'">
+              I understand this is for informational purposes only and is not medical advice
+            </span>
+          </label>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 pb-6">
+          <button @click="acceptConsent" :disabled="!consentChecked"
+            class="w-full py-3 rounded-xl text-sm font-semibold transition-all duration-200"
+            :class="consentChecked
+              ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/25 cursor-pointer'
+              : isDark ? 'bg-slate-800 text-slate-600 cursor-not-allowed border border-slate-700' : 'bg-slate-100 text-slate-400 cursor-not-allowed'">
+            Continue to Consultation
+          </button>
+        </div>
+      </div>
+    </div>
+  </Transition>
+
   </div>
 </template>
 
@@ -1465,6 +1559,16 @@ const error = ref(null)
 const retryAvailable = ref(false) // Set to true when diagnosis fails with a retryable error
 
 // Subscription / upgrade prompt state
+// ── Medical Consent ──
+const showConsent = ref(false)
+const consentChecked = ref(false)
+
+function acceptConsent() {
+  if (!consentChecked.value) return
+  sessionStorage.setItem('consult_consent_given', 'true')
+  showConsent.value = false
+}
+
 const showUpgradePrompt = ref(false)
 const upgradeUsed = ref(null)
 const upgradeLimit = ref(null)
@@ -1946,6 +2050,11 @@ onMounted(async () => {
   window.addEventListener('resize', handleResize)
   document.addEventListener('click', handleDocClick)
   document.addEventListener('click', onDocClickUserMenu)
+
+  // Show medical consent overlay once per session
+  if (!sessionStorage.getItem('consult_consent_given')) {
+    showConsent.value = true
+  }
 
   // Start session inactivity timer (auto-logout after 30 min)
   startSessionTimer()
@@ -4606,6 +4715,11 @@ if (import.meta.env.DEV) {
 </script>
 
 <style scoped>
+/* Consent overlay transition */
+.consent-fade-enter-active { transition: opacity 0.25s ease; }
+.consent-fade-leave-active { transition: opacity 0.2s ease; }
+.consent-fade-enter-from, .consent-fade-leave-to { opacity: 0; }
+
 /* Health tip fade transition */
 .fade-enter-active { transition: opacity 0.4s ease, transform 0.4s ease; }
 .fade-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }

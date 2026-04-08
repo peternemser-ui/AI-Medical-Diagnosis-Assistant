@@ -366,6 +366,26 @@ const routes = [
       },
     ]
   },
+  {
+    path: '/terms',
+    name: 'Terms',
+    component: () => import('@/views/TermsOfService.vue'),
+    meta: {
+      title: 'Terms of Service',
+      description: 'Read the MedAssist AI Terms of Service. Understand our medical disclaimer, acceptable use policy, subscription terms, and limitation of liability.',
+      keywords: 'terms of service, terms and conditions, legal, medical disclaimer, user agreement',
+    }
+  },
+  {
+    path: '/privacy',
+    name: 'Privacy',
+    component: () => import('@/views/PrivacyPolicy.vue'),
+    meta: {
+      title: 'Privacy Policy',
+      description: 'MedAssist AI Privacy Policy — learn how we collect, use, and protect your health information with AES-256 encryption and local-first storage.',
+      keywords: 'privacy policy, data protection, health data privacy, HIPAA, local storage, encryption',
+    }
+  },
   // Legacy redirects
   { path: '/voice-diagnosis', redirect: '/consult' },
   { path: '/diagnose', redirect: '/consult' },
