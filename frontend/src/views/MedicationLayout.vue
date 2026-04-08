@@ -1,65 +1,7 @@
 <template>
   <div class="min-h-screen flex flex-col surface-page">
 
-    <!-- ═══════ GLOBAL TOP NAV BAR ═══════ -->
-    <nav class="sticky top-0 z-50 flex items-center justify-between px-4 sm:px-6 py-3 backdrop-blur-xl border-b transition-colors"
-      style="background: color-mix(in srgb, var(--clinical-surface) 90%, transparent); border-color: var(--clinical-border)">
-      <!-- Left: Brand + main nav links -->
-      <div class="flex items-center gap-2 sm:gap-4">
-        <router-link to="/" class="flex items-center gap-2 group">
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
-            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" /></svg>
-          </div>
-          <span class="text-sm font-semibold hidden sm:inline transition-colors" :class="isDark ? 'text-white group-hover:text-blue-300' : 'text-slate-900 group-hover:text-blue-600'">MedDiagnose AI</span>
-        </router-link>
-
-        <div class="hidden sm:block w-px h-5" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
-
-        <!-- Main nav links -->
-        <div class="flex items-center gap-1">
-          <router-link to="/"
-            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
-            :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800/60' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
-            <span class="hidden md:inline">Home</span>
-          </router-link>
-          <router-link to="/consult"
-            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
-            :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800/60' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-            <span class="hidden md:inline">Consultation</span>
-          </router-link>
-          <router-link to="/medications"
-            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
-            :class="isDark ? 'bg-violet-500/15 text-violet-400' : 'bg-violet-50 text-violet-700'">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3h6v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V3zm-2 4h10v14a2 2 0 01-2 2H9a2 2 0 01-2-2V7z"/></svg>
-            <span class="hidden md:inline">Medications</span>
-          </router-link>
-          <router-link to="/reports"
-            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
-            :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800/60' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span class="hidden md:inline">Reports</span>
-          </router-link>
-        </div>
-      </div>
-
-      <!-- Right: User menu -->
-      <div class="flex items-center gap-2">
-        <button @click="toggleTheme()" class="p-2 rounded-lg transition-colors"
-          :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'">
-          <svg v-if="isDark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-          <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-        </button>
-        <!-- User avatar -->
-        <router-link v-if="isLoggedIn" to="/profile" class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all"
-          :class="isDark ? 'hover:bg-slate-800/60 text-slate-400 hover:text-white' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-900'">
-          <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-detail font-bold text-white">{{ userInitials }}</div>
-          <span class="hidden lg:inline text-xs font-medium" :class="isDark ? 'text-slate-300' : 'text-slate-700'">{{ userName }}</span>
-        </router-link>
-        <router-link v-else to="/profile" class="text-xs px-3 py-1.5 rounded-lg font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white">Log In</router-link>
-      </div>
-    </nav>
+    <AppNav currentPage="medications" />
 
     <!-- ═══════ BODY: Sidebar + Content ═══════ -->
     <div class="flex-1 flex">
@@ -137,6 +79,7 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme.js'
 import { useUser } from '@/composables/useUser.js'
+import AppNav from '@/components/AppNav.vue'
 
 const { isDark, toggleTheme } = useTheme()
 const { profile, isLoggedIn } = useUser()
