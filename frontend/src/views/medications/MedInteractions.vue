@@ -40,12 +40,13 @@
     </div>
 
     <!-- Empty state -->
-    <div v-else-if="medications.length < 2" class="text-center py-20">
-      <div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center" :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
-        <svg class="w-10 h-10" :class="isDark ? 'text-slate-600' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/></svg>
-      </div>
-      <h3 class="text-lg font-semibold mb-2" :class="isDark ? 'text-white' : 'text-slate-900'">Not enough medications</h3>
-      <p class="text-sm" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Add at least 2 medications to check for interactions.</p>
+    <div v-else-if="medications.length < 2" class="text-center py-12">
+      <div class="text-4xl mb-4">&#x1F48A;</div>
+      <h3 class="text-lg font-bold mb-2" :class="isDark ? 'text-white' : 'text-slate-900'">{{ medications.length === 0 ? 'No Medications Added' : 'Not Enough Medications' }}</h3>
+      <p class="text-sm mb-4" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ medications.length === 0 ? 'Add your current medications in your health profile to check for drug interactions.' : 'Add at least 2 medications to check for interactions.' }}</p>
+      <router-link v-if="medications.length === 0" to="/profile" class="inline-block px-6 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500 text-white hover:bg-emerald-400 transition-all">
+        Add Medications in Profile
+      </router-link>
     </div>
 
     <!-- Interaction Matrix -->
@@ -111,6 +112,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { getMedications, checkInteractions } from '@/services/medicationApi.js'
+import { getProfileMedicationNames } from '@/services/profileMedications.js'
 
 const { isDark } = useTheme()
 const medications = ref([])
@@ -216,7 +218,8 @@ onMounted(async () => {
     const meds = Array.isArray(data) ? data : data.medications || []
     medications.value = meds.map(m => m.name)
   } catch {
-    medications.value = ['Lisinopril', 'Metformin', 'Atorvastatin', 'Albuterol']
+    // Fall back to user's profile medications
+    medications.value = getProfileMedicationNames()
   }
   await fetchInteractions()
 })

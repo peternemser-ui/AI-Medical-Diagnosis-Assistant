@@ -106,6 +106,7 @@
 import { ref, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { getMedications, reportSideEffect, getSideEffects, analyzeSideEffects } from '@/services/medicationApi.js'
+import { getProfileMedicationNames } from '@/services/profileMedications.js'
 
 const { isDark } = useTheme()
 const showReportForm = ref(false)
@@ -149,18 +150,15 @@ onMounted(async () => {
     const meds = Array.isArray(data) ? data : data.medications || []
     availableMeds.value = meds.map(m => m.name)
   } catch {
-    availableMeds.value = ['Lisinopril', 'Metformin', 'Atorvastatin', 'Albuterol']
+    // Fall back to user's profile medications
+    availableMeds.value = getProfileMedicationNames()
   }
 
   try {
     const data = await getSideEffects()
     sideEffects.value = Array.isArray(data) ? data : data.effects || []
   } catch {
-    sideEffects.value = [
-      { id: 1, symptom: 'Mild dizziness when standing', severity: 4, date: '2026-03-28', medications: ['Lisinopril'] },
-      { id: 2, symptom: 'Stomach upset after meals', severity: 6, date: '2026-03-25', medications: ['Metformin'] },
-      { id: 3, symptom: 'Muscle soreness in legs', severity: 3, date: '2026-03-20', medications: ['Atorvastatin'] },
-    ]
+    sideEffects.value = []
   }
 })
 </script>

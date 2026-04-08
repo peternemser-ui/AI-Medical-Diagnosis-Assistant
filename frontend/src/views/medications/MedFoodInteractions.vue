@@ -15,12 +15,13 @@
     </div>
 
     <!-- Empty state -->
-    <div v-else-if="medications.length === 0" class="text-center py-20">
-      <div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center" :class="isDark ? 'bg-slate-800' : 'bg-slate-100'">
-        <svg class="w-10 h-10" :class="isDark ? 'text-slate-600' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513"/></svg>
-      </div>
-      <h3 class="text-lg font-semibold mb-2" :class="isDark ? 'text-white' : 'text-slate-900'">No medications found</h3>
-      <p class="text-sm" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Add medications first to see food and lifestyle interactions.</p>
+    <div v-else-if="medications.length === 0" class="text-center py-12">
+      <div class="text-4xl mb-4">&#x1F48A;</div>
+      <h3 class="text-lg font-bold mb-2" :class="isDark ? 'text-white' : 'text-slate-900'">No Medications Added</h3>
+      <p class="text-sm mb-4" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Add your current medications in your health profile to see food interactions, scheduling, side effects, and more.</p>
+      <router-link to="/profile" class="inline-block px-6 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500 text-white hover:bg-emerald-400 transition-all">
+        Add Medications in Profile
+      </router-link>
     </div>
 
     <!-- Medication cards -->
@@ -115,6 +116,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { getMedications, getFoodInteractions } from '@/services/medicationApi.js'
+import { getProfileMedications } from '@/services/profileMedications.js'
 
 const { isDark } = useTheme()
 const medications = ref([])
@@ -122,15 +124,25 @@ const loading = ref(true)
 const expanded = reactive({})
 const foodCache = reactive({})
 
-const demoFoodData = {
-  'Lisinopril': { avoid: ['High-potassium foods (bananas, oranges, potatoes) in excess', 'Salt substitutes containing potassium'], helpful: ['Low-sodium diet improves effectiveness', 'Balanced potassium from varied sources'], timing: 'Can be taken with or without food. Take at the same time each day.', alcohol: 'Limit alcohol. It can lower blood pressure further, causing dizziness.', supplements: ['Potassium supplements (risk of hyperkalemia)', 'NSAIDs like ibuprofen (reduce effectiveness)'], lifestyle: ['Rise slowly from sitting to avoid dizziness', 'Stay hydrated, especially in hot weather', 'Avoid heavy exercise until you know how it affects you'] },
-  'Metformin': { avoid: ['Excessive sugar and refined carbohydrates', 'Heavy meals high in fat (slows absorption)'], helpful: ['High-fiber foods help blood sugar control', 'Balanced meals with protein and complex carbs'], timing: 'Take with meals to reduce stomach upset. Best taken with the largest meals.', alcohol: 'Avoid or strictly limit alcohol. Increases risk of lactic acidosis.', supplements: ['Vitamin B12 absorption may be reduced (monitor levels)', 'Chromium supplements (unpredictable glucose effects)'], lifestyle: ['Maintain regular exercise routine', 'Monitor blood sugar regularly', 'Stay well hydrated'] },
-  'Atorvastatin': { avoid: ['Grapefruit and grapefruit juice (increases drug levels)', 'Excessive alcohol (liver strain)'], helpful: ['Oat bran and soluble fiber (complement cholesterol reduction)', 'Fish rich in omega-3 fatty acids'], timing: 'Take at bedtime for best effectiveness. Can be taken with or without food.', alcohol: 'Limit to moderate amounts. Heavy drinking increases liver damage risk.', supplements: ['St. John\'s Wort (reduces effectiveness)', 'Red yeast rice (contains natural statins, additive risk)'], lifestyle: ['Report any unexplained muscle pain or weakness immediately', 'Regular liver function tests recommended', 'Maintain heart-healthy diet and exercise'] },
-  'Albuterol': { avoid: ['Caffeine in excess (may increase heart rate)', 'Foods that trigger your asthma/allergies'], helpful: ['Anti-inflammatory foods (berries, leafy greens, fatty fish)', 'Adequate hydration thins mucus'], timing: 'Use as needed. No specific meal timing requirements.', alcohol: 'Moderate alcohol is usually fine. Avoid if it triggers breathing issues.', supplements: ['Ephedra / ma huang (additive stimulant effects)', 'High-dose caffeine supplements'], lifestyle: ['Rinse mouth after use to prevent irritation', 'Track triggers and avoid them', 'Keep rescue inhaler accessible at all times'] },
+const noProfileMeds = ref(false)
+
+function buildFoodDataFromEnriched(enrichedMed) {
+  if (!enrichedMed.foodInteractions) return null
+  const fi = enrichedMed.foodInteractions
+  return {
+    avoid: fi.avoid || [],
+    helpful: fi.helpful || [],
+    timing: fi.mealTiming || 'No specific information available.',
+    alcohol: fi.alcohol || 'Consult your doctor about alcohol use.',
+    supplements: fi.supplements || [],
+    lifestyle: fi.lifestyle || []
+  }
 }
 
 function getInfo(name) {
-  return foodCache[name] || demoFoodData[name] || { avoid: ['No data available'], helpful: ['Consult your pharmacist'], timing: 'No specific information available.', alcohol: 'Consult your doctor about alcohol use.', supplements: ['Consult your pharmacist'], lifestyle: ['Follow your doctor\'s instructions'] }
+  if (foodCache[name]) return foodCache[name]
+  const fallback = { avoid: ['No data available'], helpful: ['Consult your pharmacist'], timing: 'No specific information available.', alcohol: 'Consult your doctor about alcohol use.', supplements: ['Consult your pharmacist'], lifestyle: ['Follow your doctor\'s instructions'] }
+  return fallback
 }
 
 function toggle(name) {
@@ -142,23 +154,32 @@ onMounted(async () => {
     const data = await getMedications()
     medications.value = Array.isArray(data) ? data : data.medications || []
   } catch {
-    medications.value = [
-      { name: 'Lisinopril', dosage: '10mg' },
-      { name: 'Metformin', dosage: '500mg' },
-      { name: 'Atorvastatin', dosage: '20mg' },
-      { name: 'Albuterol', dosage: '90mcg' },
-    ]
+    // Fall back to user's profile medications
+    const { medications: profileMeds, hasProfile } = getProfileMedications()
+    if (hasProfile) {
+      medications.value = profileMeds.map(m => ({ name: m.name, dosage: m.dosage }))
+      // Populate food cache from the medication database
+      for (const m of profileMeds) {
+        const foodData = buildFoodDataFromEnriched(m)
+        if (foodData) foodCache[m.name] = foodData
+      }
+    } else {
+      medications.value = []
+      noProfileMeds.value = true
+    }
   }
 
-  try {
-    const names = medications.value.map(m => m.name)
-    const data = await getFoodInteractions(names)
-    if (data && data.interactions) {
-      for (const [name, info] of Object.entries(data.interactions)) {
-        foodCache[name] = info
+  if (medications.value.length > 0) {
+    try {
+      const names = medications.value.map(m => m.name)
+      const data = await getFoodInteractions(names)
+      if (data && data.interactions) {
+        for (const [name, info] of Object.entries(data.interactions)) {
+          foodCache[name] = info
+        }
       }
-    }
-  } catch { /* use demo data */ }
+    } catch { /* use database data already in cache */ }
+  }
 
   loading.value = false
 })

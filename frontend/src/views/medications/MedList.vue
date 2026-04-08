@@ -35,15 +35,18 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="filteredMeds.length === 0 && !loading" class="text-center py-20">
-      <div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center surface-soft">
-        <svg class="w-10 h-10" :class="isDark ? 'text-slate-600' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3h6v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V3zm-2 4h10v14a2 2 0 01-2 2H9a2 2 0 01-2-2V7z"/></svg>
+    <div v-else-if="filteredMeds.length === 0 && !loading" class="text-center py-12">
+      <div class="text-4xl mb-4">&#x1F48A;</div>
+      <h3 class="text-lg font-bold mb-2 text-[var(--text-primary)]">No Medications Added</h3>
+      <p class="text-sm mb-4 text-[var(--text-secondary)]">Add your current medications in your health profile to see food interactions, scheduling, side effects, and more.</p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <router-link to="/profile" class="px-6 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500 text-white hover:bg-emerald-400 transition-all">
+          Add Medications in Profile
+        </router-link>
+        <button @click="showAddModal = true" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-500 hover:to-purple-500 transition-all">
+          Add Manually
+        </button>
       </div>
-      <h3 class="text-lg font-semibold mb-2 text-[var(--text-primary)]">No medications yet</h3>
-      <p class="text-sm mb-6 text-[var(--text-secondary)]">Add your first medication to start tracking dosages, interactions, and reminders.</p>
-      <button @click="showAddModal = true" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-500 hover:to-purple-500 transition-all">
-        Add Your First Medication
-      </button>
     </div>
 
     <!-- Medication Grid -->
@@ -183,6 +186,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { getMedications, addMedication, updateMedication, deleteMedication, searchMedications } from '@/services/medicationApi.js'
+import { getProfileMedications } from '@/services/profileMedications.js'
+import { getAllMedicationNames } from '@/data/medicationDatabase.js'
 
 const { isDark } = useTheme()
 const medications = ref([])
@@ -218,13 +223,9 @@ async function fetchMedications() {
     const data = await getMedications()
     medications.value = Array.isArray(data) ? data : data.medications || []
   } catch {
-    // Use demo data if API not available
-    medications.value = [
-      { id: 1, name: 'Lisinopril', dosage: '10mg', frequency: 'Once daily', route: 'Oral', prescriber: 'Dr. Smith', pharmacy: 'CVS Pharmacy', active: true, adherence: 92, startDate: '2025-01-15', notes: '' },
-      { id: 2, name: 'Metformin', dosage: '500mg', frequency: 'Twice daily', route: 'Oral', prescriber: 'Dr. Johnson', pharmacy: 'Walgreens', active: true, adherence: 78, startDate: '2024-11-01', notes: 'Take with food' },
-      { id: 3, name: 'Atorvastatin', dosage: '20mg', frequency: 'Once daily', route: 'Oral', prescriber: 'Dr. Smith', pharmacy: 'CVS Pharmacy', active: true, adherence: 95, startDate: '2024-06-15', notes: 'Take at bedtime' },
-      { id: 4, name: 'Albuterol', dosage: '90mcg', frequency: 'As needed', route: 'Inhaled', prescriber: 'Dr. Patel', pharmacy: 'Rite Aid', active: false, adherence: 45, startDate: '2024-03-20', notes: '' },
-    ]
+    // Use profile medications instead of hardcoded demo data
+    const { medications: profileMeds } = getProfileMedications()
+    medications.value = profileMeds
   }
   loading.value = false
 }
@@ -237,7 +238,7 @@ function onNameInput() {
       const data = await searchMedications(form.value.name)
       suggestions.value = (Array.isArray(data) ? data : data.results || []).slice(0, 5)
     } catch {
-      suggestions.value = ['Lisinopril', 'Losartan', 'Lipitor', 'Levothyroxine', 'Lexapro'].filter(s => s.toLowerCase().includes(form.value.name.toLowerCase()))
+      suggestions.value = getAllMedicationNames().filter(s => s.toLowerCase().includes(form.value.name.toLowerCase())).slice(0, 5)
     }
   }, 300)
 }

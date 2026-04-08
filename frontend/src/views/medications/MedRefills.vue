@@ -89,6 +89,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { getMedications, getUpcomingRefills } from '@/services/medicationApi.js'
+import { getProfileMedicationNames } from '@/services/profileMedications.js'
 
 const { isDark } = useTheme()
 const refills = ref([])
@@ -152,12 +153,16 @@ onMounted(async () => {
     const data = await getUpcomingRefills()
     refills.value = Array.isArray(data) ? data : data.refills || []
   } catch {
-    refills.value = [
-      { id: 1, name: 'Lisinopril', lastFilled: '2026-03-05', nextRefill: '2026-04-04', refillsRemaining: 3, pharmacy: 'CVS Pharmacy' },
-      { id: 2, name: 'Metformin', lastFilled: '2026-03-20', nextRefill: '2026-04-01', refillsRemaining: 5, pharmacy: 'Walgreens' },
-      { id: 3, name: 'Atorvastatin', lastFilled: '2026-02-15', nextRefill: '2026-03-17', refillsRemaining: 1, pharmacy: 'CVS Pharmacy' },
-      { id: 4, name: 'Albuterol', lastFilled: '2026-01-10', nextRefill: '2026-04-10', refillsRemaining: 2, pharmacy: 'Rite Aid' },
-    ]
+    // Build refill entries from profile medications (no fake data)
+    const names = getProfileMedicationNames()
+    refills.value = names.map((name, i) => ({
+      id: i + 1,
+      name,
+      lastFilled: '',
+      nextRefill: '',
+      refillsRemaining: 0,
+      pharmacy: ''
+    }))
   }
   loading.value = false
 })

@@ -141,6 +141,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { getMedications, getReminders, addReminder, deleteReminder, logAdherence } from '@/services/medicationApi.js'
+import { getProfileMedications } from '@/services/profileMedications.js'
 
 const { isDark } = useTheme()
 const allMeds = ref([])
@@ -242,23 +243,28 @@ onMounted(async () => {
     const meds = Array.isArray(data) ? data : data.medications || []
     allMeds.value = meds.map(m => ({ ...m, scheduleHour: m.scheduleHour || (m.frequency === 'Twice daily' ? 8 : m.frequency === 'Once daily' ? 8 : 8) }))
   } catch {
-    allMeds.value = [
-      { name: 'Lisinopril', dosage: '10mg', scheduleHour: 8 },
-      { name: 'Metformin', dosage: '500mg', scheduleHour: 8 },
-      { name: 'Metformin (PM)', dosage: '500mg', scheduleHour: 18 },
-      { name: 'Atorvastatin', dosage: '20mg', scheduleHour: 21 },
-    ]
+    // Fall back to user's profile medications
+    const { medications: profileMeds, hasProfile } = getProfileMedications()
+    if (hasProfile) {
+      const expanded = []
+      for (const m of profileMeds) {
+        expanded.push({ name: m.name, dosage: m.dosage, scheduleHour: m.scheduleHour || 8 })
+        // If twice daily, add a PM dose
+        if (m.frequency === 'Twice daily') {
+          expanded.push({ name: `${m.name} (PM)`, dosage: m.dosage, scheduleHour: 18 })
+        }
+      }
+      allMeds.value = expanded
+    } else {
+      allMeds.value = []
+    }
   }
 
   try {
     const data = await getReminders()
     reminders.value = Array.isArray(data) ? data : data.reminders || []
   } catch {
-    reminders.value = [
-      { id: 1, medication: 'Lisinopril', time: '08:00', days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], enabled: true },
-      { id: 2, medication: 'Metformin', time: '08:00', days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], enabled: true },
-      { id: 3, medication: 'Atorvastatin', time: '21:00', days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], enabled: true },
-    ]
+    reminders.value = []
   }
 })
 </script>
