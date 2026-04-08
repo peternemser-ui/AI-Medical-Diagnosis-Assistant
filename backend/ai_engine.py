@@ -1,23 +1,23 @@
 # === ai_engine.py ===
 
-import os 
+import os
 import base64
+import logging
 import tempfile
 import json
-import re  # ✅ Added for safe JSON regex fallback
+import re
 from typing import Optional
 from openai import OpenAI
 from dotenv import load_dotenv
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
-# ✅ Load API key
 load_dotenv()
 
-# ✅ Create router
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 
-# ✅ Core diagnosis function
 def run_diagnosis_prompt(
     age: int,
     gender: str,
@@ -35,9 +35,7 @@ def run_diagnosis_prompt(
     client = OpenAI(api_key=actual_api_key)
     transcript_text = None
 
-    # ✅ Transcribe audio if provided
     if audio_base64:
-        print("[DEBUG] Transcribing audio with Whisper...")
         try:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".m4a") as tmp_audio:
                 tmp_audio.write(base64.b64decode(audio_base64))
@@ -51,18 +49,16 @@ def run_diagnosis_prompt(
                     response_format="text"
                 )
             os.remove(tmp_audio_path)
-            print("[DEBUG] Transcript:", transcript_text)
+            logger.info("Whisper transcription complete")
             symptoms = (symptoms or "") + f"\nVoice transcript: {transcript_text}"
 
         except Exception as e:
-            print("[ERROR] Whisper transcription failed:", e)
+            logger.error("Whisper transcription failed: %s", e, exc_info=True)
 
-    # ✅ Fallback symptoms
     symptoms = (symptoms or "").strip()
     if not symptoms:
         symptoms = "The user describes general flu-like symptoms with no further detail."
 
-    # ✅ Build the GPT prompt
     prompt = f"""
 You are an expert medical AI assistant with extensive knowledge of differential diagnosis. Analyze the patient's symptoms and provide a comprehensive medical assessment.
 
@@ -121,11 +117,8 @@ IMPORTANT GUIDELINES:
 Respond with ONLY JSON — no other text or explanations outside the JSON structure.
 """
 
-    print("[DEBUG] Final Prompt Sent to GPT:\n", prompt)
-
     try:
         if image_base64:
-            print("[DEBUG] Sending GPT-4o with image...")
             response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
@@ -148,7 +141,6 @@ Respond with ONLY JSON — no other text or explanations outside the JSON struct
                 temperature=0.2
             )
         else:
-            print("[DEBUG] Sending GPT-4o without image...")
             response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
@@ -162,27 +154,23 @@ Respond with ONLY JSON — no other text or explanations outside the JSON struct
         result_json = {}
         if response.choices:
             content = response.choices[0].message.content.strip()
-            print("[DEBUG] Raw GPT response:\n", content)
 
-            # ✅ Improved fallback parsing
             try:
                 result_json = json.loads(content)
-                print("[DEBUG] JSON parsed successfully.")
             except json.JSONDecodeError:
-                print("[WARNING] Direct JSON parse failed. Trying regex fallback...")
+                logger.warning("Direct JSON parse failed, trying regex fallback")
                 match = re.search(r'\{.*\}', content, re.DOTALL)
                 if match:
                     try:
                         result_json = json.loads(match.group(0))
-                        print("[DEBUG] Regex fallback parse worked.")
                     except json.JSONDecodeError:
-                        print("[ERROR] Regex parse failed too.")
+                        logger.error("Regex JSON fallback also failed")
                         result_json = {"diagnoses": []}
                 else:
-                    print("[ERROR] No JSON pattern found at all.")
+                    logger.error("No JSON pattern found in GPT response")
                     result_json = {"diagnoses": []}
         else:
-            print("[ERROR] No GPT choices returned.")
+            logger.error("No GPT choices returned")
             result_json = {"diagnoses": []}
 
         causes = [
@@ -207,8 +195,5 @@ Respond with ONLY JSON — no other text or explanations outside the JSON struct
         }
 
     except Exception as e:
-        print("[ERROR] OpenAI call failed:", e)
-        raise e
-
-# Note: The followup and diagnose endpoints are now handled directly in main.py
-# These router endpoints are kept for reference but are not actively used
+        logger.error("OpenAI call failed: %s", e, exc_info=True)
+        raise

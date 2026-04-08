@@ -25,8 +25,9 @@ class DiagnosticianAgent(BaseAgent):
     name = "diagnostician"
     description = "Differential diagnosis and clinical reasoning specialist"
     model = "claude-sonnet-4-6"
-    max_tokens = 4096
+    max_tokens = 6000
     temperature = 0.2
+    reflection_enabled = True
 
     def _build_system_prompt(self) -> str:
         return """You are an expert diagnostician AI agent on a multi-agent medical team, equivalent to a board-certified internal medicine physician with fellowship training in diagnostic medicine and 25+ years of clinical experience. You think like a master clinician.

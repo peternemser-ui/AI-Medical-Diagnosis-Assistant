@@ -440,6 +440,97 @@
           </div>
         </section>
 
+        <!-- App Usage Analytics -->
+        <section class="backdrop-blur-xl rounded-2xl border shadow-lg overflow-hidden"
+          :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'">
+          <div class="px-6 py-4 border-b" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
+            <h2 class="text-sm font-semibold flex items-center gap-2 text-[var(--text-primary)]">
+              <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+              App Usage
+            </h2>
+          </div>
+          <div class="p-6 space-y-5">
+            <p class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+              Local usage statistics — stored only on this device, never shared.
+            </p>
+
+            <!-- Summary counters -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="rounded-xl p-3 text-center"
+                :class="isDark ? 'bg-slate-800/60 border border-slate-700/40' : 'bg-slate-50 border border-slate-200'">
+                <div class="text-2xl font-bold tabular-nums text-teal-400">{{ analyticsSummary.totalPageViews }}</div>
+                <div class="text-xs mt-0.5" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Total Page Views</div>
+              </div>
+              <div class="rounded-xl p-3 text-center"
+                :class="isDark ? 'bg-slate-800/60 border border-slate-700/40' : 'bg-slate-50 border border-slate-200'">
+                <div class="text-2xl font-bold tabular-nums text-blue-400">{{ analyticsSummary.totalEvents }}</div>
+                <div class="text-xs mt-0.5" :class="isDark ? 'text-slate-500' : 'text-slate-400'">Features Used</div>
+              </div>
+            </div>
+
+            <!-- Most visited pages -->
+            <div v-if="analyticsSummary.topPages.length > 0">
+              <div class="text-xs font-semibold uppercase tracking-wide mb-2"
+                :class="isDark ? 'text-slate-500' : 'text-slate-400'">Most Visited Pages</div>
+              <div class="space-y-1.5">
+                <div v-for="page in analyticsSummary.topPages" :key="page.path"
+                  class="flex items-center justify-between px-3 py-2 rounded-lg text-sm"
+                  :class="isDark ? 'bg-slate-800/50' : 'bg-slate-50'">
+                  <span class="text-[var(--text-primary)] font-medium">{{ page.name }}</span>
+                  <span class="tabular-nums text-xs px-2 py-0.5 rounded-full font-semibold"
+                    :class="isDark ? 'bg-teal-500/15 text-teal-400' : 'bg-teal-50 text-teal-700'">
+                    {{ page.count }} view{{ page.count !== 1 ? 's' : '' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Feature events -->
+            <div v-if="analyticsSummary.recentEvents.length > 0">
+              <div class="text-xs font-semibold uppercase tracking-wide mb-2"
+                :class="isDark ? 'text-slate-500' : 'text-slate-400'">Feature Usage</div>
+              <div class="space-y-1.5">
+                <div v-for="evt in analyticsSummary.recentEvents" :key="evt.key"
+                  class="flex items-center justify-between px-3 py-2 rounded-lg text-sm"
+                  :class="isDark ? 'bg-slate-800/50' : 'bg-slate-50'">
+                  <span class="text-[var(--text-primary)] capitalize">{{ evt.category }} — {{ evt.action }}</span>
+                  <span class="tabular-nums text-xs px-2 py-0.5 rounded-full font-semibold"
+                    :class="isDark ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-50 text-blue-700'">
+                    {{ evt.count }}x
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty state -->
+            <div v-if="analyticsSummary.totalPageViews === 0 && analyticsSummary.totalEvents === 0"
+              class="text-center py-4">
+              <p class="text-xs" :class="isDark ? 'text-slate-600' : 'text-slate-400'">
+                No usage data yet — it will appear as you use the app.
+              </p>
+            </div>
+
+            <!-- Tracking since -->
+            <div v-if="analyticsSummary.startedAt" class="text-xs" :class="isDark ? 'text-slate-600' : 'text-slate-400'">
+              Tracking since {{ new Date(analyticsSummary.startedAt).toLocaleDateString() }}
+            </div>
+
+            <!-- Clear button -->
+            <button @click="handleClearAnalytics"
+              class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors border"
+              :class="isDark
+                ? 'border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                : 'border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700'">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+              Clear Analytics
+            </button>
+          </div>
+        </section>
+
         <!-- Need Help? -->
         <section class="backdrop-blur-xl rounded-2xl border shadow-lg overflow-hidden"
           :class="isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'">
@@ -508,6 +599,7 @@ import { clearAllEncryptedDataIncludingKeys } from '@/services/encryptedStorage.
 import { clearHistory as clearHistoryFn } from '@/services/historyService.js'
 import { validateApiKeys, API_BASE_URL } from '@/services/api.js'
 import { MODEL_PRICING, getModelPrice } from '@/data/modelPricing.js'
+import { getAnalyticsSummary, clearAnalytics } from '@/composables/useAnalytics.js'
 
 const router = useRouter()
 const { isDark, toggleTheme } = useTheme()
@@ -690,6 +782,18 @@ const settings = reactive({
   soundEffects: true,
 })
 
+// ── Analytics ────────────────────────────────────────────────────────────────
+const analyticsSummary = ref(getAnalyticsSummary())
+
+function handleClearAnalytics() {
+  confirmDialog.message = 'Clear all local usage statistics? This cannot be undone.'
+  confirmDialog.action = () => {
+    clearAnalytics()
+    analyticsSummary.value = getAnalyticsSummary()
+  }
+  confirmDialog.show = true
+}
+
 const confirmDialog = reactive({
   show: false,
   message: '',
@@ -707,6 +811,9 @@ onMounted(() => {
 
   // Load existing API key for current provider
   loadProviderKey()
+
+  // Refresh analytics summary (pick up the page-view that was just tracked for /settings)
+  analyticsSummary.value = getAnalyticsSummary()
 })
 
 function saveSetting(key, value) {

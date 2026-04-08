@@ -27,7 +27,23 @@ Thumbs.db
 
 # Database
 *.db
+*.db-shm
+*.db-wal
 backend/*.db
+
+# Runtime / local data files
+backend/quality_audits.json
+backend/subscription_data.json
 
 # Backend env
 backend/.env
+
+# Claude local settings
+.claude/settings.local.json
+
+# Debug / temp output
+backend/_debug_*.json
+frontend/nul
+
+# Office documents
+*.docx

@@ -14,6 +14,8 @@ import json
 import logging
 from typing import Any
 
+from config import AGENT_TIMEOUT_CLOUD, AGENT_TIMEOUT_OLLAMA
+
 from anthropic import AsyncAnthropic
 
 from .message_bus import Message, MessageBus
@@ -28,8 +30,9 @@ class BaseAgent:
     name: str = "base_agent"
     description: str = "Base agent"
     model: str = "claude-sonnet-4-6"
-    max_tokens: int = 4096
+    max_tokens: int = 5000
     temperature: float = 0.3
+    reflection_enabled: bool = False
 
     def __init__(self, api_key: str, bus: MessageBus, llm_client: LLMClient | None = None):
         # Keep legacy Anthropic client for backward compatibility
@@ -65,6 +68,28 @@ class BaseAgent:
         if tool_name == "publish_result":
             return json.dumps({"status": "published", "data": tool_input})
         return json.dumps({"error": f"Unknown tool: {tool_name}"})
+
+    # ------------------------------------------------------------------
+    # Output validation
+    # ------------------------------------------------------------------
+
+    def _validate_and_parse_output(self, raw_data: dict, schema_class=None) -> dict:
+        """Validate agent output against a Pydantic schema, filling defaults for missing fields."""
+        if not schema_class:
+            return raw_data
+        try:
+            validated = schema_class.model_validate(raw_data)
+            return validated.model_dump(by_alias=False)
+        except Exception:
+            # Schema validation failed -- return raw with best-effort defaults
+            try:
+                defaults = schema_class().model_dump()
+                for key, val in defaults.items():
+                    if key not in raw_data:
+                        raw_data[key] = val
+            except Exception:
+                pass
+            return raw_data
 
     # ------------------------------------------------------------------
     # Default tools every agent gets
@@ -176,16 +201,50 @@ class BaseAgent:
         })
 
     # ------------------------------------------------------------------
+    # Reflection / Self-Critique
+    # ------------------------------------------------------------------
+
+    async def reflect(self, initial_output: str, context: str = "") -> str:
+        """Self-critique loop — asks the LLM to review and improve its own output."""
+        if not self.reflection_enabled:
+            return initial_output
+
+        reflection_prompt = (
+            f"You are reviewing your own previous analysis as a {self.description}.\n\n"
+            f"=== YOUR INITIAL OUTPUT ===\n{initial_output[:3000]}\n\n"
+            f"=== CONTEXT ===\n{context[:1000]}\n\n"
+            f"Critically review your analysis:\n"
+            f"1. Did you miss any important diagnoses or conditions?\n"
+            f"2. Are there cognitive biases (anchoring, availability, premature closure)?\n"
+            f"3. Did you adequately consider dangerous 'must-not-miss' conditions?\n"
+            f"4. Are your confidence percentages well-calibrated?\n"
+            f"5. Would a senior attending physician find any gaps?\n\n"
+            f"Provide a REVISED and IMPROVED version of your analysis in the same JSON format. "
+            f"If your analysis was already correct, return it unchanged with a note explaining why."
+        )
+
+        try:
+            reflected = await self.run(reflection_prompt, use_tools=False)
+            reflected_text = reflected.get("text", "") if isinstance(reflected, dict) else str(reflected)
+            return reflected_text if reflected_text and len(reflected_text) > 50 else initial_output
+        except Exception as e:
+            logger.warning("Reflection failed for %s: %s", self.name, e)
+            return initial_output
+
+    # ------------------------------------------------------------------
     # Core agent loop
     # ------------------------------------------------------------------
 
-    async def run(self, user_message: str, context: dict[str, Any] | None = None, images: list[str] | None = None, timeout: float = None) -> dict[str, Any]:
+    async def run(self, user_message: str, context: dict[str, Any] | None = None, images: list[str] | None = None, timeout: float = None, use_tools: bool = True, max_iterations: int = 8) -> dict[str, Any]:
         """
         Run the autonomous agent loop with a timeout.
 
         Sends *user_message* to Claude along with the agent's tools.
         Loops over tool_use blocks until Claude produces a final text answer.
         Returns a dict with ``text`` (final answer) and ``tool_calls`` (log).
+
+        If *use_tools* is False, the agent produces a single response without
+        any tool use — much faster for structured JSON output.
 
         If *images* is provided (list of base64-encoded image strings),
         the user message is sent as a multi-part content block so Claude
@@ -195,10 +254,10 @@ class BaseAgent:
         from .llm_client import get_vendor
         # Local models (Ollama) need more time per agent
         if timeout is None:
-            timeout = 90.0 if get_vendor(self.model) == "ollama" else 45.0
+            timeout = AGENT_TIMEOUT_OLLAMA if get_vendor(self.model) == "ollama" else AGENT_TIMEOUT_CLOUD
         try:
             return await asyncio.wait_for(
-                self._run_loop(user_message, context, images),
+                self._run_loop(user_message, context, images, use_tools=use_tools, max_iterations=max_iterations),
                 timeout=timeout
             )
         except asyncio.TimeoutError:
@@ -209,16 +268,31 @@ class BaseAgent:
                 "timed_out": True,
             }
 
-    async def _run_loop(self, user_message: str, context: dict[str, Any] | None = None, images: list[str] | None = None) -> dict[str, Any]:
+    async def _run_loop(self, user_message: str, context: dict[str, Any] | None = None, images: list[str] | None = None, use_tools: bool = True, max_iterations: int = 8) -> dict[str, Any]:
         """Internal agent loop — called by run() with timeout wrapper."""
         messages: list[dict] = []
 
         # Inject context from other agents if available
         if context:
-            context_block = (
-                "Here is context from other agents on the team:\n"
-                + json.dumps(context, indent=2)
-            )
+            from .llm_client import get_vendor
+            is_local = get_vendor(self.model) in ("ollama",)
+
+            if is_local:
+                # Compact context for local models — strip raw_text, limit size
+                compact = {}
+                for k, v in context.items():
+                    if isinstance(v, dict):
+                        compact[k] = {ck: cv for ck, cv in v.items()
+                                      if ck != "raw_text" and not ck.startswith("_")}
+                    else:
+                        compact[k] = v
+                context_str = json.dumps(compact, indent=1)
+                if len(context_str) > 3000:
+                    context_str = context_str[:2800] + "\n..."
+            else:
+                context_str = json.dumps(context, indent=2)
+
+            context_block = "Here is context from other agents on the team:\n" + context_str
             messages.append({"role": "user", "content": context_block})
             messages.append({"role": "assistant", "content": "Thank you. I have reviewed the context from my colleagues. I will now proceed with my analysis."})
 
@@ -238,11 +312,47 @@ class BaseAgent:
         else:
             messages.append({"role": "user", "content": user_message})
 
-        tools = self._get_tools()
+        tools = self._get_tools() if use_tools else []
+
+        # Fast path: no tools → single API call, return text directly
+        if not tools:
+            from .llm_client import get_vendor
+            use_llm_client = self.llm_client and (get_vendor(self.model) != "anthropic" or self.client is None)
+            if use_llm_client:
+                resp = await self.llm_client.create_message(
+                    model=self.model,
+                    system=self._system_prompt,
+                    messages=messages,
+                    tools=None,
+                    max_tokens=self.max_tokens,
+                    temperature=self.temperature,
+                )
+                assistant_content = resp["content"]
+                usage = resp.get("usage", {})
+            else:
+                response = await self.client.messages.create(
+                    model=self.model,
+                    max_tokens=self.max_tokens,
+                    temperature=self.temperature,
+                    system=self._system_prompt,
+                    messages=messages,
+                )
+                assistant_content = response.content
+                usage = {}
+                if hasattr(response, "usage"):
+                    usage = {"input_tokens": getattr(response.usage, "input_tokens", 0),
+                             "output_tokens": getattr(response.usage, "output_tokens", 0)}
+
+            text_parts = [b.text for b in assistant_content if hasattr(b, "text") and b.type == "text"]
+            return {
+                "text": "\n".join(text_parts),
+                "tool_calls": [],
+                "token_usage": usage,
+            }
         tool_call_log: list[dict] = []
         total_input_tokens = 0
         total_output_tokens = 0
-        max_iterations = 4  # Limit tool-use rounds to prevent agents from looping too long
+        # max_iterations is now a parameter (default 8), can be overridden per call
 
         # Determine whether to use multi-vendor LLMClient or direct Anthropic
         from .llm_client import get_vendor
@@ -311,9 +421,60 @@ class BaseAgent:
 
             messages.append({"role": "user", "content": tool_results})
 
-        # Fallback if max iterations reached
+        # Max iterations reached — ask for a final JSON answer without tools
+        logger.warning("[%s] Hit max iterations (%d) — requesting final answer", self.name, max_iterations)
+        messages.append({
+            "role": "user",
+            "content": (
+                "You have used all available tool rounds. Please provide your FINAL answer now "
+                "as a single JSON object. Do NOT call any more tools. Respond ONLY with valid JSON."
+            ),
+        })
+        try:
+            if use_llm_client:
+                resp = await self.llm_client.create_message(
+                    model=self.model,
+                    system=self._system_prompt,
+                    messages=messages,
+                    tools=None,  # No tools — force text response
+                    max_tokens=self.max_tokens,
+                    temperature=self.temperature,
+                )
+                assistant_content = resp["content"]
+            else:
+                response = await self.client.messages.create(
+                    model=self.model,
+                    max_tokens=self.max_tokens,
+                    temperature=self.temperature,
+                    system=self._system_prompt,
+                    messages=messages,
+                )
+                assistant_content = response.content
+
+            text_parts = [b.text for b in assistant_content if hasattr(b, "text") and b.type == "text"]
+            final_text = "\n".join(text_parts)
+            if final_text.strip():
+                return {
+                    "text": final_text,
+                    "tool_calls": tool_call_log,
+                    "token_usage": {"input_tokens": total_input_tokens, "output_tokens": total_output_tokens},
+                }
+        except Exception as e:
+            logger.error("[%s] Last-chance answer failed: %s", self.name, e)
+
+        # True fallback — collect any text from the last assistant message
+        last_text_parts = []
+        if messages:
+            last_assistant = [m for m in messages if m.get("role") == "assistant"]
+            if last_assistant:
+                content = last_assistant[-1].get("content", [])
+                if isinstance(content, list):
+                    for b in content:
+                        if hasattr(b, "text") and hasattr(b, "type") and b.type == "text":
+                            last_text_parts.append(b.text)
+
         return {
-            "text": "Agent reached maximum iterations without a final answer.",
+            "text": "\n".join(last_text_parts) if last_text_parts else "Agent reached maximum iterations without a final answer.",
             "tool_calls": tool_call_log,
             "token_usage": {"input_tokens": total_input_tokens, "output_tokens": total_output_tokens},
         }

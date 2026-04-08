@@ -1396,6 +1396,25 @@ Always respond with structured JSON in your final answer:
                 "required": ["disease"],
             },
         })
+        tools.append({
+            "name": "search_pubmed",
+            "description": "Search PubMed for medical literature. Returns titles and abstracts of relevant papers. Use for evidence-based medicine, prevalence data, treatment efficacy, and clinical guidelines.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "PubMed search query (use MeSH terms when possible)"
+                    },
+                    "max_results": {
+                        "type": "integer",
+                        "description": "Maximum number of results to return (default 3, max 5)",
+                        "default": 3
+                    }
+                },
+                "required": ["query"]
+            }
+        })
         return tools
 
     async def _handle_tool_call(self, tool_name: str, tool_input: dict) -> str:
@@ -1405,6 +1424,8 @@ Always respond with structured JSON in your final answer:
             return await self._check_drug_interactions(tool_input)
         if tool_name == "lookup_disease_prevalence":
             return await self._lookup_prevalence(tool_input)
+        if tool_name == "search_pubmed":
+            return await self._search_pubmed(tool_input)
         return await super()._handle_tool_call(tool_name, tool_input)
 
     # ------------------------------------------------------------------
@@ -1615,3 +1636,83 @@ Always respond with structured JSON in your final answer:
                 f"Use this data to inform pre-test probability estimation."
             ),
         })
+
+    async def _search_pubmed(self, tool_input: dict) -> str:
+        """Search PubMed for medical literature via NCBI E-utilities API."""
+        import re
+
+        query = tool_input.get("query", "")
+        max_results = min(tool_input.get("max_results", 3), 5)
+
+        if not query:
+            return json.dumps({"results": [], "message": "No query provided"})
+
+        try:
+            import httpx
+
+            # Step 1: Search for paper IDs
+            search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+            search_params = {
+                "db": "pubmed",
+                "term": query,
+                "retmax": max_results,
+                "retmode": "json",
+                "sort": "relevance",
+            }
+            async with httpx.AsyncClient(timeout=10) as client:
+                search_resp = await client.get(search_url, params=search_params)
+                search_data = search_resp.json()
+
+            id_list = search_data.get("esearchresult", {}).get("idlist", [])
+
+            if not id_list:
+                return json.dumps({"results": [], "message": f"No PubMed results for: {query}"})
+
+            # Step 2: Fetch abstracts
+            fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+            fetch_params = {
+                "db": "pubmed",
+                "id": ",".join(id_list),
+                "retmode": "xml",
+                "rettype": "abstract",
+            }
+            async with httpx.AsyncClient(timeout=10) as client:
+                fetch_resp = await client.get(fetch_url, params=fetch_params)
+
+            # Parse XML response (simple extraction)
+            xml_text = fetch_resp.text
+            articles = []
+
+            # Extract articles from XML
+            article_blocks = re.findall(r'<PubmedArticle>(.*?)</PubmedArticle>', xml_text, re.DOTALL)
+            for block in article_blocks[:max_results]:
+                title_match = re.search(r'<ArticleTitle>(.*?)</ArticleTitle>', block, re.DOTALL)
+                abstract_match = re.search(r'<AbstractText[^>]*>(.*?)</AbstractText>', block, re.DOTALL)
+                year_match = re.search(r'<Year>(\d{4})</Year>', block)
+                journal_match = re.search(r'<Title>(.*?)</Title>', block)
+                pmid_match = re.search(r'<PMID[^>]*>(\d+)</PMID>', block)
+
+                title = title_match.group(1).strip() if title_match else "Unknown title"
+                abstract = abstract_match.group(1).strip() if abstract_match else "No abstract available"
+                # Clean HTML tags from abstract
+                abstract = re.sub(r'<[^>]+>', '', abstract)
+                year = year_match.group(1) if year_match else "Unknown year"
+                journal = journal_match.group(1) if journal_match else "Unknown journal"
+                pmid = pmid_match.group(1) if pmid_match else ""
+
+                articles.append({
+                    "title": title[:200],
+                    "abstract": abstract[:500],
+                    "year": year,
+                    "journal": journal[:100],
+                    "pmid": pmid,
+                    "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/" if pmid else "",
+                })
+
+            return json.dumps({
+                "results": articles,
+                "query": query,
+                "total_found": search_data.get("esearchresult", {}).get("count", 0),
+            })
+        except Exception as e:
+            return json.dumps({"results": [], "error": str(e), "message": "PubMed search failed, using local knowledge"})

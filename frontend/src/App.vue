@@ -31,18 +31,28 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import ToastContainer from '@/components/ToastContainer.vue'
 import HelpButton from '@/components/HelpButton.vue'
 import ErrorBoundary from '@/components/ErrorBoundary.vue'
 import { useOnlineStatus } from '@/composables/useOnlineStatus'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
+import { trackPageView } from '@/composables/useAnalytics'
 
 const { isOnline } = useOnlineStatus()
 const route = useRoute()
 
 useKeyboardShortcuts()
+
+// Track page views on every route change (local analytics only, no external services)
+watch(
+  () => route.path,
+  (path) => {
+    if (path) trackPageView(path)
+  },
+  { immediate: true }
+)
 
 const showHelpButton = computed(() => {
   const path = route.path || ''

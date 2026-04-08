@@ -11,6 +11,8 @@ import json
 import logging
 from typing import Any
 
+from config import OLLAMA_API_URL, OLLAMA_TIMEOUT, OLLAMA_CONNECT_TIMEOUT
+
 logger = logging.getLogger(__name__)
 
 # Vendor → model catalog
@@ -114,9 +116,9 @@ class LLMClient:
             import httpx
             from openai import AsyncOpenAI
             self._clients["ollama"] = AsyncOpenAI(
-                base_url="http://localhost:11434/v1",
+                base_url=OLLAMA_API_URL,
                 api_key="ollama",  # Ollama doesn't need a real key
-                http_client=httpx.AsyncClient(timeout=httpx.Timeout(120.0, connect=10.0)),
+                http_client=httpx.AsyncClient(timeout=httpx.Timeout(OLLAMA_TIMEOUT, connect=OLLAMA_CONNECT_TIMEOUT)),
             )
         return self._clients["ollama"]
 
@@ -286,12 +288,19 @@ class LLMClient:
         """Call Ollama using the OpenAI-compatible API (no tool support)."""
         client = self._get_ollama()
 
-        # Cap max_tokens for local models to prevent very slow generation
-        max_tokens = min(max_tokens, 1500)
+        # Cap max_tokens for local models — higher for JSON output
+        max_tokens = min(max_tokens, 3000)
 
-        # Trim system prompt for Ollama — keep it under 2000 chars for speed
+        # Build a concise system prompt for Ollama — keep the core role + JSON instruction
         if len(system) > 2000:
-            system = system[:1900] + "\n\n[System prompt trimmed for local model. Provide a concise clinical analysis.]"
+            # Extract the first paragraph (role description) and add JSON instruction
+            first_para = system[:system.find('\n\n', 200)] if '\n\n' in system[200:] else system[:500]
+            system = (
+                f"{first_para}\n\n"
+                "IMPORTANT: You MUST respond ONLY with a valid JSON object. "
+                "Do NOT include any text before or after the JSON. "
+                "Do NOT use markdown code blocks. Just output raw JSON."
+            )
 
         # Build simple message list — Ollama doesn't support tool use well,
         # so we skip tools and just use text messages
@@ -300,6 +309,9 @@ class LLMClient:
             role = msg["role"]
             content = msg["content"]
             if isinstance(content, str):
+                # Trim very long context messages for local models
+                if len(content) > 4000:
+                    content = content[:3800] + "\n\n[Context trimmed for local model. Focus on the key findings above.]"
                 oai_messages.append({"role": role, "content": content})
             elif isinstance(content, list):
                 # Flatten multi-part content to text
@@ -312,7 +324,10 @@ class LLMClient:
                     elif isinstance(block, dict) and block.get("type") == "tool_result":
                         text_parts.append(str(block.get("content", "")))
                 if text_parts:
-                    oai_messages.append({"role": role, "content": "\n".join(text_parts)})
+                    combined = "\n".join(text_parts)
+                    if len(combined) > 4000:
+                        combined = combined[:3800] + "\n\n[Trimmed for local model.]"
+                    oai_messages.append({"role": role, "content": combined})
 
         try:
             response = await client.chat.completions.create(

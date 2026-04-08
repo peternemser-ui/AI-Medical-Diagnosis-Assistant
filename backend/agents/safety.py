@@ -706,6 +706,7 @@ class SafetyAgent(BaseAgent):
     model = "claude-sonnet-4-6"
     max_tokens = 5000
     temperature = 0.1  # very deterministic for safety-critical reviews
+    reflection_enabled = True
 
     def _build_system_prompt(self) -> str:
         return """You are a patient safety officer AI agent on a multi-agent medical team. Your sole purpose is to review ALL recommendations from other agents for potential patient harm.

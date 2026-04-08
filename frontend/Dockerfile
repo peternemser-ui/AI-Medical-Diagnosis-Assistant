@@ -1,4 +1,4 @@
-## ---- Dev target (default for docker-compose) ----
+## ---- Dev target (for local development with docker-compose override) ----
 FROM node:20-alpine AS dev
 
 WORKDIR /app
@@ -30,13 +30,16 @@ RUN npm run build
 ## ---- Production serve ----
 FROM nginx:alpine AS production
 
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
 # Copy built assets
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Nginx config that proxies /api and /health to the backend service
 RUN cat > /etc/nginx/conf.d/default.conf <<'NGINX'
 server {
-    listen 3000;
+    listen 80;
     server_name _;
 
     root /usr/share/nginx/html;
@@ -62,6 +65,9 @@ server {
 }
 NGINX
 
-EXPOSE 3000
+EXPOSE 80
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

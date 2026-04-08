@@ -26,14 +26,24 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: process.env.NODE_ENV !== 'production',
+    chunkSizeWarningLimit: 700,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-vue': ['vue', 'vue-router'],
-          'vendor-marked': ['marked'],
-          'vendor-dompurify': ['dompurify'],
-          'vendor-html2pdf': ['html2pdf.js'],
-          'vendor-html2canvas': ['html2canvas'],
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined
+          const norm = id.replace(/\\/g, '/')
+          if (norm.includes('microsoft-cognitiveservices-speech-sdk')) {
+            process.stdout.write('SPEECH ID: ' + norm.slice(0, 120) + '\n')
+          }
+          const pkg = (name) => norm.includes(`/node_modules/${name}/`)
+          if (pkg('vue') || pkg('vue-router') || pkg('@vue')) return 'vendor-vue'
+          if (pkg('marked') || pkg('dompurify')) return 'vendor-markdown'
+          if (pkg('html2pdf.js') || pkg('html2canvas')) return 'vendor-pdf'
+          if (pkg('chart.js') || pkg('vue-chartjs') || pkg('chartjs-plugin-datalabels')) return 'vendor-charts'
+          if (pkg('microsoft-cognitiveservices-speech-sdk')) return 'vendor-speech'
+          if (pkg('lucide-vue-next')) return 'vendor-icons'
+          if (pkg('@vueuse')) return 'vendor-vueuse'
+          return 'vendor'
         }
       }
     }
