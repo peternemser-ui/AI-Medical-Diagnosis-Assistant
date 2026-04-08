@@ -1,8 +1,9 @@
 <template>
-  <div class="backdrop-blur-xl border-b py-3 px-6 transition-colors sticky top-0 z-50"
-    :class="isDark
-      ? 'bg-slate-900/95 border-slate-700/50 shadow-panel-dark'
-      : 'bg-white/95 border-slate-200 shadow-subtle'">
+  <div class="backdrop-blur-xl border-b py-3 px-6 transition-colors"
+    :class="[
+      sticky ? 'sticky top-0 z-50' : '',
+      isDark ? 'bg-slate-900/95 border-slate-700/50 shadow-panel-dark' : 'bg-white/95 border-slate-200 shadow-subtle'
+    ]">
     <!-- Subtle gradient accent -->
     <div v-if="accent" class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
 
@@ -50,5 +51,6 @@ defineProps({
   subtitle: String,
   icon: String,
   accent: { type: Boolean, default: false },
+  sticky: { type: Boolean, default: true },
 })
 </script>

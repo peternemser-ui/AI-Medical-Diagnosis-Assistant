@@ -298,7 +298,14 @@ const routes = [
   { path: '/diagnose', redirect: '/consult' },
   { path: '/welcome', redirect: '/' },
   { path: '/dashboard-old', redirect: '/dashboard' },
-  { path: '/chat', redirect: '/consult' }
+  { path: '/chat', redirect: '/consult' },
+  // 404 catch-all (must be last)
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/NotFound.vue'),
+    meta: { title: '404 Not Found — MedDiagnose AI' }
+  }
 ]
 
 const router = createRouter({

@@ -353,6 +353,15 @@
         <div class="rounded-2xl border p-5"
           :class="isDark ? 'bg-indigo-950/30 border-indigo-800/40' : 'bg-indigo-50/80 border-indigo-200'">
           <h3 class="text-sm font-semibold mb-3" :class="isDark ? 'text-indigo-300' : 'text-indigo-800'">Talk to Someone</h3>
+
+          <!-- Prominent Call 988 Button -->
+          <a href="tel:988"
+            class="flex items-center justify-center gap-2 w-full mb-4 px-4 py-3 rounded-xl text-white font-bold text-base bg-red-600 hover:bg-red-500 transition-colors shadow-lg shadow-red-600/30"
+            aria-label="Call 988 Suicide and Crisis Lifeline">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+            Call 988 Now
+          </a>
+
           <div class="space-y-2">
             <div class="flex items-center gap-3 text-sm">
               <span class="font-medium" :class="isDark ? 'text-indigo-200' : 'text-indigo-900'">988 Suicide &amp; Crisis Lifeline:</span>

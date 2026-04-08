@@ -390,3 +390,98 @@ export function enrichMedication(name) {
 export function getAllMedicationNames() {
   return Object.values(MEDICATION_DATABASE).map(m => m.name)
 }
+
+/**
+ * Known drug-drug interactions.
+ * Each key is a lowercase medication name; values are arrays of
+ * { drug, severity, description } objects.
+ */
+export const DRUG_INTERACTIONS = {
+  'warfarin': [
+    { drug: 'ibuprofen', severity: 'high', description: 'Increased bleeding risk. NSAIDs inhibit platelet function and may cause GI bleeding.' },
+    { drug: 'aspirin', severity: 'high', description: 'Significantly increased bleeding risk. Dual antiplatelet/anticoagulant effect.' },
+    { drug: 'clopidogrel', severity: 'high', description: 'Increased bleeding risk with dual antithrombotic therapy.' },
+    { drug: 'sertraline', severity: 'moderate', description: 'SSRIs may increase bleeding risk when combined with warfarin.' },
+    { drug: 'fluoxetine', severity: 'moderate', description: 'SSRIs may increase bleeding risk and affect warfarin metabolism.' },
+    { drug: 'omeprazole', severity: 'moderate', description: 'May alter warfarin metabolism. Monitor INR closely.' },
+  ],
+  'lisinopril': [
+    { drug: 'ibuprofen', severity: 'moderate', description: 'NSAIDs reduce the effectiveness of ACE inhibitors and increase kidney risk.' },
+    { drug: 'losartan', severity: 'high', description: 'Dual RAAS blockade increases risk of hypotension, hyperkalemia, and renal failure.' },
+  ],
+  'losartan': [
+    { drug: 'ibuprofen', severity: 'moderate', description: 'NSAIDs reduce the effectiveness of ARBs and increase kidney risk.' },
+    { drug: 'lisinopril', severity: 'high', description: 'Dual RAAS blockade increases risk of hypotension, hyperkalemia, and renal failure.' },
+  ],
+  'metformin': [
+    { drug: 'prednisone', severity: 'moderate', description: 'Corticosteroids raise blood sugar and may counteract metformin.' },
+  ],
+  'sertraline': [
+    { drug: 'fluoxetine', severity: 'high', description: 'Do not combine two SSRIs. Risk of serotonin syndrome.' },
+    { drug: 'warfarin', severity: 'moderate', description: 'SSRIs may increase bleeding risk when combined with warfarin.' },
+    { drug: 'ibuprofen', severity: 'moderate', description: 'SSRIs combined with NSAIDs increase GI bleeding risk.' },
+  ],
+  'fluoxetine': [
+    { drug: 'sertraline', severity: 'high', description: 'Do not combine two SSRIs. Risk of serotonin syndrome.' },
+    { drug: 'warfarin', severity: 'moderate', description: 'SSRIs may increase bleeding risk and affect warfarin metabolism.' },
+    { drug: 'ibuprofen', severity: 'moderate', description: 'SSRIs combined with NSAIDs increase GI bleeding risk.' },
+  ],
+  'ibuprofen': [
+    { drug: 'aspirin', severity: 'moderate', description: 'Ibuprofen may reduce the cardioprotective effect of low-dose aspirin.' },
+    { drug: 'warfarin', severity: 'high', description: 'Increased bleeding risk. NSAIDs inhibit platelet function.' },
+    { drug: 'lisinopril', severity: 'moderate', description: 'NSAIDs reduce ACE inhibitor effectiveness and increase kidney risk.' },
+    { drug: 'losartan', severity: 'moderate', description: 'NSAIDs reduce ARB effectiveness and increase kidney risk.' },
+    { drug: 'clopidogrel', severity: 'high', description: 'Increased GI bleeding risk with combined antiplatelet and NSAID therapy.' },
+  ],
+  'aspirin': [
+    { drug: 'warfarin', severity: 'high', description: 'Significantly increased bleeding risk.' },
+    { drug: 'ibuprofen', severity: 'moderate', description: 'Ibuprofen may reduce the cardioprotective effect of low-dose aspirin.' },
+    { drug: 'clopidogrel', severity: 'moderate', description: 'Increased bleeding risk with dual antiplatelet therapy.' },
+  ],
+  'clopidogrel': [
+    { drug: 'omeprazole', severity: 'moderate', description: 'Omeprazole reduces clopidogrel effectiveness. Use pantoprazole instead.' },
+    { drug: 'warfarin', severity: 'high', description: 'Increased bleeding risk with dual antithrombotic therapy.' },
+    { drug: 'ibuprofen', severity: 'high', description: 'Increased GI bleeding risk.' },
+    { drug: 'aspirin', severity: 'moderate', description: 'Increased bleeding risk with dual antiplatelet therapy.' },
+  ],
+  'omeprazole': [
+    { drug: 'clopidogrel', severity: 'moderate', description: 'Omeprazole reduces clopidogrel effectiveness. Use pantoprazole instead.' },
+  ],
+  'metoprolol': [
+    { drug: 'amlodipine', severity: 'moderate', description: 'Combined use may cause excessive blood pressure lowering or bradycardia.' },
+  ],
+  'amlodipine': [
+    { drug: 'metoprolol', severity: 'moderate', description: 'Combined use may cause excessive blood pressure lowering or bradycardia.' },
+  ],
+  'prednisone': [
+    { drug: 'ibuprofen', severity: 'moderate', description: 'Increased risk of GI ulceration and bleeding.' },
+    { drug: 'metformin', severity: 'moderate', description: 'Corticosteroids raise blood sugar and counteract metformin.' },
+    { drug: 'warfarin', severity: 'moderate', description: 'Corticosteroids may alter warfarin response. Monitor INR.' },
+  ],
+}
+
+/**
+ * Check a medication against a list of existing medications for interactions.
+ * @param {string} newMedName - Name of the new medication being added
+ * @param {Array} existingMeds - Array of medication objects with a `name` property
+ * @returns {Array} Array of { existingMed, severity, description } interaction warnings
+ */
+export function checkDrugInteractions(newMedName, existingMeds) {
+  const key = newMedName.toLowerCase().trim()
+  const interactions = DRUG_INTERACTIONS[key]
+  if (!interactions) return []
+
+  const warnings = []
+  for (const med of existingMeds) {
+    const existingKey = med.name.toLowerCase().trim()
+    const match = interactions.find(i => i.drug === existingKey)
+    if (match) {
+      warnings.push({
+        existingMed: med.name,
+        severity: match.severity,
+        description: match.description,
+      })
+    }
+  }
+  return warnings
+}

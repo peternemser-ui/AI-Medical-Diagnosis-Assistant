@@ -8,30 +8,59 @@
         You're offline — some features may be limited
       </div>
     </Transition>
-    <router-view v-slot="{ Component }">
-      <Transition name="page" mode="out-in">
-        <component :is="Component" />
-      </Transition>
-    </router-view>
+    <Transition name="offline-bar">
+      <div
+        v-if="showUpdateBanner"
+        class="fixed top-0 left-0 right-0 z-[9998] bg-blue-600 text-white text-center text-sm font-medium py-1.5 px-4 shadow-md flex items-center justify-center gap-3"
+      >
+        New version available — refresh to update
+        <button @click="reloadPage" class="underline font-semibold hover:text-blue-200">Refresh</button>
+        <button @click="showUpdateBanner = false" class="ml-2 text-blue-200 hover:text-white">&times;</button>
+      </div>
+    </Transition>
+    <ErrorBoundary>
+      <router-view v-slot="{ Component }">
+        <Transition name="page" mode="out-in">
+          <component :is="Component" />
+        </Transition>
+      </router-view>
+    </ErrorBoundary>
     <HelpButton v-if="showHelpButton" />
     <ToastContainer />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import ToastContainer from '@/components/ToastContainer.vue'
 import HelpButton from '@/components/HelpButton.vue'
+import ErrorBoundary from '@/components/ErrorBoundary.vue'
 import { useOnlineStatus } from '@/composables/useOnlineStatus'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 
 const { isOnline } = useOnlineStatus()
 const route = useRoute()
+
+useKeyboardShortcuts()
 
 const showHelpButton = computed(() => {
   const path = route.path || ''
   return !path.startsWith('/help') && !path.startsWith('/admin')
 })
+
+// App update notification
+const showUpdateBanner = ref(false)
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    showUpdateBanner.value = true
+  })
+}
+
+function reloadPage() {
+  window.location.reload()
+}
 </script>
 
 <style>

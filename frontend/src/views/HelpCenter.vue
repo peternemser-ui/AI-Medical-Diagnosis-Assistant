@@ -8,6 +8,7 @@
       <div class="lg:hidden sticky top-14 z-10 w-full px-4 py-2"
         :class="isDark ? 'bg-slate-950/95' : 'bg-white/95'" style="backdrop-filter: blur(12px)">
         <button @click="showMobileToc = !showMobileToc"
+          aria-label="Toggle table of contents" :aria-expanded="showMobileToc"
           class="w-full flex items-center justify-between px-4 py-2.5 text-sm rounded-lg border transition-colors"
           :class="isDark
             ? 'bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-600'
@@ -57,6 +58,24 @@
             {{ section.title }}
           </a>
         </nav>
+
+        <!-- Contact Support -->
+        <div class="mt-6 pt-4 border-t" :class="isDark ? 'border-slate-800' : 'border-slate-200'">
+          <p class="text-xs font-semibold uppercase tracking-wider mb-2"
+            :class="isDark ? 'text-slate-500' : 'text-slate-400'">Contact Support</p>
+          <a href="mailto:support@meddiagnose.ai"
+            class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors"
+            :class="isDark ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            Email Support
+          </a>
+          <a href="mailto:support@meddiagnose.ai?subject=Bug%20Report"
+            class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors"
+            :class="isDark ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Report a Bug
+          </a>
+        </div>
       </aside>
 
       <!-- Main content -->

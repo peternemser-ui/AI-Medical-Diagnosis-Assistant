@@ -1352,6 +1352,11 @@ async def find_doctors(
         return {"results": [], "count": 0, "error": str(e)}
 
 
+@app.exception_handler(404)
+async def not_found_handler(request: Request, exc):
+    return JSONResponse(status_code=404, content={"detail": "Not found"})
+
+
 @app.options("/{full_path:path}")
 async def options_handler():
     return {"message": "CORS preflight OK"}

@@ -1,17 +1,22 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-gray-900 text-white relative overflow-hidden p-4">
+  <div class="min-h-screen flex items-center justify-center relative overflow-hidden p-4 transition-colors duration-300"
+    :class="isDark ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-gray-900 text-white' : 'bg-gradient-to-br from-slate-100 via-white to-slate-50 text-slate-900'">
     <!-- Background blobs -->
     <div class="absolute inset-0 pointer-events-none overflow-hidden">
-      <div class="absolute rounded-full blur-[80px] opacity-40"
+      <div class="absolute rounded-full blur-[80px]"
+        :class="isDark ? 'opacity-40' : 'opacity-20'"
         style="width: 700px; height: 700px; top: -200px; right: -200px; background: radial-gradient(circle, #3b82f6, #8b5cf6)"></div>
-      <div class="absolute rounded-full blur-[80px] opacity-30"
+      <div class="absolute rounded-full blur-[80px]"
+        :class="isDark ? 'opacity-30' : 'opacity-15'"
         style="width: 600px; height: 600px; bottom: -100px; left: -150px; background: radial-gradient(circle, #10b981, #3b82f6)"></div>
     </div>
 
-    <div class="relative z-10 w-full max-w-[960px] grid grid-cols-1 lg:grid-cols-[38%_1fr] rounded-2xl shadow-2xl shadow-black/60 border border-slate-700/50 overflow-hidden">
+    <div class="relative z-10 w-full max-w-[960px] grid grid-cols-1 lg:grid-cols-[38%_1fr] rounded-2xl shadow-2xl overflow-hidden border"
+      :class="isDark ? 'shadow-black/60 border-slate-700/50' : 'shadow-black/10 border-slate-200'">
 
       <!-- Left branding panel -->
-      <div class="hidden lg:flex relative items-center justify-center p-6 bg-slate-950 rounded-l-2xl">
+      <div class="hidden lg:flex relative items-center justify-center p-6 rounded-l-2xl"
+        :class="isDark ? 'bg-slate-950' : 'bg-slate-900'">
         <div class="relative z-10 max-w-sm">
           <div class="inline-flex p-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-2xl shadow-emerald-500/25 mb-8">
             <svg class="w-12 h-12 text-white" viewBox="0 0 24 24" fill="currentColor">
@@ -50,7 +55,8 @@
       </div>
 
       <!-- Right login panel -->
-      <div class="bg-slate-900 p-6 sm:p-8 lg:rounded-r-2xl">
+      <div class="p-6 sm:p-8 lg:rounded-r-2xl"
+        :class="isDark ? 'bg-slate-900' : 'bg-white'">
         <!-- Mobile logo -->
         <div class="lg:hidden text-center mb-6">
           <div class="inline-flex p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-xl shadow-emerald-500/20 mb-4">
@@ -58,11 +64,11 @@
               <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" />
             </svg>
           </div>
-          <h1 class="text-2xl font-bold text-white">Medical Diagnosis AI</h1>
+          <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Medical Diagnosis AI</h1>
         </div>
 
-        <h2 class="text-xl font-bold text-white mb-1">Welcome back</h2>
-        <p class="text-sm text-slate-400 mb-6">Sign in to access your diagnosis history</p>
+        <h2 class="text-xl font-bold mb-1" :class="isDark ? 'text-white' : 'text-slate-900'">Welcome back</h2>
+        <p class="text-sm mb-6" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Sign in to access your diagnosis history</p>
 
         <!-- Error display -->
         <Transition name="fade">
@@ -75,7 +81,7 @@
         <form @submit.prevent="handleLogin" class="space-y-4">
           <!-- Email -->
           <div>
-            <label for="email" class="block text-sm font-medium text-slate-300 mb-1.5">Email address</label>
+            <label for="email" class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-slate-300' : 'text-slate-600'">Email address</label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
@@ -87,14 +93,30 @@
                 required
                 autocomplete="email"
                 placeholder="you@example.com"
-                class="w-full pl-10 pr-4 py-3 bg-slate-800/60 border border-slate-700/60 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                class="w-full pl-10 pr-10 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                :class="isDark
+                  ? 'bg-slate-800/60 border border-slate-700/60 text-white placeholder:text-slate-600'
+                  : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400'"
               />
+              <!-- Email validation indicator -->
+              <div v-if="email" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <svg v-if="isValidEmail" class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <svg v-else class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+              </div>
             </div>
+            <p v-if="email && !isValidEmail" class="text-xs mt-1 text-amber-500">Please enter a valid email address</p>
           </div>
 
           <!-- Password -->
           <div>
-            <label for="password" class="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="password" class="block text-sm font-medium" :class="isDark ? 'text-slate-300' : 'text-slate-600'">Password</label>
+              <a href="mailto:support@meddiagnosisai.com?subject=Password%20Reset%20Request"
+                class="text-xs transition-colors"
+                :class="isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'"
+                title="Contact support to reset your password"
+              >Forgot password?</a>
+            </div>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -106,7 +128,10 @@
                 required
                 autocomplete="current-password"
                 placeholder="Enter your password"
-                class="w-full pl-10 pr-12 py-3 bg-slate-800/60 border border-slate-700/60 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                class="w-full pl-10 pr-12 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                :class="isDark
+                  ? 'bg-slate-800/60 border border-slate-700/60 text-white placeholder:text-slate-600'
+                  : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400'"
               />
               <button
                 type="button"
@@ -132,22 +157,25 @@
 
         <!-- Divider -->
         <div class="my-6 flex items-center gap-3">
-          <div class="flex-1 h-px bg-slate-800"></div>
-          <span class="text-xs text-slate-600">New here?</span>
-          <div class="flex-1 h-px bg-slate-800"></div>
+          <div class="flex-1 h-px" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
+          <span class="text-xs" :class="isDark ? 'text-slate-600' : 'text-slate-400'">New here?</span>
+          <div class="flex-1 h-px" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
         </div>
 
         <!-- Signup link -->
         <router-link
           to="/signup"
-          class="w-full block text-center py-3 px-4 bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white font-medium rounded-xl border border-slate-700/50 transition-all"
+          class="w-full block text-center py-3 px-4 font-medium rounded-xl border transition-all"
+          :class="isDark
+            ? 'bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white border-slate-700/50'
+            : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border-slate-200'"
         >
           Create an account
         </router-link>
 
         <!-- Skip link -->
         <div class="mt-4 text-center">
-          <router-link to="/setup" class="text-xs text-slate-600 hover:text-slate-400 transition-colors">
+          <router-link to="/setup" class="text-xs transition-colors" :class="isDark ? 'text-slate-600 hover:text-slate-400' : 'text-slate-400 hover:text-slate-600'">
             Continue without an account
           </router-link>
         </div>
@@ -157,19 +185,23 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { login as authLogin } from '@/services/authService'
 import { saveProfile } from '@/services/userService'
 import { trackEvent, EVENTS } from '@/services/analytics'
+import { useTheme } from '@/composables/useTheme.js'
 
 const router = useRouter()
+const { isDark } = useTheme()
 
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const loading = ref(false)
 const error = ref('')
+
+const isValidEmail = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value))
 
 const agents = [
   { icon: '\u{1F6A8}', name: 'Triage', desc: 'Urgency assessment' },

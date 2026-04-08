@@ -1,17 +1,22 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-gray-900 text-white relative overflow-hidden p-4">
+  <div class="min-h-screen flex items-center justify-center relative overflow-hidden p-4 transition-colors duration-300"
+    :class="isDark ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-gray-900 text-white' : 'bg-gradient-to-br from-slate-100 via-white to-slate-50 text-slate-900'">
     <!-- Background blobs -->
     <div class="absolute inset-0 pointer-events-none overflow-hidden">
-      <div class="absolute rounded-full blur-[80px] opacity-40"
+      <div class="absolute rounded-full blur-[80px]"
+        :class="isDark ? 'opacity-40' : 'opacity-20'"
         style="width: 700px; height: 700px; top: -200px; right: -200px; background: radial-gradient(circle, #3b82f6, #8b5cf6)"></div>
-      <div class="absolute rounded-full blur-[80px] opacity-30"
+      <div class="absolute rounded-full blur-[80px]"
+        :class="isDark ? 'opacity-30' : 'opacity-15'"
         style="width: 600px; height: 600px; bottom: -100px; left: -150px; background: radial-gradient(circle, #10b981, #3b82f6)"></div>
     </div>
 
-    <div class="relative z-10 w-full max-w-[960px] grid grid-cols-1 lg:grid-cols-[38%_1fr] rounded-2xl shadow-2xl shadow-black/60 border border-slate-700/50 overflow-hidden">
+    <div class="relative z-10 w-full max-w-[960px] grid grid-cols-1 lg:grid-cols-[38%_1fr] rounded-2xl shadow-2xl overflow-hidden border"
+      :class="isDark ? 'shadow-black/60 border-slate-700/50' : 'shadow-black/10 border-slate-200'">
 
       <!-- Left branding panel -->
-      <div class="hidden lg:flex relative items-center justify-center p-6 bg-slate-950 rounded-l-2xl">
+      <div class="hidden lg:flex relative items-center justify-center p-6 rounded-l-2xl"
+        :class="isDark ? 'bg-slate-950' : 'bg-slate-900'">
         <div class="relative z-10 max-w-sm">
           <div class="inline-flex p-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-2xl shadow-emerald-500/25 mb-8">
             <svg class="w-12 h-12 text-white" viewBox="0 0 24 24" fill="currentColor">
@@ -57,7 +62,8 @@
       </div>
 
       <!-- Right signup panel -->
-      <div class="bg-slate-900 p-6 sm:p-8 lg:rounded-r-2xl">
+      <div class="p-6 sm:p-8 lg:rounded-r-2xl"
+        :class="isDark ? 'bg-slate-900' : 'bg-white'">
         <!-- Mobile logo -->
         <div class="lg:hidden text-center mb-6">
           <div class="inline-flex p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-xl shadow-emerald-500/20 mb-4">
@@ -65,11 +71,11 @@
               <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" />
             </svg>
           </div>
-          <h1 class="text-2xl font-bold text-white">Medical Diagnosis AI</h1>
+          <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-slate-900'">Medical Diagnosis AI</h1>
         </div>
 
-        <h2 class="text-xl font-bold text-white mb-1">Create your account</h2>
-        <p class="text-sm text-slate-400 mb-6">Secure, encrypted, HIPAA-compliant</p>
+        <h2 class="text-xl font-bold mb-1" :class="isDark ? 'text-white' : 'text-slate-900'">Create your account</h2>
+        <p class="text-sm mb-6" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Secure, encrypted, HIPAA-compliant</p>
 
         <!-- Error display -->
         <Transition name="fade">
@@ -82,7 +88,7 @@
         <form @submit.prevent="handleSignup" class="space-y-4">
           <!-- Name -->
           <div>
-            <label for="name" class="block text-sm font-medium text-slate-300 mb-1.5">Full name</label>
+            <label for="name" class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-slate-300' : 'text-slate-600'">Full name</label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -94,14 +100,17 @@
                 required
                 autocomplete="name"
                 placeholder="Jane Doe"
-                class="w-full pl-10 pr-4 py-3 bg-slate-800/60 border border-slate-700/60 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                class="w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                :class="isDark
+                  ? 'bg-slate-800/60 border border-slate-700/60 text-white placeholder:text-slate-600'
+                  : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400'"
               />
             </div>
           </div>
 
           <!-- Email -->
           <div>
-            <label for="signup-email" class="block text-sm font-medium text-slate-300 mb-1.5">Email address</label>
+            <label for="signup-email" class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-slate-300' : 'text-slate-600'">Email address</label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
@@ -113,14 +122,23 @@
                 required
                 autocomplete="email"
                 placeholder="you@example.com"
-                class="w-full pl-10 pr-4 py-3 bg-slate-800/60 border border-slate-700/60 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                class="w-full pl-10 pr-10 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                :class="isDark
+                  ? 'bg-slate-800/60 border border-slate-700/60 text-white placeholder:text-slate-600'
+                  : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400'"
               />
+              <!-- Email validation indicator -->
+              <div v-if="email" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <svg v-if="isValidEmail" class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <svg v-else class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+              </div>
             </div>
+            <p v-if="email && !isValidEmail" class="text-xs mt-1 text-amber-500">Please enter a valid email address</p>
           </div>
 
           <!-- Password -->
           <div>
-            <label for="signup-password" class="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+            <label for="signup-password" class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-slate-300' : 'text-slate-600'">Password</label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -132,7 +150,10 @@
                 required
                 autocomplete="new-password"
                 placeholder="Minimum 8 characters"
-                class="w-full pl-10 pr-12 py-3 bg-slate-800/60 border border-slate-700/60 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                class="w-full pl-10 pr-12 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                :class="isDark
+                  ? 'bg-slate-800/60 border border-slate-700/60 text-white placeholder:text-slate-600'
+                  : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400'"
               />
               <button
                 type="button"
@@ -144,21 +165,50 @@
               </button>
             </div>
 
-            <!-- Password strength indicator -->
-            <div class="mt-2 space-y-1.5">
+            <!-- Password strength indicator (4-segment bar) -->
+            <div v-if="password" class="mt-2 space-y-1.5">
               <div class="flex gap-1">
-                <div v-for="i in 4" :key="i" class="h-1 flex-1 rounded-full transition-all duration-300"
-                  :class="i <= passwordStrength ? strengthColors[passwordStrength] : 'bg-slate-800'"></div>
+                <div v-for="i in 4" :key="i" class="h-1.5 flex-1 rounded-full transition-all duration-300"
+                  :class="i <= strengthLevel ? strengthBarColor : (isDark ? 'bg-slate-800' : 'bg-slate-200')"></div>
               </div>
-              <p class="text-caption transition-colors" :class="passwordStrengthLabel.color">
-                {{ passwordStrengthLabel.text }}
+              <p class="text-xs font-medium transition-colors" :class="strengthLabelColor">
+                {{ strengthLabelText }}
               </p>
+            </div>
+
+            <!-- Password requirement hints -->
+            <div v-if="password" class="mt-2 space-y-1">
+              <div class="flex items-center gap-1.5 text-xs" :class="pwHasLength ? 'text-emerald-500' : (isDark ? 'text-slate-500' : 'text-slate-400')">
+                <svg v-if="pwHasLength" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/></svg>
+                At least 8 characters
+              </div>
+              <div class="flex items-center gap-1.5 text-xs" :class="pwHasUpper ? 'text-emerald-500' : (isDark ? 'text-slate-500' : 'text-slate-400')">
+                <svg v-if="pwHasUpper" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/></svg>
+                Uppercase letter
+              </div>
+              <div class="flex items-center gap-1.5 text-xs" :class="pwHasLower ? 'text-emerald-500' : (isDark ? 'text-slate-500' : 'text-slate-400')">
+                <svg v-if="pwHasLower" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/></svg>
+                Lowercase letter
+              </div>
+              <div class="flex items-center gap-1.5 text-xs" :class="pwHasNumber ? 'text-emerald-500' : (isDark ? 'text-slate-500' : 'text-slate-400')">
+                <svg v-if="pwHasNumber" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/></svg>
+                Number
+              </div>
+              <div class="flex items-center gap-1.5 text-xs" :class="pwHasSpecial ? 'text-emerald-500' : (isDark ? 'text-slate-500' : 'text-slate-400')">
+                <svg v-if="pwHasSpecial" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/></svg>
+                Special character (!@#$...)
+              </div>
             </div>
           </div>
 
           <!-- Confirm Password -->
           <div>
-            <label for="confirm-password" class="block text-sm font-medium text-slate-300 mb-1.5">Confirm password</label>
+            <label for="confirm-password" class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-slate-300' : 'text-slate-600'">Confirm password</label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -170,8 +220,13 @@
                 required
                 autocomplete="new-password"
                 placeholder="Re-enter your password"
-                class="w-full pl-10 pr-4 py-3 bg-slate-800/60 border border-slate-700/60 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                :class="confirmPassword && confirmPassword !== password ? 'border-red-500/50 focus:ring-red-500/50' : ''"
+                class="w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                :class="[
+                  isDark
+                    ? 'bg-slate-800/60 border border-slate-700/60 text-white placeholder:text-slate-600'
+                    : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400',
+                  confirmPassword && confirmPassword !== password ? 'border-red-500/50 focus:ring-red-500/50' : ''
+                ]"
               />
             </div>
             <p v-if="confirmPassword && confirmPassword !== password" class="text-caption text-red-400 mt-1">
@@ -187,7 +242,7 @@
               required
               class="mt-1 w-4 h-4 rounded border-slate-600 bg-slate-800 text-emerald-500 focus:ring-emerald-500/30 focus:ring-2 cursor-pointer"
             />
-            <span class="text-xs text-slate-400 group-hover:text-slate-300 transition-colors leading-relaxed">
+            <span class="text-xs transition-colors leading-relaxed" :class="isDark ? 'text-slate-400 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-700'">
               I agree to the Terms of Service and acknowledge that my health information will be encrypted (AES-256) and stored locally on this device only. No medical data is sent to or stored on our servers. I consent to this under HIPAA guidelines.
             </span>
           </label>
@@ -205,15 +260,18 @@
 
         <!-- Divider -->
         <div class="my-6 flex items-center gap-3">
-          <div class="flex-1 h-px bg-slate-800"></div>
-          <span class="text-xs text-slate-600">Already have an account?</span>
-          <div class="flex-1 h-px bg-slate-800"></div>
+          <div class="flex-1 h-px" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
+          <span class="text-xs" :class="isDark ? 'text-slate-600' : 'text-slate-400'">Already have an account?</span>
+          <div class="flex-1 h-px" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
         </div>
 
         <!-- Login link -->
         <router-link
           to="/login"
-          class="w-full block text-center py-3 px-4 bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white font-medium rounded-xl border border-slate-700/50 transition-all"
+          class="w-full block text-center py-3 px-4 font-medium rounded-xl border transition-all"
+          :class="isDark
+            ? 'bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white border-slate-700/50'
+            : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border-slate-200'"
         >
           Sign in instead
         </router-link>
@@ -228,8 +286,10 @@ import { useRouter } from 'vue-router'
 import { signup as authSignup } from '@/services/authService'
 import { saveProfile } from '@/services/userService'
 import { trackEvent, EVENTS } from '@/services/analytics'
+import { useTheme } from '@/composables/useTheme.js'
 
 const router = useRouter()
+const { isDark } = useTheme()
 
 const name = ref('')
 const email = ref('')
@@ -240,33 +300,39 @@ const acceptTerms = ref(false)
 const loading = ref(false)
 const error = ref('')
 
-const strengthColors = {
-  1: 'bg-red-500',
-  2: 'bg-orange-500',
-  3: 'bg-yellow-500',
-  4: 'bg-emerald-500',
-}
+const isValidEmail = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value))
 
-const passwordStrength = computed(() => {
+// Individual password requirement checks
+const pwHasLength = computed(() => password.value.length >= 8)
+const pwHasUpper = computed(() => /[A-Z]/.test(password.value))
+const pwHasLower = computed(() => /[a-z]/.test(password.value))
+const pwHasNumber = computed(() => /\d/.test(password.value))
+const pwHasSpecial = computed(() => /[^A-Za-z0-9]/.test(password.value))
+
+// Password strength: Weak(1) <8 chars, Fair(2) 8-11 missing reqs, Good(3) 12+ some reqs, Strong(4) 12+ all reqs
+const strengthLevel = computed(() => {
   const p = password.value
   if (!p) return 0
-  let score = 0
-  if (p.length >= 8) score++
-  if (/[A-Z]/.test(p) && /[a-z]/.test(p)) score++
-  if (/\d/.test(p)) score++
-  if (/[^A-Za-z0-9]/.test(p)) score++
-  return score
+  const allReqs = pwHasUpper.value && pwHasLower.value && pwHasNumber.value && pwHasSpecial.value
+  if (p.length >= 12 && allReqs) return 4
+  if (p.length >= 12) return 3
+  if (p.length >= 8) return 2
+  return 1
 })
 
-const passwordStrengthLabel = computed(() => {
-  const labels = [
-    { text: '', color: 'text-slate-600' },
-    { text: 'Weak — add uppercase, numbers, or symbols', color: 'text-red-400' },
-    { text: 'Fair — consider adding more variety', color: 'text-orange-400' },
-    { text: 'Good — almost there', color: 'text-yellow-400' },
-    { text: 'Strong password', color: 'text-emerald-400' },
-  ]
-  return labels[passwordStrength.value]
+const strengthBarColor = computed(() => {
+  const colors = { 1: 'bg-red-500', 2: 'bg-amber-500', 3: 'bg-blue-500', 4: 'bg-emerald-500' }
+  return colors[strengthLevel.value] || 'bg-slate-800'
+})
+
+const strengthLabelText = computed(() => {
+  const labels = { 0: '', 1: 'Weak', 2: 'Fair', 3: 'Good', 4: 'Strong' }
+  return labels[strengthLevel.value]
+})
+
+const strengthLabelColor = computed(() => {
+  const colors = { 0: 'text-slate-600', 1: 'text-red-400', 2: 'text-amber-400', 3: 'text-blue-400', 4: 'text-emerald-400' }
+  return colors[strengthLevel.value]
 })
 
 const canSubmit = computed(() => {

@@ -1,10 +1,14 @@
 <template>
-  <div v-if="visible" class="relative overflow-hidden" :style="containerStyle">
+  <div v-if="visible" class="relative overflow-hidden transition-colors duration-300"
+    :class="isDark ? 'border-b border-white/[0.06]' : 'border-b border-slate-200'"
+    :style="{ background: isDark ? 'linear-gradient(145deg, #0a0f1c 0%, #070b16 60%, #05070d 100%)' : 'linear-gradient(145deg, #f0f4f8 0%, #e8edf4 60%, #f8fafc 100%)' }">
     <!-- Ambient glow -->
     <div class="absolute inset-0 pointer-events-none overflow-hidden">
-      <div class="absolute w-[200px] h-[200px] -top-[80px] -right-[60px] rounded-full blur-[80px] opacity-[0.04]"
+      <div class="absolute w-[200px] h-[200px] -top-[80px] -right-[60px] rounded-full blur-[80px]"
+        :class="isDark ? 'opacity-[0.04]' : 'opacity-[0.08]'"
         style="background: radial-gradient(circle, #3b82f6, transparent)"></div>
-      <div class="absolute w-[150px] h-[150px] -bottom-[50px] -left-[30px] rounded-full blur-[60px] opacity-[0.03]"
+      <div class="absolute w-[150px] h-[150px] -bottom-[50px] -left-[30px] rounded-full blur-[60px]"
+        :class="isDark ? 'opacity-[0.03]' : 'opacity-[0.06]'"
         style="background: radial-gradient(circle, #22c55e, transparent)"></div>
     </div>
 
@@ -35,7 +39,7 @@
             <!-- Connector -->
             <div v-if="index < steps.length - 1" class="flex-shrink-0 mx-0.5 relative">
               <svg class="w-3 h-3 transition-colors duration-300" fill="currentColor" viewBox="0 0 20 20"
-                :style="{ color: currentStep > index ? '#22c55e' : 'rgba(255,255,255,0.1)' }">
+                :style="{ color: currentStep > index ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.3)') }">
                 <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
               </svg>
             </div>
@@ -46,7 +50,9 @@
         <div class="flex-shrink-0 text-caption font-bold px-3 py-1.5 rounded-full border tabular-nums"
           :style="progress >= 80
             ? { background: 'rgba(34,197,94,0.1)', color: '#22c55e', borderColor: 'rgba(34,197,94,0.2)', boxShadow: '0 0 10px rgba(34,197,94,0.1)' }
-            : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.08)' }
+            : isDark
+              ? { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)', borderColor: 'rgba(255,255,255,0.12)' }
+              : { background: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.55)', borderColor: 'rgba(0,0,0,0.12)' }
           ">
           {{ Math.round(progress) }}%
         </div>
@@ -54,7 +60,7 @@
 
       <!-- Progress bar with glow -->
       <div class="mt-2.5 relative">
-        <div class="h-1 rounded-full overflow-hidden bg-white/[0.04]">
+        <div class="h-1 rounded-full overflow-hidden" :class="isDark ? 'bg-white/[0.04]' : 'bg-black/[0.06]'">
           <div
             role="progressbar"
             :aria-valuenow="Math.round(progress)"
@@ -75,6 +81,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useTheme } from '@/composables/useTheme'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -85,10 +92,7 @@ const props = defineProps({
   currentStep: { type: Number, default: 0 },
 })
 
-const containerStyle = {
-  background: 'linear-gradient(145deg, #0a0f1c 0%, #070b16 60%, #05070d 100%)',
-  borderBottom: '1px solid rgba(255,255,255,0.06)',
-}
+const { isDark } = useTheme()
 
 const progressBarStyle = computed(() => ({
   width: props.progress + '%',
@@ -104,7 +108,9 @@ function getStepPillStyle(index) {
   if (props.currentStep === index) {
     return { background: 'rgba(59,130,246,0.1)', color: '#60a5fa', borderColor: 'rgba(59,130,246,0.25)', boxShadow: '0 0 8px rgba(59,130,246,0.1)' }
   }
-  return { background: 'rgba(255,255,255,0.02)', color: 'rgba(255,255,255,0.3)', borderColor: 'rgba(255,255,255,0.06)' }
+  return isDark.value
+    ? { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.55)', borderColor: 'rgba(255,255,255,0.1)' }
+    : { background: 'rgba(0,0,0,0.03)', color: 'rgba(0,0,0,0.5)', borderColor: 'rgba(0,0,0,0.1)' }
 }
 </script>
 

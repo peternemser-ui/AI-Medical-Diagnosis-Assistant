@@ -416,7 +416,7 @@
             class="rounded-xl rounded-br-sm px-4 sm:px-5 py-3 sm:py-4 shadow-lg"
             :class="isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'"
           >
-            <div v-if="message.text" class="whitespace-pre-wrap text-base" v-html="formatMessageText(message.text)"></div>
+            <div v-if="message.text" class="whitespace-pre-wrap text-base break-words">{{ message.text }}</div>
             <img v-if="message.imageUrl" :src="message.imageUrl" class="mt-2 max-w-xs rounded-lg border border-blue-400/30" alt="Uploaded image" />
             <div v-if="message.audioUrl" class="mt-2">
               <audio :src="message.audioUrl" controls class="w-full"></audio>

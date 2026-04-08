@@ -65,7 +65,7 @@
 
       <!-- More dropdown -->
       <div class="relative" ref="moreMenuRef">
-        <button @click="showMoreMenu = !showMoreMenu" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all"
+        <button @click="showMoreMenu = !showMoreMenu" aria-label="More navigation options" :aria-expanded="showMoreMenu" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all"
           :class="[
             morePages.includes(currentPage)
               ? (isDark ? 'text-white bg-slate-700/80' : 'text-slate-900 bg-slate-200/80')
@@ -108,14 +108,14 @@
 
       <!-- User menu -->
       <div class="relative" ref="userMenuRef">
-        <button v-if="isLoggedIn" @click="showUserMenu = !showUserMenu" class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all" :class="isDark ? 'hover:bg-slate-700/60 text-slate-400 hover:text-white' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-900'">
+        <button v-if="isLoggedIn" @click="showUserMenu = !showUserMenu" aria-label="User menu" :aria-expanded="showUserMenu" class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all" :class="isDark ? 'hover:bg-slate-700/60 text-slate-400 hover:text-white' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-900'">
           <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-detail font-bold text-white">
             {{ userInitials }}
           </div>
           <span class="hidden lg:inline text-sm font-medium" :class="isDark ? 'text-slate-300' : 'text-slate-700'">{{ userName }}</span>
           <svg class="w-3 h-3 hidden lg:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
-        <router-link v-else to="/profile" class="p-2 rounded-lg transition-all" :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'">
+        <router-link v-else to="/profile" aria-label="Sign in or view profile" class="p-2 rounded-lg transition-all" :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </router-link>
         <Transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
@@ -160,7 +160,7 @@
 
     <!-- Mobile: hamburger -->
     <div class="flex sm:hidden items-center gap-1">
-      <button @click="showMobileMenu = !showMobileMenu" class="p-2 rounded-lg" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+      <button @click="showMobileMenu = !showMobileMenu" class="p-2 rounded-lg" :class="isDark ? 'text-slate-400' : 'text-slate-500'" aria-label="Toggle navigation menu" :aria-expanded="showMobileMenu">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
     </div>

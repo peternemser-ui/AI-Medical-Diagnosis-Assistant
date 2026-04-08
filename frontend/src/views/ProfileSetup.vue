@@ -571,8 +571,8 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
 import { useTheme } from '@/composables/useTheme.js'
 import { useUser } from '@/composables/useUser.js'
 import { getProfile, saveProfile } from '@/services/userService.js'
@@ -654,6 +654,32 @@ export default {
     // Medical history collapsible
     const medHistoryExpanded = ref(false)
 
+    // Unsaved changes tracking
+    const isDirty = ref(false)
+    const savedSnapshot = ref('')
+
+    function markDirty() {
+      isDirty.value = true
+    }
+
+    // Watch all form fields + chip arrays for changes
+    watch([form, allergyChips, medicationChips], () => {
+      // Compare current state to saved snapshot
+      const current = JSON.stringify({ form: form.value, allergies: allergyChips.value, medications: medicationChips.value })
+      if (savedSnapshot.value && current !== savedSnapshot.value) {
+        isDirty.value = true
+      }
+    }, { deep: true })
+
+    onBeforeRouteLeave((to, from, next) => {
+      if (isDirty.value) {
+        if (confirm('You have unsaved changes. Leave anyway?')) next()
+        else next(false)
+      } else {
+        next()
+      }
+    })
+
     // Options for past conditions checkboxes
     const pastConditionOptions = [
       'Diabetes', 'Hypertension', 'Heart Disease', 'Asthma/COPD',
@@ -717,6 +743,11 @@ export default {
       if (form.value.pastConditions.length || form.value.surgeries.length || Object.keys(form.value.familyHistory).length || form.value.socialHistory.smoking || form.value.socialHistory.alcohol) {
         medHistoryExpanded.value = true
       }
+      // Capture initial snapshot for dirty tracking (use nextTick-like delay so watchers settle)
+      setTimeout(() => {
+        savedSnapshot.value = JSON.stringify({ form: form.value, allergies: allergyChips.value, medications: medicationChips.value })
+        isDirty.value = false
+      }, 100)
     })
 
     function parseCommaSeparated(text) {
@@ -765,6 +796,7 @@ export default {
           // Direct write as last resort
           localStorage.setItem('user_profile', JSON.stringify(data))
         }
+        isDirty.value = false
         router.push(isEditing.value ? '/consult' : '/')
       } catch (e) {
         error.value = e.message || 'Failed to save profile. Please try again.'
@@ -804,6 +836,7 @@ export default {
       handleLogin,
       loginWithAccount,
       navAvatar,
+      isDirty,
     }
   }
 }

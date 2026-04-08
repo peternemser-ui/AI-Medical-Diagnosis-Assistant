@@ -110,6 +110,24 @@
               </div>
             </div>
 
+            <!-- Drug Interaction Warnings -->
+            <div v-if="interactionWarnings.length > 0" class="rounded-xl border-2 p-3 space-y-2"
+              :class="interactionWarnings.some(w => w.severity === 'high')
+                ? 'bg-red-500/10 border-red-500/40'
+                : 'bg-amber-500/10 border-amber-500/40'">
+              <div class="flex items-center gap-2 text-sm font-semibold"
+                :class="interactionWarnings.some(w => w.severity === 'high') ? 'text-red-500' : 'text-amber-500'">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                Drug Interaction Warning
+              </div>
+              <div v-for="(w, idx) in interactionWarnings" :key="idx" class="text-xs leading-relaxed"
+                :class="w.severity === 'high' ? 'text-red-400' : (isDark ? 'text-amber-300' : 'text-amber-700')">
+                <span class="font-bold uppercase text-[10px] px-1.5 py-0.5 rounded mr-1"
+                  :class="w.severity === 'high' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-500'">{{ w.severity }}</span>
+                <strong>{{ form.name }}</strong> + <strong>{{ w.existingMed }}</strong>: {{ w.description }}
+              </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-medium mb-1.5" :class="isDark ? 'text-slate-400' : 'text-slate-600'">Dosage</label>
@@ -187,7 +205,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme.js'
 import { getMedications, addMedication, updateMedication, deleteMedication, searchMedications } from '@/services/medicationApi.js'
 import { getProfileMedications } from '@/services/profileMedications.js'
-import { getAllMedicationNames } from '@/data/medicationDatabase.js'
+import { getAllMedicationNames, checkDrugInteractions } from '@/data/medicationDatabase.js'
 
 const { isDark } = useTheme()
 const medications = ref([])
@@ -198,6 +216,7 @@ const showAddModal = ref(false)
 const editingMed = ref(null)
 const deletingMed = ref(null)
 const suggestions = ref([])
+const interactionWarnings = ref([])
 let searchTimeout = null
 
 const frequencies = ['Once daily', 'Twice daily', 'Three times daily', 'Four times daily', 'Every 6 hours', 'Every 8 hours', 'Every 12 hours', 'As needed', 'Weekly']
@@ -232,6 +251,7 @@ async function fetchMedications() {
 
 function onNameInput() {
   clearTimeout(searchTimeout)
+  checkInteractions()
   if (form.value.name.length < 2) { suggestions.value = []; return }
   searchTimeout = setTimeout(async () => {
     try {
@@ -246,6 +266,20 @@ function onNameInput() {
 function selectSuggestion(s) {
   form.value.name = s
   suggestions.value = []
+  checkInteractions()
+}
+
+function checkInteractions() {
+  if (!form.value.name || form.value.name.length < 2) {
+    interactionWarnings.value = []
+    return
+  }
+  const existingMeds = medications.value.filter(m => {
+    // Don't check against the medication being edited
+    if (editingMed.value && m.id === editingMed.value.id) return false
+    return m.active
+  })
+  interactionWarnings.value = checkDrugInteractions(form.value.name, existingMeds)
 }
 
 function editMed(med) {
@@ -259,6 +293,7 @@ function closeModal() {
   editingMed.value = null
   form.value = { ...defaultForm }
   suggestions.value = []
+  interactionWarnings.value = []
 }
 
 async function saveMedication() {

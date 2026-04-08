@@ -728,8 +728,12 @@ function saveApiKeyFn() {
   setTimeout(() => { apiKeySaved.value = false }, 2000)
 }
 
-function handleExportData() {
-  const data = exportAllData()
+async function handleExportData() {
+  const data = await exportAllData()
+  if (data.error) {
+    console.warn('Export failed:', data.error)
+    return
+  }
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

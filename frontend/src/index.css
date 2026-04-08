@@ -401,3 +401,13 @@ html {
 /* No-scrollbar utility */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ═══════════════════════════════════════════════════════════
+   PRINT STYLES
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  nav, .help-button, .fixed, [role="banner"] { display: none !important; }
+  body { background: white !important; color: black !important; }
+  .surface-card { box-shadow: none !important; border: 1px solid #ddd !important; }
+}
