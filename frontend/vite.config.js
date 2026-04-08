@@ -32,9 +32,6 @@ export default defineConfig({
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined
           const norm = id.replace(/\\/g, '/')
-          if (norm.includes('microsoft-cognitiveservices-speech-sdk')) {
-            process.stdout.write('SPEECH ID: ' + norm.slice(0, 120) + '\n')
-          }
           const pkg = (name) => norm.includes(`/node_modules/${name}/`)
           if (pkg('vue') || pkg('vue-router') || pkg('@vue')) return 'vendor-vue'
           if (pkg('marked') || pkg('dompurify')) return 'vendor-markdown'
