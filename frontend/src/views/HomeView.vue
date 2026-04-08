@@ -325,7 +325,54 @@
       </div>
     </section>
 
-    <!-- ─── S7: CTA Close ─────────────────────────────────────── -->
+    <!-- ─── S7: FAQ ─────────────────────────────────────── -->
+    <section class="py-20 px-4" :class="isDark ? 'bg-slate-900/50' : 'bg-slate-50'">
+      <div class="max-w-3xl mx-auto">
+        <div class="text-center mb-12">
+          <h2 class="text-headline sm:text-display mb-3">Frequently Asked Questions</h2>
+          <p class="text-body-lg" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+            Common questions about MedAssist AI
+          </p>
+        </div>
+        <div class="space-y-3">
+          <div v-for="(faq, i) in homeFaqs" :key="i"
+            class="rounded-xl border overflow-hidden transition-all"
+            :class="isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'">
+            <button @click="faq.open = !faq.open"
+              class="w-full flex items-center justify-between px-5 py-4 text-left transition-colors"
+              :class="isDark ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'">
+              <span class="text-sm font-semibold pr-4" :class="isDark ? 'text-white' : 'text-slate-900'">{{ faq.q }}</span>
+              <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-200"
+                :class="[faq.open ? 'rotate-180' : '', isDark ? 'text-slate-500' : 'text-slate-400']"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <Transition
+              enter-active-class="transition-all duration-200 ease-out"
+              enter-from-class="opacity-0 max-h-0"
+              enter-to-class="opacity-100 max-h-96"
+              leave-active-class="transition-all duration-150 ease-in"
+              leave-from-class="opacity-100 max-h-96"
+              leave-to-class="opacity-0 max-h-0">
+              <div v-if="faq.open" class="px-5 pb-4 overflow-hidden">
+                <p class="text-sm leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-600'">{{ faq.a }}</p>
+              </div>
+            </Transition>
+          </div>
+        </div>
+        <div class="text-center mt-8">
+          <router-link to="/help#13-frequently-asked-questions"
+            class="inline-flex items-center gap-1.5 text-sm font-medium transition-colors"
+            :class="isDark ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-700 hover:text-indigo-800'">
+            View all FAQs
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </router-link>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── S8: CTA Close ─────────────────────────────────────── -->
     <section class="py-24 px-4 text-center"
       :class="isDark ? 'bg-slate-950 border-t border-slate-800' : 'bg-white border-t border-slate-200'">
       <div class="max-w-2xl mx-auto">
@@ -362,6 +409,11 @@
           Privacy Policy
         </router-link>
         <span aria-hidden="true">&middot;</span>
+        <router-link to="/help#13-frequently-asked-questions" class="underline underline-offset-2 transition-colors"
+          :class="isDark ? 'hover:text-slate-400' : 'hover:text-slate-600'">
+          FAQ
+        </router-link>
+        <span aria-hidden="true">&middot;</span>
         <a href="mailto:legal@medassist.ai" class="underline underline-offset-2 transition-colors"
           :class="isDark ? 'hover:text-slate-400' : 'hover:text-slate-600'">
           legal@medassist.ai
@@ -374,10 +426,20 @@
 </template>
 
 <script setup>
-import { ref, inject } from 'vue'
+import { ref, reactive, inject } from 'vue'
 import AppNav from '@/components/AppNav.vue'
 
 const isDark = inject('isDark', ref(false))
+
+/* ── Homepage FAQ ── */
+const homeFaqs = reactive([
+  { q: 'Is MedAssist AI a replacement for seeing a doctor?', a: 'No. MedAssist AI is an informational tool only. It does not constitute medical advice, diagnosis, or treatment. No doctor-patient relationship is created. Always consult a qualified healthcare professional for medical decisions.', open: false },
+  { q: 'How does the 7-agent AI pipeline work?', a: 'Each consultation runs through 7 specialized agents: Triage (urgency), Diagnostician (differential diagnosis), Research (medical literature), Specialist (domain expertise), Treatment (care plans), Safety (contraindications), and Empathy (clear communication). They work together to provide a comprehensive analysis.', open: false },
+  { q: 'Is my health data private and secure?', a: 'Yes. All health data is encrypted with AES-256 and stored locally on your device. We never store symptoms, diagnoses, or health records on our servers. Only your encrypted email and password hash are stored server-side.', open: false },
+  { q: 'What AI models are available?', a: 'MedAssist AI supports Anthropic Claude (recommended), OpenAI GPT-4o, Google Gemini, and Ollama (free, runs locally). You can switch models anytime in Settings.', open: false },
+  { q: 'How much does it cost?', a: 'The Free plan includes 3 consultations per month. Paid plans start at $9.99/month (Plus) with up to unlimited consultations on Pro ($19.99/month). Annual billing saves 20%. Ollama provides unlimited free local consultations.', open: false },
+  { q: 'Can I share reports with my doctor?', a: 'Yes. You can download PDF reports, email summaries, copy text, or print reports to share with your healthcare provider. All reports include a clear disclaimer that they are AI-generated.', open: false },
+])
 
 /* ── Hero trust badges ── */
 const trustBadges = [

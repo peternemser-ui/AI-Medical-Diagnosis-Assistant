@@ -526,35 +526,115 @@ If Stripe payment processing is not configured for the instance, the Pricing pag
 
 ## 13. Frequently Asked Questions
 
-### Is this a replacement for seeing a doctor?
+### General
 
-No. MedDiagnose AI is an informational tool only. It does not constitute medical advice, diagnosis, or treatment. The platform displays this disclaimer prominently on the home page and in every report. Always consult a qualified healthcare professional for medical decisions.
+#### Is this a replacement for seeing a doctor?
 
-### How accurate is the AI?
+**No. Absolutely not.** MedAssist AI is an informational and educational tool only. It does not constitute medical advice, diagnosis, or treatment. No doctor-patient relationship is created by using this service. The platform displays this disclaimer prominently on the home page, before every consultation, and in every report. Always consult a qualified healthcare professional for medical decisions.
 
-The 7-agent system provides comprehensive analysis from multiple clinical perspectives, but AI cannot replace a physical examination, laboratory tests, or medical imaging. Use it as a well-informed starting point for understanding your symptoms before speaking with a doctor.
+#### How accurate is the AI?
 
-### Is my data private?
+The 7-agent system provides comprehensive analysis from multiple clinical perspectives, but AI cannot replace a physical examination, laboratory tests, or medical imaging. AI models can produce incorrect, incomplete, or misleading information. Use MedAssist AI as a well-informed starting point for understanding your symptoms before speaking with a doctor -- never as a final answer.
 
-Yes. All medical data is encrypted with AES-256 and stored only on your device. The server stores only your email (encrypted), password hash (bcrypt, irreversible), and session tokens. No symptoms, diagnoses, photos, or health records are ever stored on MedDiagnose AI servers.
+#### What should I do in a medical emergency?
 
-### Can I use it without an API key?
+**Call 911 (or your local emergency number) immediately.** Do not use MedAssist AI for emergency medical situations. If you or someone else is experiencing chest pain, difficulty breathing, severe bleeding, signs of stroke, allergic reactions, loss of consciousness, or any other life-threatening symptoms, seek emergency medical care right away.
 
-Yes. Select **Ollama (free, local model)** during setup or in Settings. Ollama runs entirely on your computer, requires no API key, and provides unlimited free diagnoses. Diagnostic quality may be lower than cloud-hosted models, however.
+#### Is MedAssist AI FDA-approved?
 
-### How do I get the best results?
+No. MedAssist AI is not a medical device and is not FDA-approved or cleared. It is a software tool that provides AI-generated health information for educational and informational purposes only. It has not been evaluated by the FDA or any regulatory body for clinical use.
 
-1. **Complete your health profile** -- age, gender, medications, allergies, and medical history.
+#### Can I use MedAssist AI for my children?
+
+MedAssist AI is not intended for users under 18 years of age without parental or guardian consent and supervision. If you are using the platform on behalf of a minor, you accept full responsibility for how the information is used. Pediatric symptoms can present differently than adult symptoms -- always consult a pediatrician for children's health concerns.
+
+---
+
+### Privacy & Data
+
+#### Is my data private?
+
+Yes. All medical data is encrypted with AES-256 and stored only on your device. The server stores only your email (encrypted), password hash (bcrypt, irreversible), and session tokens. No symptoms, diagnoses, photos, or health records are ever stored on MedAssist AI servers.
+
+#### What data is sent to AI providers?
+
+When you start a consultation, your symptoms and any uploaded images are sent to the selected AI provider (Anthropic Claude, OpenAI GPT, or Google Gemini) for processing. We do not include your name, email, or other personally identifiable information in these requests. Each AI provider has its own data handling and retention policies -- we recommend reviewing their respective privacy policies.
+
+#### Is MedAssist AI HIPAA-compliant?
+
+MedAssist AI follows HIPAA-aware design principles including encryption at rest and in transit, session timeouts, and minimal data collection. However, MedAssist AI is not a covered entity under HIPAA and does not claim full HIPAA compliance. For protected health information (PHI) management, consult your healthcare provider's patient portal.
+
+#### Can I delete all my data?
+
+Yes. Go to **Settings > Privacy & Data** and click **Clear All Data** to permanently remove all locally stored health data, consultation history, and preferences. You can also request full account deletion, which removes your server-side account within 30 days.
+
+#### Does MedAssist AI use cookies or track me?
+
+MedAssist AI uses localStorage (not cookies) for storing settings, session tokens, and encrypted health data. We do not use third-party tracking cookies, advertising pixels, or analytics services. Usage analytics are stored locally on your device and can be cleared at any time from Settings.
+
+---
+
+### AI & Technology
+
+#### What AI models power MedAssist AI?
+
+MedAssist AI supports multiple AI providers:
+- **Anthropic Claude** (Sonnet, Haiku) -- recommended for best clinical reasoning
+- **OpenAI GPT-4o** -- strong general-purpose medical knowledge
+- **Google Gemini** -- good balance of speed and quality
+- **Ollama** -- free, runs locally on your computer with no data leaving your device
+
+You can select your preferred model in Settings or during API key setup.
+
+#### What is the 7-agent pipeline?
+
+Each consultation runs through 7 specialized AI agents:
+1. **Triage Agent** -- Assesses urgency and identifies red flags
+2. **Diagnostician Agent** -- Generates differential diagnoses using clinical reasoning
+3. **Research Agent** -- Reviews medical literature and clinical guidelines
+4. **Specialist Agent** -- Provides domain-specific deep analysis
+5. **Treatment Agent** -- Suggests treatment approaches and lifestyle changes
+6. **Safety Agent** -- Checks for contraindications, drug interactions, and safety concerns
+7. **Empathy Agent** -- Translates clinical findings into clear, compassionate language
+
+The Diagnostician and Research agents run in parallel for faster results.
+
+#### Can I use it without an API key?
+
+Yes. Select **Ollama (free, local model)** during setup or in Settings. Ollama runs entirely on your computer, requires no API key, and provides unlimited free consultations. Diagnostic quality may be lower than cloud-hosted models, however.
+
+#### How much does each consultation cost?
+
+Cost depends on your selected AI model. Approximate costs per consultation:
+- **Claude Sonnet**: ~$0.02-0.08
+- **GPT-4o**: ~$0.03-0.10
+- **Gemini**: ~$0.01-0.05
+- **Ollama (local)**: Free
+
+Actual cost is shown after each consultation. Subscription plans (Plus, Pro, Family) include credits that reduce or eliminate per-consultation costs.
+
+#### Can the AI analyze images?
+
+Yes. You can upload photos of skin conditions, rashes, injuries, or other visible symptoms. The AI Image Agent analyzes the photo alongside your described symptoms. However, AI image analysis has significant limitations -- it cannot replace dermatoscopy, biopsy, or in-person examination. Always have a medical professional evaluate concerning skin changes or lesions.
+
+---
+
+### Using the Platform
+
+#### How do I get the best results?
+
+1. **Complete your health profile** -- age, gender, medications, allergies, and medical history help the AI provide more relevant analysis.
 2. **Be specific about symptoms** -- describe location, duration, severity, triggers, and what makes it better or worse.
 3. **Upload photos when relevant** -- annotate them to highlight areas of concern.
 4. **Answer all follow-up questions thoroughly** -- the more detail the AI has, the better its analysis.
 5. **Use Claude Sonnet or higher** -- higher-tier models produce more thorough clinical reasoning.
+6. **Mention current medications** -- this helps the Safety Agent check for drug interactions.
 
-### What languages are supported?
+#### What languages are supported?
 
 The interface supports 12 languages: English, Spanish, French, German, Italian, Portuguese, Chinese, Japanese, Korean, Hindi, Arabic, and Russian. The AI responds in your selected language.
 
-### Can my doctor see my reports?
+#### Can my doctor see my reports?
 
 You can share reports with your doctor through several methods:
 - **Download PDF** and email it or bring a printed copy to your appointment.
@@ -562,9 +642,81 @@ You can share reports with your doctor through several methods:
 - **Copy Report Text** for pasting into patient portals or messaging systems.
 - **Print Report** for a physical copy.
 
-### What is the "View Sample Report" on the home page?
+Reports include a clear disclaimer noting they are AI-generated and for informational purposes only.
 
-This button lets you see a fully populated example diagnosis report without running an actual consultation, so you can understand the depth and format of the AI's output before committing to a session.
+#### What is the Second Opinion feature?
+
+Second Opinion lets you run the same symptoms through multiple AI models simultaneously and compare their analyses side by side. This helps identify areas of agreement (higher confidence) and disagreement (areas to discuss with your doctor). It is not a substitute for consulting multiple real physicians.
+
+#### How does the Medication Tracker work?
+
+The Medication Tracker lets you:
+- Log your current medications with dosage and frequency
+- Check for drug-drug interactions using the interaction matrix
+- Review food and lifestyle interactions that may affect your medications
+- Set up a daily medication schedule with reminders
+- Track side effects and adherence
+
+All medication data is stored locally and encrypted. The interaction checker is for reference only -- always verify with your pharmacist or prescribing physician.
+
+#### Are the nutrition recommendations personalized?
+
+The Nutrition Planner considers your health profile (conditions, allergies, dietary preferences) when generating meal plans and recommendations. However, these are general suggestions -- not medical nutrition therapy. If you have diabetes, kidney disease, food allergies, or other conditions requiring specialized diets, consult a registered dietitian.
+
+#### How do the mental health assessments work?
+
+MedAssist AI includes validated screening tools:
+- **PHQ-9** for depression screening (9 questions)
+- **GAD-7** for anxiety screening (7 questions)
+
+These are widely used clinical screening instruments, but they are **screening tools only** -- they do not constitute a clinical diagnosis. Your results should be discussed with a licensed mental health professional who can provide proper evaluation and treatment.
+
+---
+
+### Account & Billing
+
+#### What subscription plans are available?
+
+| Plan | Price | Includes |
+|------|-------|----------|
+| **Free** | $0/month | 3 consultations/month, basic features |
+| **Plus** | $9.99/month | 20 consultations/month, PDF reports, medication tracker |
+| **Pro** | $19.99/month | Unlimited consultations, all features, priority processing |
+| **Family** | $29.99/month | Up to 5 family members, all Pro features |
+
+Annual billing saves 20%. All plans include a 7-day free trial for paid tiers.
+
+#### How do I cancel my subscription?
+
+Go to **Settings > Subscription** and click **Cancel Subscription**. Your access continues until the end of your current billing period. You can resubscribe at any time. Refunds are available within 7 days of purchase.
+
+#### What happens to my data if I cancel?
+
+Your locally stored data (consultations, medications, journal entries) remains on your device regardless of subscription status. Server-side account data is retained for 30 days after cancellation, then permanently deleted.
+
+#### How do I change my AI model or API key?
+
+Go to **Settings > API Configuration** to add, change, or remove API keys for different providers. You can switch between providers at any time. Your consultation history is not affected by changing providers.
+
+---
+
+### Troubleshooting
+
+#### The AI gave me concerning results. What should I do?
+
+If the AI flags something as urgent or suggests you seek immediate medical attention, take that seriously and **contact a healthcare professional right away**. However, remember that AI can also overestimate severity. A doctor can properly evaluate your symptoms with physical examination and appropriate tests.
+
+#### My consultation seems stuck or incomplete.
+
+This can happen if the AI provider is experiencing high traffic or if your internet connection is unstable. Try:
+1. Wait 30 seconds -- the pipeline may still be processing.
+2. Refresh the page and start a new consultation.
+3. Switch to a different AI provider in Settings.
+4. If using Ollama, ensure the Ollama server is running locally.
+
+#### I forgot my password.
+
+Click **Forgot Password?** on the login page to receive a password reset email. If you don't receive it within a few minutes, check your spam folder.
 
 ---
 
