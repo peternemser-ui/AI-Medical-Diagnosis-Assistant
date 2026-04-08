@@ -30,26 +30,26 @@
 
     <!-- Right: Desktop toolbar (hidden on mobile) -->
     <div class="hidden sm:flex items-center gap-1">
-      <!-- New Consultation -->
+      <!-- Consult -->
       <router-link to="/consult" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all"
         :class="[
           currentPage === 'consult'
             ? (isDark ? 'text-white bg-slate-700/80' : 'text-slate-900 bg-slate-200/80')
             : (isDark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100')
         ]">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-        <span class="hidden lg:inline">{{ t('nav.new') }}</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        <span class="hidden lg:inline">Consult</span>
       </router-link>
 
-      <!-- Consultation Reports -->
+      <!-- Reports -->
       <router-link to="/reports" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all"
         :class="[
           currentPage === 'reports'
             ? (isDark ? 'text-white bg-slate-700/80' : 'text-slate-900 bg-slate-200/80')
             : (isDark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100')
         ]">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-        <span class="hidden lg:inline">Consultation Reports</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span class="hidden lg:inline">Reports</span>
       </router-link>
 
       <!-- Medications -->
@@ -105,11 +105,6 @@
       <div class="w-px h-5 mx-0.5" :class="isDark ? 'bg-slate-700' : 'bg-slate-300'"></div>
 
       <ThemeLangControls />
-
-      <!-- Settings gear -->
-      <router-link to="/setup" class="p-2 rounded-lg transition-all" :class="isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-      </router-link>
 
       <!-- User menu -->
       <div class="relative" ref="userMenuRef">
