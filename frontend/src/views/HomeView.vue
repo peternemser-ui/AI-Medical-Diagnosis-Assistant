@@ -42,9 +42,61 @@
           </div>
         </div>
         <div class="flex-shrink-0 hidden lg:flex items-center justify-center">
-          <div class="w-72 h-72 rounded-3xl flex items-center justify-center text-8xl"
-            :class="isDark ? 'bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50' : 'bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200'">
-            &#x1F430;
+          <div class="w-80 h-96 flex items-center justify-center" style="filter: drop-shadow(0 20px 40px rgba(0,0,0,0.1))">
+            <svg viewBox="-10 -30 260 380" class="w-full h-full">
+              <defs>
+                <linearGradient id="hEarGlow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.3"/><stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/></linearGradient>
+                <linearGradient id="hBodyGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient>
+                <filter id="hGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              </defs>
+              <!-- Ears -->
+              <g><ellipse cx="120" cy="55" rx="19" ry="65" fill="white" stroke="#64748b" stroke-width="2.5" transform="rotate(-8 120 110)"/>
+              <ellipse cx="120" cy="50" rx="10" ry="46" fill="url(#hEarGlow)" transform="rotate(-8 120 110)"/></g>
+              <g><ellipse cx="160" cy="50" rx="19" ry="65" fill="white" stroke="#64748b" stroke-width="2.5" transform="rotate(8 160 110)"/>
+              <ellipse cx="160" cy="45" rx="10" ry="46" fill="url(#hEarGlow)" transform="rotate(8 160 110)"/></g>
+              <!-- Antenna -->
+              <line x1="172" y1="30" x2="185" y2="5" stroke="#38bdf8" stroke-width="1.5" opacity="0.7"/>
+              <circle cx="185" cy="5" r="4" fill="#0ea5e9" opacity="0.9" filter="url(#hGlow)">
+                <animate attributeName="r" values="3;5;3" dur="1.2s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.6;1;0.6" dur="1.2s" repeatCount="indefinite"/>
+              </circle>
+              <!-- Head -->
+              <ellipse cx="140" cy="150" rx="65" ry="60" fill="white" stroke="#64748b" stroke-width="3"/>
+              <!-- Eyes -->
+              <rect x="100" y="126" width="32" height="24" rx="12" :fill="isDark ? '#0f172a' : '#e2e8f0'" stroke="#94a3b8" stroke-width="1.5"/>
+              <circle cx="116" cy="138" r="7" fill="#3b82f6" filter="url(#hGlow)"/>
+              <circle cx="114" cy="136" r="2.5" fill="white" opacity="0.85"/>
+              <rect x="148" y="126" width="32" height="24" rx="12" :fill="isDark ? '#0f172a' : '#e2e8f0'" stroke="#94a3b8" stroke-width="1.5"/>
+              <circle cx="164" cy="138" r="7" fill="#3b82f6" filter="url(#hGlow)"/>
+              <circle cx="162" cy="136" r="2.5" fill="white" opacity="0.85"/>
+              <!-- Nose -->
+              <polygon points="140,155 136,161 144,161" fill="#94a3b8" stroke="#64748b" stroke-width="1"/>
+              <!-- Whiskers -->
+              <line x1="88" y1="152" x2="113" y2="156" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
+              <line x1="88" y1="162" x2="113" y2="161" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
+              <line x1="167" y1="156" x2="192" y2="152" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
+              <line x1="167" y1="161" x2="192" y2="162" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
+              <!-- Smile -->
+              <path d="M126 168 Q140 180 154 168" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+              <!-- Body -->
+              <path d="M90 200 Q90 185 105 178 L120 195 Q140 205 160 195 L175 178 Q190 185 190 200 L195 290 L85 290 Z" fill="url(#hBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
+              <path d="M110 195 L140 210 L170 195" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+              <!-- Heartbeat -->
+              <g opacity="0.5">
+                <polyline fill="none" stroke="#38bdf8" stroke-width="1" stroke-linecap="round" points="105,225 120,225 125,225 128,215 131,235 134,220 137,230 140,225 175,225" opacity="0.4"/>
+              </g>
+              <!-- Hands -->
+              <ellipse cx="88" cy="215" rx="15" ry="12" fill="url(#hBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
+              <ellipse cx="192" cy="215" rx="15" ry="12" fill="url(#hBodyGrad)" stroke="#64748b" stroke-width="2.5"/>
+              <circle cx="80" cy="230" r="10" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
+              <circle cx="200" cy="230" r="10" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
+              <!-- Feet -->
+              <ellipse cx="115" cy="298" rx="18" ry="12" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
+              <ellipse cx="165" cy="298" rx="18" ry="12" fill="white" stroke="#94a3b8" stroke-width="2.5"/>
+              <!-- Name tag -->
+              <rect x="108" y="250" width="64" height="14" rx="3" fill="white" stroke="#94a3b8" stroke-width="0.8"/>
+              <text x="140" y="261" text-anchor="middle" fill="#3b82f6" font-size="7.5" font-weight="bold" font-family="system-ui, sans-serif">DR. HOPPS</text>
+            </svg>
           </div>
         </div>
       </div>
