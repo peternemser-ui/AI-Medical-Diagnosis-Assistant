@@ -1,25 +1,16 @@
 {
-  "name": "MedDiagnose AI",
-  "short_name": "MedDiagnose",
-  "description": "AI-powered medical diagnosis assistant",
+  "name": "MedAssist AI",
+  "short_name": "MedAssist",
+  "description": "AI-powered medical diagnosis assistant with 7 specialized agents for comprehensive clinical analysis.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#0f172a",
-  "background_color": "#020617",
   "orientation": "portrait-primary",
+  "theme_color": "#10b981",
+  "background_color": "#020617",
   "categories": ["health", "medical"],
+  "lang": "en",
   "prefer_related_applications": false,
-  "related_applications": [
-    {
-      "platform": "play",
-      "url": "https://play.google.com/store/apps/details?id=ai.meddiagnose.app",
-      "id": "ai.meddiagnose.app"
-    },
-    {
-      "platform": "itunes",
-      "url": "https://apps.apple.com/app/meddiagnose-ai/id000000000"
-    }
-  ],
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -47,7 +38,7 @@
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
@@ -58,10 +49,40 @@
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Home — MedAssist AI"
+    },
+    {
+      "src": "/screenshots/consultation.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "AI Medical Consultation"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Consultation",
+      "short_name": "Consult",
+      "description": "Start a new AI medical consultation",
+      "url": "/consult",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "My Reports",
+      "short_name": "Reports",
+      "description": "View past diagnosis reports",
+      "url": "/reports",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ]
 }

@@ -29,6 +29,19 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message)s")
 logger = logging.getLogger(__name__)
 
+# ── Sentry error monitoring (optional — only enabled when SENTRY_DSN is set) ──
+import sentry_sdk
+if os.getenv("SENTRY_DSN"):
+    sentry_sdk.init(
+        dsn=os.getenv("SENTRY_DSN"),
+        # Capture 10% of transactions for performance monitoring.
+        # Set to 1.0 for full tracing (higher cost) or 0.0 to disable tracing.
+        traces_sample_rate=0.1,
+        # Strip PII from events before sending to Sentry.
+        send_default_pii=False,
+    )
+    logger.info("Sentry error monitoring enabled")
+
 limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(
@@ -79,6 +92,9 @@ app.include_router(subscription_router)
 
 from nutrition_routes import nutrition_router
 app.include_router(nutrition_router)
+
+from stripe_webhooks import stripe_webhook_router
+app.include_router(stripe_webhook_router)
 
 
 # ── Helpers ──────────────────────────────────────────────────────────

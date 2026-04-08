@@ -77,15 +77,43 @@
         <h2 class="text-xl font-bold mb-1" :class="isDark ? 'text-white' : 'text-slate-900'">Create your account</h2>
         <p class="text-sm mb-6" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Secure, encrypted, HIPAA-compliant</p>
 
+        <!-- Check your email — shown after successful signup -->
+        <Transition name="fade">
+          <div v-if="signupSuccess" class="space-y-4">
+            <div class="p-6 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-center">
+              <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <svg class="w-7 h-7 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              </div>
+              <h3 class="text-lg font-semibold mb-2" :class="isDark ? 'text-white' : 'text-slate-900'">Check your email</h3>
+              <p class="text-sm mb-1" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
+                We sent a verification link to
+              </p>
+              <p class="text-sm font-medium text-emerald-400 mb-4">{{ signupEmail }}</p>
+              <p class="text-xs" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+                Click the link in the email to verify your address, then sign in to start your first consultation.
+              </p>
+            </div>
+            <router-link
+              to="/login"
+              class="w-full block text-center py-3 px-4 font-medium rounded-xl border transition-all"
+              :class="isDark
+                ? 'bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white border-slate-700/50'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border-slate-200'"
+            >
+              Go to sign in
+            </router-link>
+          </div>
+        </Transition>
+
         <!-- Error display -->
         <Transition name="fade">
-          <div v-if="error" class="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-start gap-2">
+          <div v-if="error && !signupSuccess" id="signup-error" role="alert" class="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-start gap-2">
             <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
             <span>{{ error }}</span>
           </div>
         </Transition>
 
-        <form @submit.prevent="handleSignup" class="space-y-4">
+        <form v-if="!signupSuccess" @submit.prevent="handleSignup" class="space-y-4">
           <!-- Name -->
           <div>
             <label for="name" class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-slate-300' : 'text-slate-600'">Full name</label>
@@ -122,6 +150,8 @@
                 required
                 autocomplete="email"
                 placeholder="you@example.com"
+                :aria-invalid="email && !isValidEmail ? 'true' : undefined"
+                :aria-describedby="email && !isValidEmail ? 'signup-email-error' : undefined"
                 class="w-full pl-10 pr-10 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
                 :class="isDark
                   ? 'bg-slate-800/60 border border-slate-700/60 text-white placeholder:text-slate-600'
@@ -133,7 +163,7 @@
                 <svg v-else class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
               </div>
             </div>
-            <p v-if="email && !isValidEmail" class="text-xs mt-1 text-amber-500">Please enter a valid email address</p>
+            <p v-if="email && !isValidEmail" id="signup-email-error" role="alert" class="text-xs mt-1 text-amber-500">Please enter a valid email address</p>
           </div>
 
           <!-- Password -->
@@ -158,6 +188,7 @@
               <button
                 type="button"
                 @click="showPassword = !showPassword"
+                :aria-label="showPassword ? 'Hide password' : 'Show password'"
                 class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
               >
                 <svg v-if="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -167,11 +198,18 @@
 
             <!-- Password strength indicator (4-segment bar) -->
             <div v-if="password" class="mt-2 space-y-1.5">
-              <div class="flex gap-1">
+              <div
+                role="progressbar"
+                :aria-valuenow="strengthLevel"
+                aria-valuemin="0"
+                aria-valuemax="4"
+                :aria-label="`Password strength: ${strengthLabelText}`"
+                class="flex gap-1"
+              >
                 <div v-for="i in 4" :key="i" class="h-1.5 flex-1 rounded-full transition-all duration-300"
                   :class="i <= strengthLevel ? strengthBarColor : (isDark ? 'bg-slate-800' : 'bg-slate-200')"></div>
               </div>
-              <p class="text-xs font-medium transition-colors" :class="strengthLabelColor">
+              <p class="text-xs font-medium transition-colors" :class="strengthLabelColor" aria-live="polite">
                 {{ strengthLabelText }}
               </p>
             </div>
@@ -258,23 +296,25 @@
           </button>
         </form>
 
-        <!-- Divider -->
-        <div class="my-6 flex items-center gap-3">
-          <div class="flex-1 h-px" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
-          <span class="text-xs" :class="isDark ? 'text-slate-600' : 'text-slate-400'">Already have an account?</span>
-          <div class="flex-1 h-px" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
-        </div>
+        <!-- Divider + login link (hidden once signup succeeds — that state shows its own link) -->
+        <template v-if="!signupSuccess">
+          <div class="my-6 flex items-center gap-3">
+            <div class="flex-1 h-px" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
+            <span class="text-xs" :class="isDark ? 'text-slate-600' : 'text-slate-400'">Already have an account?</span>
+            <div class="flex-1 h-px" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
+          </div>
 
-        <!-- Login link -->
-        <router-link
-          to="/login"
-          class="w-full block text-center py-3 px-4 font-medium rounded-xl border transition-all"
-          :class="isDark
-            ? 'bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white border-slate-700/50'
-            : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border-slate-200'"
-        >
-          Sign in instead
-        </router-link>
+          <!-- Login link -->
+          <router-link
+            to="/login"
+            class="w-full block text-center py-3 px-4 font-medium rounded-xl border transition-all"
+            :class="isDark
+              ? 'bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white border-slate-700/50'
+              : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border-slate-200'"
+          >
+            Sign in instead
+          </router-link>
+        </template>
       </div>
     </div>
   </div>
@@ -299,6 +339,10 @@ const showPassword = ref(false)
 const acceptTerms = ref(false)
 const loading = ref(false)
 const error = ref('')
+
+// After successful signup — show "check your email" instead of redirecting
+const signupSuccess = ref(false)
+const signupEmail = ref('')
 
 const isValidEmail = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value))
 
@@ -352,17 +396,14 @@ async function handleSignup() {
   loading.value = true
 
   try {
-    const data = await authSignup(name.value.trim(), email.value.trim(), password.value)
-    // Reset user_profile for the new account (clear old profile data)
-    localStorage.removeItem('user_profile')
-    await saveProfile({
-      name: name.value.trim(),
-      email: email.value.trim(),
-      ...(data.user?.profile_data || {}),
-    })
-    localStorage.setItem('api_key_configured', 'true')
+    const trimmedEmail = email.value.trim()
+    const data = await authSignup(name.value.trim(), trimmedEmail, password.value)
+
     trackEvent(EVENTS.SIGNUP, { method: 'email' })
-    router.push('/setup')
+
+    // Show the "check your email" state instead of auto-redirecting
+    signupEmail.value = trimmedEmail
+    signupSuccess.value = true
   } catch (e) {
     error.value = e.message || 'Signup failed. Please try again.'
   } finally {

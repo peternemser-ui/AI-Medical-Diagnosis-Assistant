@@ -96,3 +96,57 @@ class EmailService:
             <p>Hi {name}, you've used {used} of {limit} diagnoses this month.</p>
             <a href="{FRONTEND_URL}/pricing" style="display:inline-block;padding:12px 24px;background:#f59e0b;color:white;text-decoration:none;border-radius:8px;">Upgrade for More</a>
         </div>""")
+
+    def send_verification_email(self, email: str, name: str, token: str) -> bool:
+        """Send an email address verification link to a newly registered user."""
+        verify_url = f"{FRONTEND_URL}/login?verified=pending&token={token}"
+        # The backend verify endpoint does the actual verification and redirects;
+        # the link points there via the API.
+        api_verify_url = f"/api/auth/verify-email?token={token}"
+        # Build an absolute URL using FRONTEND_URL as origin base for the API call
+        import os
+        backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
+        verify_link = f"{backend_url}/api/auth/verify-email?token={token}"
+
+        subject = "Verify your email address — MedDiagnose AI"
+        body = f"""
+        <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+            <div style="text-align:center;padding:32px 0 24px;">
+                <div style="display:inline-flex;padding:16px;border-radius:16px;
+                            background:linear-gradient(135deg,#10b981,#0d9488);
+                            margin-bottom:20px;">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
+                        <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z"/>
+                    </svg>
+                </div>
+                <h1 style="color:#0f172a;font-size:24px;margin:0;">Verify your email</h1>
+            </div>
+            <p style="color:#334155;">Hi {name or 'there'},</p>
+            <p style="color:#334155;">
+                Thanks for signing up for MedDiagnose AI. Click the button below to
+                verify your email address and activate your account.
+            </p>
+            <div style="text-align:center;margin:32px 0;">
+                <a href="{verify_link}"
+                   style="display:inline-block;padding:14px 32px;
+                          background:linear-gradient(135deg,#10b981,#0d9488);
+                          color:white;font-weight:600;text-decoration:none;
+                          border-radius:10px;font-size:16px;">
+                    Verify Email Address
+                </a>
+            </div>
+            <p style="color:#64748b;font-size:13px;">
+                This link expires in 24 hours. If you did not create an account,
+                you can safely ignore this email.
+            </p>
+            <p style="color:#94a3b8;font-size:12px;">
+                Or copy and paste this URL: {verify_link}
+            </p>
+            <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;"/>
+            <p style="color:#94a3b8;font-size:11px;text-align:center;">
+                MedDiagnose AI — For informational purposes only. Not a substitute
+                for professional medical advice.
+            </p>
+        </div>"""
+
+        return self.send(email, subject, body)

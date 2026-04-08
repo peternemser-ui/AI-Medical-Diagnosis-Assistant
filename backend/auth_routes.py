@@ -1,20 +1,25 @@
 """
 Authentication API routes.
 
-POST /api/auth/signup          - Register new user
-POST /api/auth/login           - Log in
-POST /api/auth/refresh         - Refresh access token
-POST /api/auth/logout          - Revoke refresh token
-GET  /api/auth/me              - Current user profile
-PUT  /api/auth/me              - Update profile
-POST /api/auth/change-password - Change password
+POST /api/auth/signup               - Register new user
+POST /api/auth/login                - Log in
+POST /api/auth/refresh              - Refresh access token
+POST /api/auth/logout               - Revoke refresh token
+GET  /api/auth/me                   - Current user profile
+PUT  /api/auth/me                   - Update profile
+POST /api/auth/change-password      - Change password
+GET  /api/auth/verify-email         - Verify email with token (redirects to frontend)
+POST /api/auth/resend-verification  - Resend verification email
 """
 
 import re
+import os
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Request, Depends
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, EmailStr, field_validator
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -127,8 +132,12 @@ def _safe_user(user: dict) -> dict:
         "name": user.get("name", ""),
         "role": user.get("role", "patient"),
         "created_at": user.get("created_at"),
+        "email_verified": user.get("email_verified", False),
         "profile_data": user.get("profile_data"),
     }
+
+
+_FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 
 # ---------------------------------------------------------------------------
@@ -139,10 +148,10 @@ def _safe_user(user: dict) -> dict:
 @limiter.limit("3/minute")
 async def signup(body: SignupRequest, request: Request):
     """Register a new user account."""
-    # Rate limiting placeholder — in production use Redis-based rate limiter
-    # e.g. slowapi or fastapi-limiter: @limiter.limit("5/minute")
-
     db = Database.get()
+
+    # Generate a secure email verification token
+    verification_token = secrets.token_urlsafe(32)
 
     try:
         user = db.create_user(
@@ -150,6 +159,7 @@ async def signup(body: SignupRequest, request: Request):
             password=body.password,
             name=body.name,
             role="patient",
+            verification_token=verification_token,
         )
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
@@ -170,13 +180,20 @@ async def signup(body: SignupRequest, request: Request):
     # Audit
     db.log_audit(user["id"], "signup", "user", _client_ip(request))
 
-    # Send welcome email
-    _email.send_welcome(email=user["email"], name=user.get("name", ""))
+    # Send verification email (preferred) or welcome email as fallback
+    email_sent = _email.send_verification_email(
+        email=user["email"],
+        name=user.get("name", ""),
+        token=verification_token,
+    )
+    if not email_sent:
+        _email.send_welcome(email=user["email"], name=user.get("name", ""))
 
     return {
         "user": _safe_user(user),
         "access_token": access,
         "refresh_token": refresh,
+        "verification_email_sent": True,
     }
 
 
@@ -293,3 +310,64 @@ async def change_password(body: ChangePasswordRequest, request: Request,
     db.log_audit(user["id"], "change_password", "user", _client_ip(request))
 
     return {"message": "Password changed. Please log in again."}
+
+
+# ---------------------------------------------------------------------------
+# Email verification endpoints
+# ---------------------------------------------------------------------------
+
+@auth_router.get("/verify-email")
+async def verify_email(token: str, request: Request):
+    """
+    Verify a user's email address using the token sent in the verification email.
+
+    On success: marks the user as verified and redirects to the frontend login
+    page with ?verified=true so the UI can show a success banner.
+
+    On failure: redirects to the frontend login page with ?verified=false.
+    """
+    db = Database.get()
+    user = db.get_user_by_verification_token(token)
+
+    if user is None:
+        return RedirectResponse(url=f"{_FRONTEND_URL}/login?verified=false")
+
+    if user.get("email_verified"):
+        # Already verified — just redirect to login with success
+        return RedirectResponse(url=f"{_FRONTEND_URL}/login?verified=true")
+
+    db.set_email_verified(user["id"])
+    db.log_audit(user["id"], "email_verified", "user", _client_ip(request))
+
+    return RedirectResponse(url=f"{_FRONTEND_URL}/login?verified=true")
+
+
+class ResendVerificationRequest(BaseModel):
+    email: str
+
+
+@auth_router.post("/resend-verification")
+@limiter.limit("3/minute")
+async def resend_verification(body: ResendVerificationRequest, request: Request):
+    """
+    Resend a verification email to the given address.
+
+    Always returns 200 to prevent email enumeration — the client cannot
+    tell whether the address is registered or not.
+    """
+    db = Database.get()
+    user = db.get_user_by_email(body.email.strip().lower())
+
+    if user and not user.get("email_verified"):
+        # Generate a fresh token and store it
+        new_token = secrets.token_urlsafe(32)
+        db.set_verification_token(user["id"], new_token)
+        _email.send_verification_email(
+            email=user["email"],
+            name=user.get("name", ""),
+            token=new_token,
+        )
+        db.log_audit(user["id"], "resend_verification", "user", _client_ip(request))
+
+    # Always return the same response to prevent email enumeration
+    return {"message": "If that address is registered and unverified, a new link has been sent."}

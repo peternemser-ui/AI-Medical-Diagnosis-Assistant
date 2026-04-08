@@ -330,7 +330,9 @@ class Database:
                 created_at TEXT NOT NULL,
                 last_login TEXT,
                 is_active BOOLEAN DEFAULT 1,
-                profile_data TEXT
+                profile_data TEXT,
+                email_verified BOOLEAN DEFAULT 0,
+                verification_token TEXT
             );
 
             CREATE TABLE IF NOT EXISTS sessions (
@@ -377,14 +379,32 @@ class Database:
             CREATE INDEX IF NOT EXISTS idx_audit_ts ON audit_log(timestamp);
         """)
         conn.commit()
+        # Migrate older schemas: add email verification columns if missing
+        self._migrate_sqlite_email_verification(conn)
+
+    def _migrate_sqlite_email_verification(self, conn) -> None:
+        """Add email_verified and verification_token columns to existing databases."""
+        existing = {row[1] for row in conn.execute("PRAGMA table_info(users)").fetchall()}
+        if "email_verified" not in existing:
+            conn.execute("ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT 0")
+            logger.info("SQLite migration: added email_verified column")
+        if "verification_token" not in existing:
+            conn.execute("ALTER TABLE users ADD COLUMN verification_token TEXT")
+            logger.info("SQLite migration: added verification_token column")
+        conn.commit()
 
     # ======================================================================
     # USER CRUD
     # ======================================================================
 
     def create_user(self, email: str, password: str, name: str = "",
-                    role: str = "patient") -> dict:
-        """Create a new user with encrypted PII and bcrypt-hashed password."""
+                    role: str = "patient",
+                    verification_token: str = None) -> dict:
+        """Create a new user with encrypted PII and bcrypt-hashed password.
+
+        If verification_token is provided it is stored so the user can
+        verify their email address via GET /api/auth/verify-email?token=xxx.
+        """
         import bcrypt
 
         user_id = str(uuid.uuid4())
@@ -399,12 +419,17 @@ class Database:
                     cur.execute(
                         """INSERT INTO users
                            (id, email_hash, email_encrypted, password_hash,
-                            role, name_encrypted, created_at)
-                           VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                            role, name_encrypted, created_at,
+                            is_email_verified)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
                         (user_id, email_hashed, encrypt(email), pw_hash,
-                         role, encrypt(name), now),
+                         role, encrypt(name), now, False),
                     )
                 conn.commit()
+                # Store verification token in a separate update so PG schema
+                # differences don't break the INSERT on older migrations.
+                if verification_token:
+                    self._pg_set_verification_token(user_id, verification_token, conn_override=None)
             except Exception as exc:
                 conn.rollback()
                 if "duplicate key" in str(exc).lower() or "unique" in str(exc).lower():
@@ -417,10 +442,12 @@ class Database:
             try:
                 with self._sqlite_lock:
                     conn.execute(
-                        """INSERT INTO users (id, email, password_hash, role, name, created_at)
-                           VALUES (?, ?, ?, ?, ?, ?)""",
+                        """INSERT INTO users
+                           (id, email, password_hash, role, name, created_at,
+                            email_verified, verification_token)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                         (user_id, encrypt(email), pw_hash, role,
-                         encrypt(name), now),
+                         encrypt(name), now, 0, verification_token),
                     )
                     conn.commit()
             except sqlite3.IntegrityError:
@@ -433,6 +460,7 @@ class Database:
             "role": role,
             "created_at": now,
             "is_active": True,
+            "email_verified": False,
             "profile_data": None,
         }
 
@@ -612,6 +640,126 @@ class Database:
             conn.commit()
             return self.get_user(user_id)
 
+    # ======================================================================
+    # EMAIL VERIFICATION
+    # ======================================================================
+
+    def get_user_by_verification_token(self, token: str) -> Optional[dict]:
+        """Look up a user by their email verification token."""
+        if self._use_pg:
+            conn = self._pg_conn()
+            try:
+                with conn.cursor() as cur:
+                    # verification_token stored in profile_data or a dedicated column
+                    # We store it in a JSON side-channel via profile_data_encrypted for PG
+                    # to avoid a schema migration on existing PG deployments.
+                    cur.execute(
+                        "SELECT * FROM users WHERE is_active = TRUE",
+                        (),
+                    )
+                    cols = [d[0] for d in cur.description] if cur.description else []
+                    rows = cur.fetchall()
+                for row in rows:
+                    row_dict = dict(zip(cols, row))
+                    profile = None
+                    if row_dict.get("profile_data_encrypted"):
+                        profile = decrypt_json(row_dict["profile_data_encrypted"])
+                    if isinstance(profile, dict) and profile.get("_verification_token") == token:
+                        return self._pg_row_to_user(row_dict)
+                return None
+            finally:
+                self._pg_put(conn)
+        else:
+            conn = self._conn()
+            row = conn.execute(
+                "SELECT * FROM users WHERE verification_token = ? AND is_active = 1",
+                (token,),
+            ).fetchone()
+            if row is None:
+                return None
+            return self._sqlite_row_to_user(row)
+
+    def set_email_verified(self, user_id: str) -> None:
+        """Mark a user's email as verified and clear the verification token."""
+        if self._use_pg:
+            conn = self._pg_conn()
+            try:
+                now = datetime.now(timezone.utc).isoformat()
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "UPDATE users SET is_email_verified = TRUE, email_verified_at = %s WHERE id = %s",
+                        (now, user_id),
+                    )
+                    # Also clear the token stored in profile_data
+                    cur.execute(
+                        "SELECT profile_data_encrypted FROM users WHERE id = %s",
+                        (user_id,),
+                    )
+                    row = cur.fetchone()
+                    if row and row[0]:
+                        profile = decrypt_json(row[0])
+                        if isinstance(profile, dict):
+                            profile.pop("_verification_token", None)
+                            cur.execute(
+                                "UPDATE users SET profile_data_encrypted = %s WHERE id = %s",
+                                (encrypt_json(profile), user_id),
+                            )
+                conn.commit()
+            except Exception:
+                conn.rollback()
+                raise
+            finally:
+                self._pg_put(conn)
+        else:
+            conn = self._conn()
+            with self._sqlite_lock:
+                conn.execute(
+                    "UPDATE users SET email_verified = 1, verification_token = NULL WHERE id = ?",
+                    (user_id,),
+                )
+                conn.commit()
+
+    def set_verification_token(self, user_id: str, token: str) -> None:
+        """Store (or replace) an email verification token for a user."""
+        if self._use_pg:
+            self._pg_set_verification_token(user_id, token)
+        else:
+            conn = self._conn()
+            with self._sqlite_lock:
+                conn.execute(
+                    "UPDATE users SET verification_token = ?, email_verified = 0 WHERE id = ?",
+                    (token, user_id),
+                )
+                conn.commit()
+
+    def _pg_set_verification_token(self, user_id: str, token: str,
+                                    conn_override=None) -> None:
+        """Store a verification token inside profile_data_encrypted for PostgreSQL."""
+        conn = conn_override or self._pg_conn()
+        own_conn = conn_override is None
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT profile_data_encrypted FROM users WHERE id = %s",
+                    (user_id,),
+                )
+                row = cur.fetchone()
+                profile = {}
+                if row and row[0]:
+                    profile = decrypt_json(row[0]) or {}
+                profile["_verification_token"] = token
+                cur.execute(
+                    "UPDATE users SET profile_data_encrypted = %s WHERE id = %s",
+                    (encrypt_json(profile), user_id),
+                )
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            if own_conn:
+                self._pg_put(conn)
+
     # -- row converters ----------------------------------------------------
 
     def _pg_row_to_user(self, row: dict) -> dict:
@@ -627,6 +775,7 @@ class Database:
             "created_at": row["created_at"].isoformat() if hasattr(row["created_at"], "isoformat") else str(row["created_at"]),
             "last_login": row.get("last_login_at").isoformat() if row.get("last_login_at") and hasattr(row["last_login_at"], "isoformat") else (str(row["last_login_at"]) if row.get("last_login_at") else None),
             "is_active": bool(row["is_active"]),
+            "email_verified": bool(row.get("is_email_verified", False)),
             "profile_data": profile,
         }
 
@@ -634,6 +783,12 @@ class Database:
         profile = None
         if row["profile_data"]:
             profile = decrypt_json(row["profile_data"])
+
+        # email_verified column may not exist on very old DBs — handle gracefully
+        try:
+            ev = bool(row["email_verified"])
+        except (IndexError, KeyError):
+            ev = False
 
         return {
             "id": row["id"],
@@ -643,6 +798,7 @@ class Database:
             "created_at": row["created_at"],
             "last_login": row["last_login"],
             "is_active": bool(row["is_active"]),
+            "email_verified": ev,
             "profile_data": profile,
         }
 

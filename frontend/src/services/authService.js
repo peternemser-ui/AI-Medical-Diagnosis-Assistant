@@ -231,3 +231,20 @@ export async function fetchCurrentUser() {
     return null
   }
 }
+
+/**
+ * Request a new verification email for the given address.
+ * Always resolves (never rejects) — the server intentionally gives no
+ * indication of whether the address is registered.
+ */
+export async function resendVerification(email) {
+  try {
+    await fetch(`${API_BASE_URL}/api/auth/resend-verification`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
+  } catch {
+    // Swallow network errors — the server response is always the same
+  }
+}

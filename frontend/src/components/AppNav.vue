@@ -1,5 +1,5 @@
 <template>
-  <nav role="banner" aria-label="Main navigation"
+  <nav role="navigation" aria-label="Main navigation"
     class="sticky top-0 z-50 backdrop-blur-xl border-b py-3 px-4 sm:px-6 flex justify-between items-center transition-colors duration-300"
     style="background: color-mix(in srgb, var(--clinical-surface) 85%, transparent); border-color: var(--clinical-border)">
 
@@ -15,7 +15,7 @@
       </router-link>
 
       <!-- Home link -->
-      <router-link to="/" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all" :class="isDark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'">
+      <router-link to="/" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all" :class="isDark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" :aria-current="currentPage === 'home' ? 'page' : undefined">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
         {{ t('nav.home') }}
       </router-link>
@@ -32,6 +32,7 @@
     <div class="hidden sm:flex items-center gap-1">
       <!-- Consult -->
       <router-link to="/consult" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all"
+        :aria-current="currentPage === 'consult' ? 'page' : undefined"
         :class="[
           currentPage === 'consult'
             ? (isDark ? 'text-white bg-slate-700/80' : 'text-slate-900 bg-slate-200/80')
@@ -43,6 +44,7 @@
 
       <!-- Reports -->
       <router-link to="/reports" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all"
+        :aria-current="currentPage === 'reports' ? 'page' : undefined"
         :class="[
           currentPage === 'reports'
             ? (isDark ? 'text-white bg-slate-700/80' : 'text-slate-900 bg-slate-200/80')
@@ -54,6 +56,7 @@
 
       <!-- Medications -->
       <router-link to="/medications" class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all"
+        :aria-current="currentPage === 'medications' ? 'page' : undefined"
         :class="[
           currentPage === 'medications'
             ? (isDark ? 'text-white bg-slate-700/80' : 'text-slate-900 bg-slate-200/80')

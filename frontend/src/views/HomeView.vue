@@ -1,6 +1,13 @@
 <template>
   <div class="min-h-screen transition-colors duration-300" :class="isDark ? 'bg-slate-950 text-white' : 'bg-white text-slate-900'">
+    <!-- Skip to main content (WCAG 2.1 AA) -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:rounded-lg focus:font-semibold focus:text-white focus:bg-emerald-600">
+      Skip to main content
+    </a>
+
     <AppNav currentPage="home" />
+
+    <main id="main-content">
 
     <!-- S1: Hero -->
     <section class="relative overflow-hidden py-20 sm:py-28 px-4">
@@ -290,6 +297,8 @@
       :class="isDark ? 'border-slate-800 text-slate-600' : 'border-slate-200 text-slate-400'">
       &copy; {{ new Date().getFullYear() }} MedDiagnose AI. For informational purposes only — not a substitute for professional medical advice.
     </footer>
+
+    </main>
   </div>
 </template>
 

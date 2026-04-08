@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline — MedAssist AI</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #020617;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+    }
+    .icon {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, #10b981, #0d9488);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2rem;
+      box-shadow: 0 0 40px rgba(16, 185, 129, 0.25);
+    }
+    .icon svg { width: 36px; height: 36px; fill: white; }
+    h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.75rem; color: #f8fafc; }
+    p  { color: #94a3b8; font-size: 1rem; line-height: 1.6; max-width: 380px; margin: 0 auto 2rem; }
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 2rem;
+      background: linear-gradient(135deg, #10b981, #0d9488);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.88; }
+    .note {
+      margin-top: 1.5rem;
+      font-size: 0.8125rem;
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+  <div class="icon">
+    <svg viewBox="0 0 24 24"><path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z"/></svg>
+  </div>
+  <h1>You're Offline</h1>
+  <p>MedAssist AI requires an internet connection to run diagnostic consultations. Please reconnect and try again.</p>
+  <button class="btn" onclick="window.location.reload()">Try Again</button>
+  <p class="note">Your past reports and profile are cached and will be available once you reconnect.</p>
+</body>
+</html>

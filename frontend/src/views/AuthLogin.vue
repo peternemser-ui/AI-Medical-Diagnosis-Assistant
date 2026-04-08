@@ -70,9 +70,48 @@
         <h2 class="text-xl font-bold mb-1" :class="isDark ? 'text-white' : 'text-slate-900'">Welcome back</h2>
         <p class="text-sm mb-6" :class="isDark ? 'text-slate-400' : 'text-slate-500'">Sign in to access your diagnosis history</p>
 
+        <!-- Email verified success banner -->
+        <Transition name="fade">
+          <div v-if="showVerifiedBanner" class="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-sm flex items-start gap-2">
+            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Email verified! You can now sign in.</span>
+          </div>
+        </Transition>
+
+        <!-- Email verification failed banner -->
+        <Transition name="fade">
+          <div v-if="showVerifiedFailed" class="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-400 text-sm flex items-start gap-2">
+            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            <span>Verification link is invalid or has expired. Enter your email below and use the resend button.</span>
+          </div>
+        </Transition>
+
+        <!-- Email not verified warning (shown after login attempt with unverified account) -->
+        <Transition name="fade">
+          <div v-if="showUnverifiedWarning" class="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-400 text-sm">
+            <div class="flex items-start gap-2 mb-2">
+              <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              <span>Please verify your email address before signing in. Check your inbox for the verification link.</span>
+            </div>
+            <button
+              type="button"
+              :disabled="resendLoading || resendSent"
+              @click="handleResend"
+              class="w-full py-2 px-3 text-xs font-medium rounded-lg border transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              :class="isDark
+                ? 'border-amber-500/40 text-amber-400 hover:bg-amber-500/10'
+                : 'border-amber-400/50 text-amber-600 hover:bg-amber-50'"
+            >
+              <span v-if="resendSent">Verification email sent — check your inbox</span>
+              <span v-else-if="resendLoading">Sending...</span>
+              <span v-else>Resend verification email</span>
+            </button>
+          </div>
+        </Transition>
+
         <!-- Error display -->
         <Transition name="fade">
-          <div v-if="error" class="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-start gap-2">
+          <div v-if="error" id="login-error" role="alert" class="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-start gap-2">
             <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
             <span>{{ error }}</span>
           </div>
@@ -93,6 +132,8 @@
                 required
                 autocomplete="email"
                 placeholder="you@example.com"
+                :aria-invalid="email && !isValidEmail ? 'true' : undefined"
+                :aria-describedby="email && !isValidEmail ? 'email-error' : undefined"
                 class="w-full pl-10 pr-10 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
                 :class="isDark
                   ? 'bg-slate-800/60 border border-slate-700/60 text-white placeholder:text-slate-600'
@@ -104,7 +145,7 @@
                 <svg v-else class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
               </div>
             </div>
-            <p v-if="email && !isValidEmail" class="text-xs mt-1 text-amber-500">Please enter a valid email address</p>
+            <p v-if="email && !isValidEmail" id="email-error" role="alert" class="text-xs mt-1 text-amber-500">Please enter a valid email address</p>
           </div>
 
           <!-- Password -->
@@ -136,6 +177,7 @@
               <button
                 type="button"
                 @click="showPassword = !showPassword"
+                :aria-label="showPassword ? 'Hide password' : 'Show password'"
                 class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
               >
                 <svg v-if="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -185,14 +227,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { login as authLogin } from '@/services/authService'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { login as authLogin, resendVerification } from '@/services/authService'
 import { saveProfile } from '@/services/userService'
 import { trackEvent, EVENTS } from '@/services/analytics'
 import { useTheme } from '@/composables/useTheme.js'
 
 const router = useRouter()
+const route = useRoute()
 const { isDark } = useTheme()
 
 const email = ref('')
@@ -201,7 +244,28 @@ const showPassword = ref(false)
 const loading = ref(false)
 const error = ref('')
 
+// Email verification banners
+const showVerifiedBanner = ref(false)
+const showVerifiedFailed = ref(false)
+const showUnverifiedWarning = ref(false)
+const resendLoading = ref(false)
+const resendSent = ref(false)
+
 const isValidEmail = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value))
+
+onMounted(() => {
+  // Read ?verified=true|false from the URL (set by the backend verify-email redirect)
+  const verified = route.query.verified
+  if (verified === 'true') {
+    showVerifiedBanner.value = true
+  } else if (verified === 'false') {
+    showVerifiedFailed.value = true
+  }
+  // Clean up the query param without adding to browser history
+  if (verified) {
+    router.replace({ path: route.path })
+  }
+})
 
 const agents = [
   { icon: '\u{1F6A8}', name: 'Triage', desc: 'Urgency assessment' },
@@ -214,10 +278,19 @@ const agents = [
 
 async function handleLogin() {
   error.value = ''
+  showUnverifiedWarning.value = false
   loading.value = true
 
   try {
     const data = await authLogin(email.value, password.value)
+
+    // Check if the account is unverified (server may return this flag)
+    if (data.user && data.user.email_verified === false) {
+      showUnverifiedWarning.value = true
+      loading.value = false
+      return
+    }
+
     // Merge auth user data into existing profile (preserve gender, DOB, etc.)
     if (data.user) {
       await saveProfile({
@@ -231,10 +304,23 @@ async function handleLogin() {
     trackEvent(EVENTS.LOGIN, { method: 'email' })
     router.push('/consult')
   } catch (e) {
-    error.value = e.message || 'Login failed. Please try again.'
+    // Server returns 403 for unverified accounts
+    if (e.message && e.message.toLowerCase().includes('verify')) {
+      showUnverifiedWarning.value = true
+    } else {
+      error.value = e.message || 'Login failed. Please try again.'
+    }
   } finally {
     loading.value = false
   }
+}
+
+async function handleResend() {
+  if (!email.value || resendLoading.value || resendSent.value) return
+  resendLoading.value = true
+  await resendVerification(email.value)
+  resendLoading.value = false
+  resendSent.value = true
 }
 </script>
 
